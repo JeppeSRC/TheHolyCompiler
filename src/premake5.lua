@@ -57,20 +57,19 @@ project("TheHolyCompiler-core")
     targetdir "%{sln.location}/../bin/TheHolyCompiler-core/"
     objdir "%{sln.location}/../bin/TheHolyCompiler-core/intermediates/"
 
-    filter("*-Static")
-        kind "StaticLib"
-    
-    filter("*-Shared")
-        kind "SharedLib"
-
-    filter("")
-
-
     files {
         "TheHolyCompiler-core/**.h",
         "TheHolyCompiler-core/**.cpp",
         "TheHolyCompiler-core/**.c"
     }
+
+    filter("*-Static")
+        kind "StaticLib"
+
+    filter("*-Shared")
+        kind "SharedLib"
+
+    filter { "" }
 
 project("TheHolyCompiler")
     removeconfigurations {
