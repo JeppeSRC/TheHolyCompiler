@@ -63,6 +63,10 @@ project("TheHolyCompiler-core")
         "TheHolyCompiler-core/**.c"
     }
 
+    includedirs {
+        "TheHolyCompiler-core/",
+    }
+
     filter("*-Static")
         kind "StaticLib"
 
