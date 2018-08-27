@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include <memory>
 
-#include <generator/generator.h>
 #include <core/spirvlimits.h>
 
 namespace thc {
