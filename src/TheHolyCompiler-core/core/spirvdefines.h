@@ -502,6 +502,7 @@ SOFTWARE.
 //OpCodes
 #define THC_SPIRV_OPCODE_OpNop 0
 #define THC_SPIRV_OPCODE_OpUndef 1
+#define THC_SPIRV_OPCODE_OpSizeOf 321
 #define THC_SPIRV_OPCODE_OpSourceContinued 2
 #define THC_SPIRV_OPCODE_OpSource 3
 #define THC_SPIRV_OPCODE_OpSourceExtension 4
