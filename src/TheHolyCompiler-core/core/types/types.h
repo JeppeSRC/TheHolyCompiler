@@ -50,7 +50,7 @@ public:
 	unsigned int id;
 	Type type;
 
-	TypeBase(Type type) : type(type) { }
+	TypeBase(Type type);
 };
 
 class TypeInt : public TypeBase {
@@ -58,14 +58,14 @@ public:
 	unsigned int bits;
 	unsigned int sign;
 
-	TypeInt(unsigned int bits, unsigned int sign) : TypeBase(THC_TYPE_INT), bits(bits), sign(sign) { }
+	TypeInt(unsigned int bits, unsigned int sign);
 };
 
 class TypeFloat : public TypeBase {
 public:
 	unsigned int bits;
 
-	TypeFloat(unsigned int bits) : TypeBase(THC_TYPE_FLOAT), bits(bits) { }
+	TypeFloat(unsigned int bits);
 };
 
 class TypeVector : public TypeBase {
@@ -73,7 +73,7 @@ public:
 	unsigned int componentCount;
 	unsigned int componentTypeId;
 
-	TypeVector(unsigned int compCount, unsigned int compTypeId) : TypeBase(THC_TYPE_VECTOR), componentCount(compCount), componentTypeId(compTypeId) { }
+	TypeVector(unsigned int compCount, unsigned int compTypeId);
 };
 
 class TypeMatrix : public TypeBase {
@@ -81,7 +81,7 @@ public:
 	unsigned int columnCount;
 	unsigned int columnTypeId;
 
-	TypeMatrix(unsigned int columnCount, unsigned int columnTypeId) : TypeBase(THC_TYPE_MATRIX), columnCount(columnCount), columnTypeId(columnTypeId) { }
+	TypeMatrix(unsigned int columnCount, unsigned int columnTypeId);
 };
 
 class TypeArray : public TypeBase {
@@ -89,7 +89,7 @@ public:
 	unsigned int elementCount;
 	unsigned int elementTypeId;
 
-	TypeArray(unsigned int elementCount, unsigned int elementTypeId) : TypeBase(THC_TYPE_ARRAY), elementCount(elementCount), elementTypeId(elementTypeId) { }
+	TypeArray(unsigned int elementCount, unsigned int elementTypeId);
 };
 
 class TypeStruct : public TypeBase {
@@ -97,7 +97,7 @@ public:
 	unsigned int memberCount;
 	unsigned int memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
-	TypeStruct(unsigned int memberCount, unsigned int* memberTypeIds) : TypeBase(THC_TYPE_STRUCT), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount * sizeof(unsigned int)); }
+	TypeStruct(unsigned int memberCount, unsigned int* memberTypeIds);
 };
 
 class TypePointer : public TypeBase {
@@ -105,7 +105,7 @@ public:
 	unsigned int storageClass;
 	unsigned int typeId;
 
-	TypePointer(unsigned int storageClass, unsigned int typeId) : TypeBase(THC_TYPE_POINTER), storageClass(storageClass), typeId(typeId) { }
+	TypePointer(unsigned int storageClass, unsigned int typeId);
 };
 
 class TypeFunction : public TypeBase {
@@ -114,7 +114,7 @@ public:
 	unsigned int parameterCount;
 	unsigned int parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
 
-	TypeFunction(unsigned int returnTypeId, unsigned int parameterCount, unsigned int* parameterIds) : TypeBase(THC_TYPE_FUNCTION), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount * sizeof(unsigned int)); }
+	TypeFunction(unsigned int returnTypeId, unsigned int parameterCount, unsigned int* parameterIds);
 };
 
 }
