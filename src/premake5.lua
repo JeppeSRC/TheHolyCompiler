@@ -54,8 +54,8 @@ workspace("TheHolyCompiler")
 
 project("TheHolyCompiler-core")
     location "../solution/TheHolyCompiler-core/"
-    targetdir "%{sln.location}/../bin/TheHolyCompiler-core/"
-    objdir "%{sln.location}/../bin/TheHolyCompiler-core/intermediates/"
+    targetdir "%{sln.location}/../bin/TheHolyCompiler-core/%{cfg.buildcfg}/"
+    objdir "%{sln.location}/../bin/TheHolyCompiler-core/%{cfg.buildcfg}/intermediates/"
 
     files {
         "TheHolyCompiler-core/**.h",
