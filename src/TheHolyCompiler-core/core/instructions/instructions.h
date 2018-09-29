@@ -1168,16 +1168,6 @@ public:
 	void GetInstWords(unsigned int* words) const override;
 };
 
-class InstIEqual : public InstBase {
-public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
-
-	InstIEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
-
-	void GetInstWords(unsigned int* words) const override;
-};
 
 class InstINotEqual : public InstBase {
 public:
