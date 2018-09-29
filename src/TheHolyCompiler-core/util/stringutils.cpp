@@ -29,7 +29,7 @@ namespace thc {
 namespace utils {
 
 void Utils::CopyString(char*& dst, const char* const src) {
-	unsigned int len = strlen(src)+1;
+	size_t len = strlen(src)+1;
 
 	dst = new char[len+1];
 	memcpy(dst, src, len);
