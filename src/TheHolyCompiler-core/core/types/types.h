@@ -27,6 +27,7 @@ SOFTWARE.
 #include <memory>
 
 #include <core/spirvlimits.h>
+#include <core/instructions/instructions.h>
 
 namespace thc {
 namespace core {
@@ -45,12 +46,22 @@ enum Type {
 	THC_TYPE_POINTER
 };
 
-class TypeBase {
+
+class TypeBase : public instruction::InstBase {
 public:
-	unsigned int id;
 	Type type;
 
-	TypeBase(Type type);
+	TypeBase(Type type, unsigned int opCode, unsigned int wordCount, const char* const literalName);
+	virtual ~TypeBase();
+
+	virtual void GetInstWords(unsigned int* words) const = 0;
+};
+
+class TypeVoid : public TypeBase {
+public:
+	TypeVoid();
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeInt : public TypeBase {
@@ -59,6 +70,8 @@ public:
 	unsigned int sign;
 
 	TypeInt(unsigned int bits, unsigned int sign);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeFloat : public TypeBase {
@@ -66,6 +79,8 @@ public:
 	unsigned int bits;
 
 	TypeFloat(unsigned int bits);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeVector : public TypeBase {
@@ -74,6 +89,8 @@ public:
 	unsigned int componentTypeId;
 
 	TypeVector(unsigned int compCount, unsigned int compTypeId);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeMatrix : public TypeBase {
@@ -82,6 +99,8 @@ public:
 	unsigned int columnTypeId;
 
 	TypeMatrix(unsigned int columnCount, unsigned int columnTypeId);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeArray : public TypeBase {
@@ -90,6 +109,8 @@ public:
 	unsigned int elementTypeId;
 
 	TypeArray(unsigned int elementCount, unsigned int elementTypeId);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeStruct : public TypeBase {
@@ -98,6 +119,8 @@ public:
 	unsigned int memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
 	TypeStruct(unsigned int memberCount, unsigned int* memberTypeIds);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypePointer : public TypeBase {
@@ -106,6 +129,8 @@ public:
 	unsigned int typeId;
 
 	TypePointer(unsigned int storageClass, unsigned int typeId);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 class TypeFunction : public TypeBase {
@@ -115,6 +140,8 @@ public:
 	unsigned int parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
 
 	TypeFunction(unsigned int returnTypeId, unsigned int parameterCount, unsigned int* parameterIds);
+
+	void GetInstWords(unsigned int* words) const override;
 };
 
 }
