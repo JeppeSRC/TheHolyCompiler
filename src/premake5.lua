@@ -15,6 +15,10 @@ workspace("TheHolyCompiler")
 
     callingconvention "FastCall"
 
+    defines {
+        "_CRT_SECURE_NO_WARNINGS"
+    }
+
     flags {
         "MultiProcessorCompile",
         "NoPCH"
