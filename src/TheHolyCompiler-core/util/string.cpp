@@ -149,5 +149,47 @@ String String::SubString(const char* const start, const char* const end) const {
 	return std::move(SubString(Find(start), Find(end)));
 }
 
+StringList String::Split(const String& delimiters) const {
+	return std::move(Split(delimiters.str));
+}
+
+StringList String::Split(const char* const delimiters) const {
+	StringList list;
+
+	size_t numDelimiters = strlen(delimiters);
+
+	size_t lastIndex = 0;
+
+	for (size_t i = 0; i < length; i++) {
+		for (size_t j = 0; j < numDelimiters; j++) {
+			if (str[i] == delimiters[j]) {
+				if (lastIndex == i-1 || lastIndex == i) {
+					lastIndex++;
+				} else {
+					list.push_back(std::move(SubString(lastIndex, i-1)));
+					lastIndex = i+1;
+				}
+				break;
+			}
+		}
+	}
+
+	if (lastIndex < length) {
+		list.push_back(std::move(SubString(lastIndex, length-1)));
+	}
+
+	return std::move(list);
+}
+
+char& String::operator[](size_t index) {
+	THC_ASSERT(index < length);
+	return str[index];
+}
+
+char String::operator[](size_t index) const {
+	THC_ASSERT(index < length);
+	return str[index];
+}
+
 }
 }

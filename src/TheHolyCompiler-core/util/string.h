@@ -24,9 +24,13 @@ SOFTWARE.
 #pragma once
 
 #include <memory>
+#include <vector>
 
 namespace thc {
 namespace utils {
+
+
+using StringList = std::vector<String>;
 
 class String {
 public:
@@ -60,6 +64,12 @@ public:
 	String SubString(size_t start, size_t end) const;
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
+
+	StringList Split(const String& delimiters) const;
+	StringList Split(const char* const delimiters) const;
+
+	char& operator[](size_t index);
+	char operator[](size_t index) const;
 };
 
 }
