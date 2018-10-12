@@ -22,28 +22,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
-
-namespace thc {
-namespace core {
-namespace compiler {
-
-class IDManager {
-private:
-	static unsigned int count;
-
-public:
-	static unsigned int GetNewId();
-	static unsigned int GetCount();
-};
-
-class Compiler {
-private:
-
-public:
-
-};
-
-}
-}
-}
