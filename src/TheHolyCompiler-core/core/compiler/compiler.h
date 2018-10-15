@@ -24,6 +24,8 @@ SOFTWARE.
 
 #pragma once
 
+#include <util/string.h>
+
 namespace thc {
 namespace core {
 namespace compiler {
@@ -41,6 +43,7 @@ class Compiler {
 private:
 
 public:
+	static utils::String PreprocessorStage(const utils::String& data);
 
 };
 

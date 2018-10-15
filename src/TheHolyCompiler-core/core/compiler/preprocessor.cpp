@@ -22,3 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include "compiler.h"
+
+namespace thc {
+namespace core {
+namespace compiler {
+
+using namespace utils;
+
+String Compiler::PreprocessorStage(const String& data) {
+
+}
+
+}
+}
+}
