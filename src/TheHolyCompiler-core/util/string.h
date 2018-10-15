@@ -29,6 +29,7 @@ SOFTWARE.
 namespace thc {
 namespace utils {
 
+class String;
 
 using StringList = std::vector<String>;
 
