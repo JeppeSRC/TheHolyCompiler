@@ -1,4 +1,5 @@
 workspace("TheHolyCompiler")
+    startproject "TheHolyCompiler"
     location "../solution/"
     cppdialect "c++14"
 
