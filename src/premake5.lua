@@ -93,10 +93,16 @@ project("TheHolyCompiler")
 
     dependson "TheHolyCompiler-core"
 
+    links "TheHolyCompiler-core"
+
     files {
         "TheHolyCompiler/**.h",
         "TheHolyCompiler/**.cpp",
         "TheHolyCompiler/**.c"
+    }
+
+    includedirs {
+        "TheHolyCompiler-core/"
     }
 
 
