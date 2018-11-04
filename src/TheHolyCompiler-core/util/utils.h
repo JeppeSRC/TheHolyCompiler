@@ -24,12 +24,16 @@ SOFTWARE.
 
 #pragma once
 
+#include "string.h"
+
 namespace thc {
 namespace utils {
 
 class Utils {
 public:
 	static void CopyString(char*& dst, const char* const src);
+	
+	static String ReadFile(const String& filename);
 
 };
 
