@@ -39,11 +39,40 @@ public:
 	static unsigned int GetCount();
 };
 
+class PreProcessor {
+private:
+	//#include stuff
+
+
+	void ProcessInclude(String& code);
+
+	void ProcessDefine(String& code);
+
+	void ProcessUndef(String& code);
+
+	void ProcessIf(String& code);
+
+	void ProcessElse(String& code);
+
+	void ProcessElif(String& code);
+
+	void ProcessDefined(String& code);
+
+	void ProcessIfdef(String& code);
+
+	void ProcessMessage(String& code);
+
+	void ProcessError(String& code);
+
+public:
+	utils::String Run(const utils::String& code);
+};
+
 class Compiler {
 private:
 
 public:
-	static utils::String PreprocessorStage(const utils::String& data);
+
 
 };
 

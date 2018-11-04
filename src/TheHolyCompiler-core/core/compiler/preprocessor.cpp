@@ -30,9 +30,11 @@ namespace compiler {
 
 using namespace utils;
 
-String Compiler::PreprocessorStage(const String& data) {
+
+String PreProcessor::Run(const String& code) {
 
 }
+
 
 }
 }
