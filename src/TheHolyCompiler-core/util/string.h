@@ -24,14 +24,14 @@ SOFTWARE.
 #pragma once
 
 #include <memory>
-#include <vector>
+#include "list.h"
 
 namespace thc {
 namespace utils {
 
 class String;
 
-using StringList = std::vector<String>;
+using StringList = List<String>;
 
 class String {
 public:

@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#include "log.h"
+#include "thc_assert.h"
 
 #define THC_PREALLOC_COUNT 128
 

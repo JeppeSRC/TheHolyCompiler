@@ -24,37 +24,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <Windows.h>
-#include "string.h"
-
-namespace thc {
-namespace utils {
-
-enum class LogLevel {
-	Debug,
-	Info,
-	Warning,
-	Error
-};
-
-typedef void(*LogCallback)(LogLevel, const String& message);
-
-class Log {
-private:
-	static HANDLE logHandle;
-
-	static LogCallback logCallback;
-
-	static void LogInternal(LogLevel level, const char* const message, va_list list);
-public:
-	static void Info(const char* const message...);
-	static void Debug(const char* const message...);
-	static void Warning(const char* const message...);
-	static void Error(const char* const message...);
-
-	static void SetOutputHandle(HANDLE logHandle);
-	static void SetLogCallback(LogCallback logCallback);
-};
-
-}
-}
+#ifdef THC_DEBUG
+#define THC_ASSERT(x) if (!(x)) { printf("Assertion Failed (%s) -> File: \"%s\" Function: \"%s\" Line: %u\n", #x, __FILE__, __FUNCSIG__, __LINE__); *((int*)0x0) = 0; }
+#else
+#define THC_ASSERT(x) 
+#endif

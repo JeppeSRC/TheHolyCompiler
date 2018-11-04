@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 #include "string.h"
-#include "log.h"
+#include "thc_assert.h"
 
 namespace thc {
 namespace utils {
@@ -174,7 +174,7 @@ StringList String::Split(const char* const delimiters) const {
 				if (lastIndex == i-1 || lastIndex == i) {
 					lastIndex++;
 				} else {
-					list.push_back(std::move(SubString(lastIndex, i-1)));
+					list.Add(std::move(SubString(lastIndex, i-1)));
 					lastIndex = i+1;
 				}
 				break;
@@ -183,7 +183,7 @@ StringList String::Split(const char* const delimiters) const {
 	}
 
 	if (lastIndex < length) {
-		list.push_back(std::move(SubString(lastIndex, length-1)));
+		list.Add(std::move(SubString(lastIndex, length-1)));
 	}
 
 	return std::move(list);
