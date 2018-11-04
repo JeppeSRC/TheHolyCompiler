@@ -57,7 +57,9 @@ String::String(const String* string) : length(string->length) {
 	memcpy(str, string->str, length+1);
 }
 
-String::String(String&& string) : str(str), length(length) {
+String::String(String&& string)  {
+	str = string.str;
+	length = string.length;
 	string.str = nullptr;
 	string.length = 0;
 }
@@ -69,7 +71,9 @@ String::~String() {
 String& String::operator=(const String& string) {
 	if (this != &string) {
 		delete[] str;
-		String::String(string);
+		str = new char[string.length+1];
+		length = string.length;
+		memcpy(str, string.str, length+1);
 	}
 
 	return *this;
@@ -78,7 +82,11 @@ String& String::operator=(const String& string) {
 String& String::operator=(String&& string) {
 	if (this != &string) {
 		delete[] str;
-		String::String(string);
+		str = string.str;
+		length = string.length;
+
+		string.str = nullptr;
+		string.length = 0;
 	}
 
 	return *this;
