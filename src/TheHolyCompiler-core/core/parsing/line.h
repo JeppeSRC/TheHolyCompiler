@@ -27,7 +27,7 @@ SOFTWARE.
 
 namespace thc {
 namespace core {
-namespace compiler {
+namespace parsing {
 
 class Line {
 public:
