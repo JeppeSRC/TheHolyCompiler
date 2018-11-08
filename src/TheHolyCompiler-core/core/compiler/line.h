@@ -35,7 +35,6 @@ public:
 	utils::String sourceFile;
 	unsigned int lineNumber;
 
-
 public:
 	Line();
 	Line(const utils::String& string, const utils::String& file, unsigned int line);
@@ -44,7 +43,6 @@ public:
 
 	Line& operator=(const Line& other);
 	Line& operator=(Line&& other);
-
 
 public:
 	static utils::String ToString(const utils::List<Line>& lines);
