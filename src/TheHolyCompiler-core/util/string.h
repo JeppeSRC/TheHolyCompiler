@@ -31,8 +31,6 @@ namespace utils {
 
 class String;
 
-using StringList = List<String>;
-
 class String {
 public:
 	char* str;
@@ -66,8 +64,8 @@ public:
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
 
-	StringList Split(const String& delimiters) const;
-	StringList Split(const char* const delimiters) const;
+	List<String> Split(const String& delimiters) const;
+	List<String> Split(const char* const delimiters) const;
 
 	char& operator[](size_t index);
 	char operator[](size_t index) const;

@@ -157,12 +157,12 @@ String String::SubString(const char* const start, const char* const end) const {
 	return std::move(SubString(Find(start), Find(end)));
 }
 
-StringList String::Split(const String& delimiters) const {
+List<String> String::Split(const String& delimiters) const {
 	return std::move(Split(delimiters.str));
 }
 
-StringList String::Split(const char* const delimiters) const {
-	StringList list;
+List<String> String::Split(const char* const delimiters) const {
+	List<String> list;
 
 	size_t numDelimiters = strlen(delimiters);
 
