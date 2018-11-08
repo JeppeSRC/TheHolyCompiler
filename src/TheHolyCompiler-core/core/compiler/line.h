@@ -45,7 +45,9 @@ public:
 	Line& operator=(const Line& other);
 	Line& operator=(Line&& other);
 
+
 public:
+	static utils::String ToString(const utils::List<Line>& lines);
 	static utils::List<Line> GetLinesFromString(const utils::String& string, const utils::String& file);
 	static utils::List<Line> GetLinesFromFile(const utils::String& fileName);
 };

@@ -83,6 +83,16 @@ List<Line> Line::GetLinesFromFile(const String& fileName) {
 	return GetLinesFromString(string, fileName);
 }
 
+String Line::ToString(const List<Line>& lines) {
+	String string;
+
+	for (size_t i = 0; i < lines.GetCount(); i++) {
+		string.Append(lines[i].string + "\n");
+	}
+
+	return string;
+}
+
 }
 }
 }
