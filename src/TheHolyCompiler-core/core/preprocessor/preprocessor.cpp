@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <core/preprocessor/preprocessor.h>
 #include <core/parsing/line.h>
+#include <util/utils.h>
 
 namespace thc {
 namespace core {

@@ -31,7 +31,6 @@ namespace thc {
 namespace core {
 namespace preprocessor {
 
-
 class PreProcessor {
 private:
 	utils::String code;
@@ -66,8 +65,6 @@ private:
 		CodeUnit& operator=(const CodeUnit& other);
 		CodeUnit& operator=(CodeUnit&& other);
 	};
-
-	//#include stuff
 
 
 	void ProcessInclude(utils::String& code);
