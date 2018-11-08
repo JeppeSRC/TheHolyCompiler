@@ -174,7 +174,7 @@ List<String> String::Split(const char* const delimiters) const {
 				if (lastIndex == i-1 || lastIndex == i) {
 					lastIndex++;
 				} else {
-					list.Add(std::move(SubString(lastIndex, i-1)));
+					list.Add(SubString(lastIndex, i-1));
 					lastIndex = i+1;
 				}
 				break;
@@ -183,10 +183,10 @@ List<String> String::Split(const char* const delimiters) const {
 	}
 
 	if (lastIndex < length) {
-		list.Add(std::move(SubString(lastIndex, length-1)));
+		list.Add(SubString(lastIndex, length-1));
 	}
 
-	return std::move(list);
+	return list;
 }
 
 char& String::operator[](size_t index) {
