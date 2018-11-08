@@ -145,20 +145,20 @@ String String::SubString(size_t start, size_t end) const {
 
 	THC_ASSERT(start + len < length);
 
-	return std::move(String(str+start, len));
+	return String(str+start, len);
 }
 
 String String::SubString(const String& start, const String& end) const {
-	return std::move(SubString(start.str, end.str));
+	return SubString(start.str, end.str);
 }
 
 String String::SubString(const char* const start, const char* const end) const {
 	THC_ASSERT(start != nullptr && end != nullptr);
-	return std::move(SubString(Find(start), Find(end)));
+	return SubString(Find(start), Find(end));
 }
 
 List<String> String::Split(const String& delimiters) const {
-	return std::move(Split(delimiters.str));
+	return Split(delimiters.str);
 }
 
 List<String> String::Split(const char* const delimiters) const {
