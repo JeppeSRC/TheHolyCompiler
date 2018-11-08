@@ -69,6 +69,9 @@ public:
 
 	char& operator[](size_t index);
 	char operator[](size_t index) const;
+
+	String operator+(const String& string) const;
+	String operator+(const char* const string) const;
 };
 
 }

@@ -199,5 +199,17 @@ char String::operator[](size_t index) const {
 	return str[index];
 }
 
+String String::operator+(const String& string) const {
+	return operator+(string.str);
+}
+
+String String::operator+(const char* const string) const {
+	String tmp(this);
+
+	tmp.Append(string);
+
+	return tmp;
+}
+
 }
 }
