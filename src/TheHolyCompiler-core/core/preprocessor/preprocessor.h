@@ -25,22 +25,12 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <util/utils.h>
-#include <util/list.h>
 #include <core/parsing/line.h>
 
 namespace thc {
 namespace core {
-namespace compiler {
+namespace preprocessor {
 
-class IDManager {
-private:
-	static unsigned int count;
-
-public:
-	static unsigned int GetNewId();
-	static unsigned int GetCount();
-};
 
 class PreProcessor {
 private:
@@ -108,14 +98,6 @@ private:
 public:
 	static utils::String Run(const utils::String& code, const utils::String& fileName);
 	static utils::String Run(const utils::String& fileName);
-
-};
-
-class Compiler {
-private:
-
-public:
-
 
 };
 
