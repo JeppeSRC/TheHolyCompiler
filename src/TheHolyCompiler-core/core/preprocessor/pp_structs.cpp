@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <core/compiler/compiler.h>
+#include <core/preprocessor/preprocessor.h>
 
 namespace thc {
 namespace core {
-namespace compiler {
+namespace preprocessor {
 
 using namespace utils;
 
