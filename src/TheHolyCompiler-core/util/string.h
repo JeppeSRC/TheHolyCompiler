@@ -58,6 +58,14 @@ public:
 	size_t Find(const String& string) const;
 	size_t Find(const char* const string) const;
 
+	//Tests if the string starts with string
+	bool StartsWith(const String& string) const;
+	bool StartsWith(const char* const string) const;
+
+	//Tests if the string ends with string
+	bool EndsWith(const String& string) const;
+	bool EndsWith(const char* const string) const;
+
 	//Creates a new String from the indexes.
 	//both start and end is inclusive
 	String SubString(size_t start, size_t end) const;

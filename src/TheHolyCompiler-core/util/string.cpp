@@ -137,6 +137,42 @@ size_t String::Find(const char* const string) const {
 	return ~0;
 }
 
+bool String::StartsWith(const String& string) const {
+	return StartsWith(string.str);
+}
+
+bool String::StartsWith(const char* const string) const {
+	THC_ASSERT(string != nullptr);
+	size_t len = strlen(string);
+
+	if (len > length) return false;
+
+	for (size_t i = 0; i < len; i++) {
+		if (str[i] != string[i]) return false;
+	}
+
+	return true;
+}
+
+bool String::EndsWith(const String& string) const {
+	return EndsWith(string.str);
+}
+
+bool String::EndsWith(const char* const string) const {
+	THC_ASSERT(string != nullptr);
+	size_t len = strlen(string);
+
+	if (len > length) return false;
+
+	size_t offset = length - len;
+
+	for (size_t i = 0; i < len; i++) {
+		if (str[offset + i] != string[i]) return false;
+	}
+
+	return true;
+}
+
 String String::SubString(size_t start, size_t end) const {
 	THC_ASSERT(start != ~0 && end != ~0);
 	THC_ASSERT(end >= start);
