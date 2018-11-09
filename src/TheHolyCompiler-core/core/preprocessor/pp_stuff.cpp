@@ -38,10 +38,10 @@ String PreProcessor::FindFile(const String& fileName) {
 		if (path.EndsWith("/")) {
 			path.Append(fileName);
 		} else {
-			path.Append("/").Append(string);
+			path.Append("/").Append(fileName);
 		}
 
-		FILE* f = fopen(path, "rb");
+		FILE* f = fopen(path.str, "rb");
 
 		if (!f) {
 			continue;
