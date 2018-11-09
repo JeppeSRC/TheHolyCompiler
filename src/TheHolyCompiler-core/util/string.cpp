@@ -247,5 +247,22 @@ String String::operator+(const char* const string) const {
 	return tmp;
 }
 
+bool String::operator==(const String& string) const {
+	return operator==(string.str);
+}
+
+bool String::operator==(const char* const string) const {
+	THC_ASSERT(string != nullptr);
+	size_t len = strlen(string);
+
+	if (len != length) return false;
+
+	for (size_t i = 0; i < len; i++) {
+		if (str[i] != string[i]) return false;
+	}
+
+	return true;
+}
+
 }
 }
