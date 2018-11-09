@@ -32,10 +32,7 @@ namespace core {
 namespace preprocessor {
 
 class PreProcessor {
-private:
-	utils::String code;
-	utils::String fileName;
-
+public:
 	struct Define {
 		utils::String name;
 		utils::String value;
@@ -66,6 +63,15 @@ private:
 		CodeUnit& operator=(CodeUnit&& other);
 	};
 
+private:
+	static utils::List<utils::String> includeDirectories;
+	static utils::List<Define> defines;
+
+	static utils::String FindFile(const utils::String& fileName);
+
+private:
+	utils::String code;
+	utils::String fileName;
 
 	void ProcessInclude(utils::String& code);
 
@@ -74,10 +80,6 @@ private:
 	void ProcessUndef(utils::String& code);
 
 	void ProcessIf(utils::String& code);
-
-	void ProcessElse(utils::String& code);
-
-	void ProcessElif(utils::String& code);
 
 	void ProcessDefined(utils::String& code);
 
@@ -95,6 +97,12 @@ private:
 public:
 	static utils::String Run(const utils::String& code, const utils::String& fileName);
 	static utils::String Run(const utils::String& fileName);
+
+	static inline void SetIncludeDirectories(const utils::List<utils::String>& dirs) { includeDirectories = dirs; }
+	static inline void SetDefinitions(const utils::List<Define>& defs) { defines = defs; }
+
+	static inline void AddIncludeDirectory(const utils::String& path) { includeDirectories.Add(path); }
+	static inline void AddDefine(const Define& def) { defines.Add(def); }
 
 };
 
