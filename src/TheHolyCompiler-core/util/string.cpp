@@ -140,6 +140,23 @@ String& String::Remove(size_t start, size_t end) {
 	return *this;
 }
 
+size_t String::Count(const String& string) const {
+	return Count(string.str);
+}
+
+size_t String::Count(const char* const string) const {
+	THC_ASSERT(string != nullptr);
+	
+	size_t index = 0;
+	size_t count = 0;
+
+	while ((index = Find(string, index+1)) != ~0) {
+		count++;
+	}
+	
+	return count;
+}
+
 size_t String::Find(const String& string, size_t offset) const {
 	return Find(string.str, offset);
 }
