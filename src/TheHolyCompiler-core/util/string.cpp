@@ -112,15 +112,43 @@ String& String::Append(const char* const string) {
 	return *this;
 }
 
-size_t String::Find(const String& string) const {
-	return Find(string.str);
+String& String::Remove(const String& start, const String& end) {
+	return Remove(Find(start), Find(end)+end.length-1);
 }
 
-size_t String::Find(const char* const string) const {
+String& String::Remove(const char* const start, const char* const end) {
+	return Remove(Find(start), Find(end)+strlen(end)-1);
+}
+
+String& String::Remove(size_t start, size_t end) {
+	THC_ASSERT(start <= end);
+	THC_ASSERT(end < length);
+
+	char* tmp = str;
+
+	size_t remLen = end - start + 1;
+	size_t newLen = length - remLen;
+
+	str = new char[newLen+1];
+
+	memcpy(str, tmp, start);
+	memcpy(str+start, tmp+end+1, length - (start + remLen) + 1);
+
+	delete[] tmp;
+	length = newLen;
+
+	return *this;
+}
+
+size_t String::Find(const String& string, size_t offset) const {
+	return Find(string.str, offset);
+}
+
+size_t String::Find(const char* const string, size_t offset) const {
 	THC_ASSERT(string != nullptr);
 	size_t len = strlen(string);
 
-	for (size_t i = 0; i < length - len; i++) {
+	for (size_t i = offset; i < length - len; i++) {
 		bool match = true;
 		for (size_t j = 0; j < len; j++) {
 			if (str[i + j] != string[j]) {

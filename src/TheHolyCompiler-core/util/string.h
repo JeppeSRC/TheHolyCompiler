@@ -54,9 +54,13 @@ public:
 	String& Append(const String& string);
 	String& Append(const char* const string);
 
+	String& Remove(const String& start, const String& end);
+	String& Remove(const char* const start, const char* const end);
+	String& Remove(size_t start, size_t end);
+
 	//Finds the index of the string, if it exist
-	size_t Find(const String& string) const;
-	size_t Find(const char* const string) const;
+	size_t Find(const String& string, size_t offset = 0) const;
+	size_t Find(const char* const string, size_t offset = 0) const;
 
 	//Tests if the string starts with string
 	bool StartsWith(const String& string) const;
