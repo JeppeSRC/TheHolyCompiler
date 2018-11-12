@@ -119,7 +119,7 @@ void Log::CompilerWarning(const char* const filename, int line, const char* cons
 	va_end(list);
 }
 
-void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
+void Log::CompilerError(const char* const filename, int line, const char* const message...) {
 	char buf[2048] = { 0 };
 
 	sprintf(buf, "%s:%d -> %s", filename, line, message);
