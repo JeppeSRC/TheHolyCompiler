@@ -37,7 +37,7 @@ HANDLE Log::logHandle = INVALID_HANDLE_VALUE;
 LogCallback Log::logCallback = nullptr;
 
 void Log::LogInternal(LogLevel level, const char* const message, va_list list) {
-	if (logHandle) {
+	if (logHandle != INVALID_HANDLE_VALUE) {
 		CONSOLE_SCREEN_BUFFER_INFO info;
 
 		GetConsoleScreenBufferInfo(logHandle, &info);
@@ -105,6 +105,28 @@ void Log::Error(const char* const message...) {
 	va_list list;
 	va_start(list, message);
 	LogInternal(LogLevel::Error, message, list);
+	va_end(list);
+}
+
+void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
+	char buf[2048] = { 0 };
+
+	sprintf(buf, "%s:%d -> %s", filename, line, message);
+	
+	va_list list;
+	va_start(list, message);
+	LogInternal(LogLevel::Warning, buf, list);
+	va_end(list);
+}
+
+void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
+	char buf[2048] = { 0 };
+
+	sprintf(buf, "%s:%d -> %s", filename, line, message);
+
+	va_list list;
+	va_start(list, message);
+	LogInternal(LogLevel::Error, buf, list);
 	va_end(list);
 }
 
