@@ -78,19 +78,19 @@ private:
 
 	void ProcessInclude(utils::List<parsing::Line>& lines);
 
-	void ProcessDefine(utils::String& code);
+	void ProcessDefine(utils::List<parsing::Line>& lines);
 
-	void ProcessUndef(utils::String& code);
+	void ProcessUndef(utils::List<parsing::Line>& lines);
 
-	void ProcessIf(utils::String& code);
+	void ProcessIf(utils::List<parsing::Line>& lines);
 
-	void ProcessDefined(utils::String& code);
+	void ProcessDefined(utils::List<parsing::Line>& lines);
 
-	void ProcessIfdef(utils::String& code);
+	void ProcessIfdef(utils::List<parsing::Line>& lines);
 
-	void ProcessMessage(utils::String& code);
+	void ProcessMessage(utils::List<parsing::Line>& lines);
 
-	void ProcessError(utils::String& code);
+	void ProcessError(utils::List<parsing::Line>& lines);
 
 	CodeUnit Process();
 
