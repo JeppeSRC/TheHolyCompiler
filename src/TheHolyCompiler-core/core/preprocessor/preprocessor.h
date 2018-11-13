@@ -76,7 +76,7 @@ private:
 
 	void RemoveComments(utils::String& code);
 
-	void ProcessInclude(utils::String& code);
+	void ProcessInclude(utils::List<parsing::Line>& lines);
 
 	void ProcessDefine(utils::String& code);
 

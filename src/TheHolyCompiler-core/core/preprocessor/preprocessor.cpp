@@ -49,35 +49,35 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(String& code) {
+void PreProcessor::ProcessInclude(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessDefine(String& code) {
+void PreProcessor::ProcessDefine(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessUndef(String& code) {
+void PreProcessor::ProcessUndef(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessIf(String& code) {
+void PreProcessor::ProcessIf(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessDefined(String& code) {
+void PreProcessor::ProcessDefined(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessIfdef(String& code) {
+void PreProcessor::ProcessIfdef(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessMessage(String& code) {
+void PreProcessor::ProcessMessage(List<parsing::Line>& lines) {
 
 }
 
-void PreProcessor::ProcessError(String& code) {
+void PreProcessor::ProcessError(List<parsing::Line>& lines) {
 
 }
 
