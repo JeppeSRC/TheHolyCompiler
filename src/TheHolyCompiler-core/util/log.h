@@ -61,7 +61,7 @@ public:
 	static void SetOutputHandle(HANDLE logHandle);
 	static void SetLogCallback(LogCallback logCallback);
 	
-	static void EnableWarnings();
+	static void DisableWarnings();
 	static void EnableStopOnError();
 };
 
