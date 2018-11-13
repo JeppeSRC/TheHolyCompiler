@@ -68,10 +68,13 @@ private:
 	static utils::List<Define> defines;
 
 	static utils::String FindFile(const utils::String& fileName);
+	static bool IsDefined(const utils::String& name);
 
 private:
 	utils::String code;
 	utils::String fileName;
+
+	void RemoveComments(utils::String& code);
 
 	void ProcessInclude(utils::String& code);
 

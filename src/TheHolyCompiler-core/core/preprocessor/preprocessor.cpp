@@ -25,6 +25,7 @@ SOFTWARE.
 #include <core/preprocessor/preprocessor.h>
 #include <core/parsing/line.h>
 #include <util/utils.h>
+#include <util/log.h>
 
 namespace thc {
 namespace core {
@@ -33,6 +34,20 @@ namespace preprocessor {
 using namespace utils;
 using namespace parsing;
 
+void PreProcessor::RemoveComments(String& code) {
+	size_t index = 0;
+
+	while ((index = code.Find("/*")) != ~0) {
+		size_t next = code.Find("*/", index);
+
+		if (next != ~0) {
+			code.Remove(index, next+1);
+		} else {
+			//TODO: specify line
+			Log::CompilerError(fileName.str, -1, "Multiline comment is missing end");
+		}
+	}
+}
 
 void PreProcessor::ProcessInclude(String& code) {
 
@@ -71,12 +86,17 @@ PreProcessor::CodeUnit PreProcessor::Process() {
 
 	List<Line> lines = Line::GetLinesFromString(code, fileName);
 
+	for (size_t i = 0; i < lines.GetCount(); i++) {
+		const Line& line = lines[i];
 
+	}
 
 	return d;
 }
 
-PreProcessor::PreProcessor(const String& code, const String& fileName) : code(code), fileName(fileName) { }
+PreProcessor::PreProcessor(const String& code, const String& fileName) : code(code), fileName(fileName) {
+	RemoveComments(this->code);
+}
 
 String PreProcessor::Run(const String& code, const String& fileName) {
 	PreProcessor pp(code, fileName);
