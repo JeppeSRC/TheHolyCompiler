@@ -41,6 +41,9 @@ typedef void(*LogCallback)(LogLevel, const String& message);
 
 class Log {
 private:
+	static bool warnings;
+	static bool stopOnError;
+private:
 	static HANDLE logHandle;
 
 	static LogCallback logCallback;
@@ -57,6 +60,9 @@ public:
 
 	static void SetOutputHandle(HANDLE logHandle);
 	static void SetLogCallback(LogCallback logCallback);
+	
+	static void EnableWarnings();
+	static void EnableStopOnError();
 };
 
 }

@@ -33,6 +33,9 @@ SOFTWARE.
 namespace thc {
 namespace utils {
 
+bool Log::warnings = true;
+bool Log::stopOnError = false;
+
 HANDLE Log::logHandle = INVALID_HANDLE_VALUE;
 LogCallback Log::logCallback = nullptr;
 
@@ -109,6 +112,7 @@ void Log::Error(const char* const message...) {
 }
 
 void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
+	if (!warnings) return;
 	char buf[2048] = { 0 };
 
 	sprintf(buf, "%s:%d -> %s", filename, line, message);
@@ -128,6 +132,10 @@ void Log::CompilerError(const char* const filename, int line, const char* const 
 	va_start(list, message);
 	LogInternal(LogLevel::Error, buf, list);
 	va_end(list);
+
+	if (stopOnError) {
+		//TODO: handle error
+	}
 }
 
 void Log::SetOutputHandle(HANDLE logHandle) {
@@ -137,6 +145,14 @@ void Log::SetOutputHandle(HANDLE logHandle) {
 
 void Log::SetLogCallback(LogCallback logCallback) {
 	Log::logCallback = logCallback;
+}
+
+void Log::DisableWarnings() {
+	warnings = false;
+}
+
+void Log::EnableStopOnError() {
+	stopOnError = true;
 }
 
 }
