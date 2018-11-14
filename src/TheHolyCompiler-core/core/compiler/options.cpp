@@ -22,53 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#pragma once
-
-#include <util/string.h>
-#include <util/utils.h>
-#include <util/list.h>
-#include <core/compiler/parsing/line.h>
+#include "compiler.h"
 
 namespace thc {
 namespace core {
 namespace compiler {
 
-class IDManager {
-private:
-	static unsigned int count;
+using namespace utils;
 
-public:
-	static unsigned int GetNewId();
-	static unsigned int GetCount();
-};
+bool CompilerOptions::warningsMessages = true;
+bool CompilerOptions::debugMessages = false;
+bool CompilerOptions::stopOnError = false;
 
-class CompilerOptions {
-private:
-	static bool warningsMessages;
-	static bool debugMessages;
-	static bool stopOnError;
+List<String> CompilerOptions::includeDirectories;
+List<String> CompilerOptions::defines;
 
-	static utils::List<utils::String> includeDirectories;
-	static utils::List<utils::String> defines;
+void CompilerOptions::ParseOptions(const String& args) {
 
-public:
-	static void ParseOptions(const utils::String& args);
-
-	inline static bool WarningMessages() { return warningsMessages; }
-	inline static bool DebugMessages() { return debugMessages; }
-	inline static bool StopOnError() { return stopOnError; }
-
-	inline static const utils::List<utils::String>& IncludeDirectories() { return includeDirectories; }
-	inline static const utils::List<utils::String>& PredefinedDefines() { return defines; }
-};
-
-class Compiler {
-private:
-
-public:
-
-
-};
+}
 
 }
 }
