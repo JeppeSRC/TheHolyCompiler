@@ -33,7 +33,7 @@ using namespace utils;
 
 Line::Line() : string(""), sourceFile(""), lineNumber(0) { }
 
-Line::Line(const String& string, const String& file, unsigned int line) : string(string), sourceFile(file), lineNumber(line) { }
+Line::Line(const String& string, const String& file, uint32 line) : string(string), sourceFile(file), lineNumber(line) { }
 
 Line::Line(const Line& other) {
 	string = other.string;
@@ -71,7 +71,7 @@ List<Line> Line::GetLinesFromString(const String& string, const String& file) {
 	List<String> lines = string.Split("\n");
 	List<Line> res(lines.GetCount());
 
-	for (size_t i = 0; i < lines.GetCount(); i++) {
+	for (uint64 i = 0; i < lines.GetCount(); i++) {
 		res.Emplace(lines[i], file, i+1);
 	}
 
@@ -86,7 +86,7 @@ List<Line> Line::GetLinesFromFile(const String& fileName) {
 String Line::ToString(const List<Line>& lines) {
 	String string;
 
-	for (size_t i = 0; i < lines.GetCount(); i++) {
+	for (uint64 i = 0; i < lines.GetCount(); i++) {
 		string.Append(lines[i].string + "\n");
 	}
 

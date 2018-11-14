@@ -33,7 +33,7 @@ namespace preprocessor {
 using namespace utils;
 
 String PreProcessor::FindFile(const String& fileName) {
-	for (size_t i = 0; i < includeDirectories.GetCount(); i++) {
+	for (uint64 i = 0; i < includeDirectories.GetCount(); i++) {
 		String path = includeDirectories[i];
 		
 		if (path.EndsWith("/")) {
@@ -61,7 +61,7 @@ String PreProcessor::FindFile(const String& fileName) {
 }
 
 bool PreProcessor::IsDefined(const String& name) {
-	for (size_t i = 0; i < defines.GetCount(); i++) {
+	for (uint64 i = 0; i < defines.GetCount(); i++) {
 		if (defines[i].name == name) return true;
 	}
 

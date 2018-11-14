@@ -29,18 +29,18 @@ namespace thc {
 namespace core {
 namespace instruction {
 
-void InstBase::GetInstWords(unsigned int* words) const {
+void InstBase::GetInstWords(uint32* words) const {
 	words[0] = opCode | (wordCount << 16);
 }
 
-void InstUndef::GetInstWords(unsigned int* words) const {
+void InstUndef::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
 	words[2] = id;
 }
 
-void InstSizeOf::GetInstWords(unsigned int* words) const {
+void InstSizeOf::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -48,17 +48,17 @@ void InstSizeOf::GetInstWords(unsigned int* words) const {
 	words[3] = pointerId;
 }
 
-void InstSourceContinued::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(source)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstSourceContinued::GetInstWords(uint32* words) const {
+	uint64 len = strlen(source)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	InstBase::GetInstWords(words);
 	memcpy(words+1, source, len);
 }
 
-void InstSource::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(source)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstSource::GetInstWords(uint32* words) const {
+	uint64 len = strlen(source)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	InstBase::GetInstWords(words);
 	
@@ -68,17 +68,17 @@ void InstSource::GetInstWords(unsigned int* words) const {
 	memcpy(words+4, source, len);
 }
 
-void InstSourceExtension::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(extension)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstSourceExtension::GetInstWords(uint32* words) const {
+	uint64 len = strlen(extension)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	InstBase::GetInstWords(words);
 	memcpy(words+1, extension, len);
 }
 
-void InstName::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(name)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstName::GetInstWords(uint32* words) const {
+	uint64 len = strlen(name)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	words[1] = targetId;
 
@@ -86,9 +86,9 @@ void InstName::GetInstWords(unsigned int* words) const {
 	memcpy(words+2, name, len);
 }
 
-void InstMemberName::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(name)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstMemberName::GetInstWords(uint32* words) const {
+	uint64 len = strlen(name)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	words[1] = typeId;
 	words[2] = member;
@@ -97,9 +97,9 @@ void InstMemberName::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, name, len);
 }
 
-void InstString::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(string)+1;
-	wordCount += (unsigned int)((len >> 2) + (len % 4 ? 1 : 0));
+void InstString::GetInstWords(uint32* words) const {
+	uint64 len = strlen(string)+1;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 
 	words[1] = id;
 
@@ -107,7 +107,7 @@ void InstString::GetInstWords(unsigned int* words) const {
 	memcpy(words+2, string, len);
 }
 
-void InstLine::GetInstWords(unsigned int* words) const {
+void InstLine::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = fileNameId;
@@ -115,7 +115,7 @@ void InstLine::GetInstWords(unsigned int* words) const {
 	words[3] = column;
 }
 
-void InstDecorate::GetInstWords(unsigned int* words) const {
+void InstDecorate::GetInstWords(uint32* words) const {
 	wordCount += numDecorationLiterals;
 	InstBase::GetInstWords(words);
 
@@ -124,7 +124,7 @@ void InstDecorate::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, literals, numDecorationLiterals << 2);
 }
 
-void InstMemberDecorate::GetInstWords(unsigned int* words) const {
+void InstMemberDecorate::GetInstWords(uint32* words) const {
 	wordCount += numDecorationLiterals;
 	InstBase::GetInstWords(words);
 
@@ -133,13 +133,13 @@ void InstMemberDecorate::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, literals, numDecorationLiterals << 2);
 }
 
-void InstDecorationGroup::GetInstWords(unsigned int* words) const {
+void InstDecorationGroup::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
 }
 
-void InstGroupDecorate::GetInstWords(unsigned int* words) const {
+void InstGroupDecorate::GetInstWords(uint32* words) const {
 	wordCount += numTargets;
 	InstBase::GetInstWords(words);
 
@@ -147,17 +147,17 @@ void InstGroupDecorate::GetInstWords(unsigned int* words) const {
 	memcpy(words+2, targets, numTargets << 2);
 }
 
-void InstExtension::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(extension) + 1;
-	wordCount += (unsigned int)len;
+void InstExtension::GetInstWords(uint32* words) const {
+	uint64 len = strlen(extension) + 1;
+	wordCount += (uint32)len;
 	InstBase::GetInstWords(words);
 
 	memcpy(words+1, extension, len);
 }
 
-void InstExtInstImport::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(extensionSet) + 1;
-	wordCount += (unsigned int)len;
+void InstExtInstImport::GetInstWords(uint32* words) const {
+	uint64 len = strlen(extensionSet) + 1;
+	wordCount += (uint32)len;
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -165,16 +165,16 @@ void InstExtInstImport::GetInstWords(unsigned int* words) const {
 	memcpy(words+2, extensionSet, len);
 }
 
-void InstMemoryModel::GetInstWords(unsigned int* words) const {
+void InstMemoryModel::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = addressingModel;
 	words[2] = memoryModel;
 }
 
-void InstEntryPoint::GetInstWords(unsigned int* words) const {
-	size_t len = strlen(entryPointName) + 1;
-	wordCount += (unsigned int)len + inoutVariableCount;
+void InstEntryPoint::GetInstWords(uint32* words) const {
+	uint64 len = strlen(entryPointName) + 1;
+	wordCount += (uint32)len + inoutVariableCount;
 	InstBase::GetInstWords(words);
 
 	words[1] = executionModel;
@@ -182,12 +182,12 @@ void InstEntryPoint::GetInstWords(unsigned int* words) const {
 
 	memcpy(words+3, entryPointName, len);
 	
-	unsigned int offset = ((unsigned int)len >> 4) + ((unsigned int)len % 4 ? 1 : 0) + 3;
+	uint32 offset = ((uint32)len >> 4) + ((uint32)len % 4 ? 1 : 0) + 3;
 
 	memcpy(words+offset, inoutVariables, inoutVariableCount << 2);
 }
 
-void InstExecutionMode::GetInstWords(unsigned int* words) const {
+void InstExecutionMode::GetInstWords(uint32* words) const {
 	wordCount += extraOperandCount;
 	InstBase::GetInstWords(words);
 
@@ -197,13 +197,13 @@ void InstExecutionMode::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, extraOperand, extraOperandCount << 2);
 }
 
-void InstCapability::GetInstWords(unsigned int* words) const {
+void InstCapability::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = capability;
 }
 
-void InstConstant::GetInstWords(unsigned int* words) const {
+void InstConstant::GetInstWords(uint32* words) const {
 	wordCount += valueCount;
 	InstBase::GetInstWords(words);
 
@@ -217,7 +217,7 @@ void InstConstant::GetInstWords(unsigned int* words) const {
 	}
 }
 
-void InstConstantComposite::GetInstWords(unsigned int* words) const {
+void InstConstantComposite::GetInstWords(uint32* words) const {
 	wordCount += constituentCount;
 	InstBase::GetInstWords(words);
 
@@ -227,7 +227,7 @@ void InstConstantComposite::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, constituent, constituentCount << 2);
 }
 
-void InstVariable::GetInstWords(unsigned int* words) const {
+void InstVariable::GetInstWords(uint32* words) const {
 	wordCount += initializer ? 1 : 0;
 	InstBase::GetInstWords(words);
 
@@ -237,7 +237,7 @@ void InstVariable::GetInstWords(unsigned int* words) const {
 	words[4] = initializer;
 }
 
-void InstLoad::GetInstWords(unsigned int* words) const {
+void InstLoad::GetInstWords(uint32* words) const {
 	wordCount += memoryAccess ? 1 : 0;
 	InstBase::GetInstWords(words);
 
@@ -247,7 +247,7 @@ void InstLoad::GetInstWords(unsigned int* words) const {
 	words[4] = memoryAccess;
 }
 
-void InstStore::GetInstWords(unsigned int* words) const {
+void InstStore::GetInstWords(uint32* words) const {
 	wordCount += memoryAccess ? 1 : 0;
 	InstBase::GetInstWords(words);
 
@@ -256,7 +256,7 @@ void InstStore::GetInstWords(unsigned int* words) const {
 	words[3] = memoryAccess;
 }
 
-void InstCopyMemory::GetInstWords(unsigned int* words) const {
+void InstCopyMemory::GetInstWords(uint32* words) const {
 	wordCount += memoryAccess ? 1 : 0;
 	InstBase::GetInstWords(words);
 
@@ -265,7 +265,7 @@ void InstCopyMemory::GetInstWords(unsigned int* words) const {
 	words[3] = memoryAccess;
 }
 
-void InstCopyMemorySized::GetInstWords(unsigned int* words) const {
+void InstCopyMemorySized::GetInstWords(uint32* words) const {
 	wordCount += memoryAccess ? 1 : 0;
 	InstBase::GetInstWords(words);
 
@@ -275,7 +275,7 @@ void InstCopyMemorySized::GetInstWords(unsigned int* words) const {
 	words[4] = memoryAccess;
 }
 
-void InstAccessChain::GetInstWords(unsigned int* words) const {
+void InstAccessChain::GetInstWords(uint32* words) const {
 	wordCount += indexCount;
 	InstBase::GetInstWords(words);
 
@@ -286,7 +286,7 @@ void InstAccessChain::GetInstWords(unsigned int* words) const {
 	memcpy(words+4, index, indexCount << 2);
 }
 
-void InstInBoundsAccessChain::GetInstWords(unsigned int* words) const {
+void InstInBoundsAccessChain::GetInstWords(uint32* words) const {
 	wordCount += indexCount;
 	InstBase::GetInstWords(words);
 
@@ -297,7 +297,7 @@ void InstInBoundsAccessChain::GetInstWords(unsigned int* words) const {
 	memcpy(words+4, index, indexCount << 2);
 }
 
-void InstFunction::GetInstWords(unsigned int* words) const {
+void InstFunction::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -306,14 +306,14 @@ void InstFunction::GetInstWords(unsigned int* words) const {
 	words[4] = functionTypeId;
 }
 
-void InstFunctionParameter::GetInstWords(unsigned int* words) const {
+void InstFunctionParameter::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
 	words[2] = id;
 }
 
-void InstFunctionCall::GetInstWords(unsigned int* words) const {
+void InstFunctionCall::GetInstWords(uint32* words) const {
 	wordCount += argumentCount;
 	InstBase::GetInstWords(words);
 
@@ -324,7 +324,7 @@ void InstFunctionCall::GetInstWords(unsigned int* words) const {
 	memcpy(words+4, argument, argumentCount << 2);
 }
 
-void InstConvertFToU::GetInstWords(unsigned int* words) const {
+void InstConvertFToU::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -332,7 +332,7 @@ void InstConvertFToU::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstConvertFToS::GetInstWords(unsigned int* words) const {
+void InstConvertFToS::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -340,7 +340,7 @@ void InstConvertFToS::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstConvertSToF::GetInstWords(unsigned int* words) const {
+void InstConvertSToF::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -348,7 +348,7 @@ void InstConvertSToF::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstConvertUToF::GetInstWords(unsigned int* words) const {
+void InstConvertUToF::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -356,7 +356,7 @@ void InstConvertUToF::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstUConvert::GetInstWords(unsigned int* words) const {
+void InstUConvert::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -364,7 +364,7 @@ void InstUConvert::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstSConvert::GetInstWords(unsigned int* words) const {
+void InstSConvert::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -372,7 +372,7 @@ void InstSConvert::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstFConvert::GetInstWords(unsigned int* words) const {
+void InstFConvert::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -380,7 +380,7 @@ void InstFConvert::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstConvertPtrToU::GetInstWords(unsigned int* words) const {
+void InstConvertPtrToU::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -388,7 +388,7 @@ void InstConvertPtrToU::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstConvertUToPtr::GetInstWords(unsigned int* words) const {
+void InstConvertUToPtr::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -396,7 +396,7 @@ void InstConvertUToPtr::GetInstWords(unsigned int* words) const {
 	words[3] = valueId;
 }
 
-void InstVectorExtractDynamic::GetInstWords(unsigned int* words) const {
+void InstVectorExtractDynamic::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -405,7 +405,7 @@ void InstVectorExtractDynamic::GetInstWords(unsigned int* words) const {
 	words[4] = indexId;
 }
 
-void InstVectorInsertDynamic::GetInstWords(unsigned int* words) const {
+void InstVectorInsertDynamic::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -415,7 +415,7 @@ void InstVectorInsertDynamic::GetInstWords(unsigned int* words) const {
 	words[5] = indexId;
 }
 
-void InstVectorShuffle::GetInstWords(unsigned int* words) const {
+void InstVectorShuffle::GetInstWords(uint32* words) const {
 	wordCount += componentCount;
 	InstBase::GetInstWords(words);
 
@@ -427,7 +427,7 @@ void InstVectorShuffle::GetInstWords(unsigned int* words) const {
 	memcpy(words+5, component, componentCount << 2);
 }
 
-void InstCompositeConstruct::GetInstWords(unsigned int* words) const {
+void InstCompositeConstruct::GetInstWords(uint32* words) const {
 	wordCount += constituentCount;
 	InstBase::GetInstWords(words);
 
@@ -437,7 +437,7 @@ void InstCompositeConstruct::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, constituent, constituentCount << 2);
 }
 
-void InstCompositeExtract::GetInstWords(unsigned int* words) const {
+void InstCompositeExtract::GetInstWords(uint32* words) const {
 	wordCount += indexCount;
 	InstBase::GetInstWords(words);
 
@@ -448,7 +448,7 @@ void InstCompositeExtract::GetInstWords(unsigned int* words) const {
 	memcpy(words+4, index, indexCount << 2);
 }
 
-void InstCompositeInsert::GetInstWords(unsigned int* words) const {
+void InstCompositeInsert::GetInstWords(uint32* words) const {
 	wordCount += indexCount;
 	InstBase::GetInstWords(words);
 
@@ -460,7 +460,7 @@ void InstCompositeInsert::GetInstWords(unsigned int* words) const {
 	memcpy(words+5, index, indexCount << 2);
 }
 
-void InstCopyObject::GetInstWords(unsigned int* words) const {
+void InstCopyObject::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -468,7 +468,7 @@ void InstCopyObject::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstTranspose::GetInstWords(unsigned int* words) const {
+void InstTranspose::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -476,7 +476,7 @@ void InstTranspose::GetInstWords(unsigned int* words) const {
 	words[3] = matrixId;
 }
 
-void InstSNegate::GetInstWords(unsigned int* words) const {
+void InstSNegate::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -484,7 +484,7 @@ void InstSNegate::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstFNegate::GetInstWords(unsigned int* words) const {
+void InstFNegate::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -492,7 +492,7 @@ void InstFNegate::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstIAdd::GetInstWords(unsigned int* words) const {
+void InstIAdd::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -501,7 +501,7 @@ void InstIAdd::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFAdd::GetInstWords(unsigned int* words) const {
+void InstFAdd::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -510,7 +510,7 @@ void InstFAdd::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstISub::GetInstWords(unsigned int* words) const {
+void InstISub::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -519,7 +519,7 @@ void InstISub::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFSub::GetInstWords(unsigned int* words) const {
+void InstFSub::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -528,7 +528,7 @@ void InstFSub::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstIMul::GetInstWords(unsigned int* words) const {
+void InstIMul::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -537,7 +537,7 @@ void InstIMul::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFMul::GetInstWords(unsigned int* words) const {
+void InstFMul::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -546,7 +546,7 @@ void InstFMul::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstUDiv::GetInstWords(unsigned int* words) const {
+void InstUDiv::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -556,7 +556,7 @@ void InstUDiv::GetInstWords(unsigned int* words) const {
 }
 
 
-void InstSDiv::GetInstWords(unsigned int* words) const {
+void InstSDiv::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -565,7 +565,7 @@ void InstSDiv::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFDiv::GetInstWords(unsigned int* words) const {
+void InstFDiv::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -574,7 +574,7 @@ void InstFDiv::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstUMod::GetInstWords(unsigned int* words) const {
+void InstUMod::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -583,7 +583,7 @@ void InstUMod::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSRem::GetInstWords(unsigned int* words) const {
+void InstSRem::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -592,7 +592,7 @@ void InstSRem::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSMod::GetInstWords(unsigned int* words) const {
+void InstSMod::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -601,7 +601,7 @@ void InstSMod::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFRem::GetInstWords(unsigned int* words) const {
+void InstFRem::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -610,7 +610,7 @@ void InstFRem::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFMod::GetInstWords(unsigned int* words) const {
+void InstFMod::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -619,7 +619,7 @@ void InstFMod::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstVectorTimesScalar::GetInstWords(unsigned int* words) const {
+void InstVectorTimesScalar::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -628,7 +628,7 @@ void InstVectorTimesScalar::GetInstWords(unsigned int* words) const {
 	words[4] = scalarId;
 }
 
-void InstMatrixTimesScalar::GetInstWords(unsigned int* words) const {
+void InstMatrixTimesScalar::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -637,7 +637,7 @@ void InstMatrixTimesScalar::GetInstWords(unsigned int* words) const {
 	words[4] = scalarId;
 }
 
-void InstVectorTimesMatrix::GetInstWords(unsigned int* words) const {
+void InstVectorTimesMatrix::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -646,7 +646,7 @@ void InstVectorTimesMatrix::GetInstWords(unsigned int* words) const {
 	words[4] = matrixId;
 }
 
-void InstMatrixTimesVector::GetInstWords(unsigned int* words) const {
+void InstMatrixTimesVector::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -655,7 +655,7 @@ void InstMatrixTimesVector::GetInstWords(unsigned int* words) const {
 	words[4] = vectorId;
 }
 
-void InstMatrixTimesMatrix::GetInstWords(unsigned int* words) const {
+void InstMatrixTimesMatrix::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -664,7 +664,7 @@ void InstMatrixTimesMatrix::GetInstWords(unsigned int* words) const {
 	words[4] = matrix2Id;
 }
 
-void InstOuterProduct::GetInstWords(unsigned int* words) const {
+void InstOuterProduct::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -673,7 +673,7 @@ void InstOuterProduct::GetInstWords(unsigned int* words) const {
 	words[4] = vector2Id;
 }
 
-void InstDot::GetInstWords(unsigned int* words) const {
+void InstDot::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -683,7 +683,7 @@ void InstDot::GetInstWords(unsigned int* words) const {
 }
 
 
-void InstIAddCarry::GetInstWords(unsigned int* words) const {
+void InstIAddCarry::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -692,7 +692,7 @@ void InstIAddCarry::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstISubBorrow::GetInstWords(unsigned int* words) const {
+void InstISubBorrow::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -701,7 +701,7 @@ void InstISubBorrow::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstUMulExtended::GetInstWords(unsigned int* words) const {
+void InstUMulExtended::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -710,7 +710,7 @@ void InstUMulExtended::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSMulExtended::GetInstWords(unsigned int* words) const {
+void InstSMulExtended::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -719,7 +719,7 @@ void InstSMulExtended::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstShiftRightLogical::GetInstWords(unsigned int* words) const {
+void InstShiftRightLogical::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -728,7 +728,7 @@ void InstShiftRightLogical::GetInstWords(unsigned int* words) const {
 	words[4] = shiftId;
 }
 
-void InstShiftRightArithmetic::GetInstWords(unsigned int* words) const {
+void InstShiftRightArithmetic::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -737,7 +737,7 @@ void InstShiftRightArithmetic::GetInstWords(unsigned int* words) const {
 	words[4] = shiftId;
 }
 
-void InstShiftLeftLogical::GetInstWords(unsigned int* words) const {
+void InstShiftLeftLogical::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -746,7 +746,7 @@ void InstShiftLeftLogical::GetInstWords(unsigned int* words) const {
 	words[4] = shiftId;
 }
 
-void InstBitwiseOr::GetInstWords(unsigned int* words) const {
+void InstBitwiseOr::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -755,7 +755,7 @@ void InstBitwiseOr::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstBitwiseXor::GetInstWords(unsigned int* words) const {
+void InstBitwiseXor::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -764,7 +764,7 @@ void InstBitwiseXor::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstBitwiseAnd::GetInstWords(unsigned int* words) const {
+void InstBitwiseAnd::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -773,7 +773,7 @@ void InstBitwiseAnd::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstNot::GetInstWords(unsigned int* words) const {
+void InstNot::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -781,7 +781,7 @@ void InstNot::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstBitReverse::GetInstWords(unsigned int* words) const {
+void InstBitReverse::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -789,7 +789,7 @@ void InstBitReverse::GetInstWords(unsigned int* words) const {
 	words[3] = operand1Id;
 }
 
-void InstAny::GetInstWords(unsigned int* words) const {
+void InstAny::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -797,7 +797,7 @@ void InstAny::GetInstWords(unsigned int* words) const {
 	words[3] = vectorId;
 }
 
-void InstAll::GetInstWords(unsigned int* words) const {
+void InstAll::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -805,7 +805,7 @@ void InstAll::GetInstWords(unsigned int* words) const {
 	words[3] = vectorId;
 }
 
-void InstIsNan::GetInstWords(unsigned int* words) const {
+void InstIsNan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -813,7 +813,7 @@ void InstIsNan::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstIsInf::GetInstWords(unsigned int* words) const {
+void InstIsInf::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -821,7 +821,7 @@ void InstIsInf::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstLogicalEqual::GetInstWords(unsigned int* words) const {
+void InstLogicalEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -830,7 +830,7 @@ void InstLogicalEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstLogicalNotEqual::GetInstWords(unsigned int* words) const {
+void InstLogicalNotEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -839,7 +839,7 @@ void InstLogicalNotEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstLogicalOr::GetInstWords(unsigned int* words) const {
+void InstLogicalOr::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -848,7 +848,7 @@ void InstLogicalOr::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstLogicalAnd::GetInstWords(unsigned int* words) const {
+void InstLogicalAnd::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -857,7 +857,7 @@ void InstLogicalAnd::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstLogicalNot::GetInstWords(unsigned int* words) const {
+void InstLogicalNot::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -865,7 +865,7 @@ void InstLogicalNot::GetInstWords(unsigned int* words) const {
 	words[3] = operandId;
 }
 
-void InstSelect::GetInstWords(unsigned int* words) const {
+void InstSelect::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -875,7 +875,7 @@ void InstSelect::GetInstWords(unsigned int* words) const {
 	words[5] = object2Id;
 }
 
-void InstIEqual::GetInstWords(unsigned int* words) const {
+void InstIEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -884,7 +884,7 @@ void InstIEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstINotEqual::GetInstWords(unsigned int* words) const {
+void InstINotEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -893,7 +893,7 @@ void InstINotEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstUGreaterThan::GetInstWords(unsigned int* words) const {
+void InstUGreaterThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -902,7 +902,7 @@ void InstUGreaterThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSGreaterThan::GetInstWords(unsigned int* words) const {
+void InstSGreaterThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -911,7 +911,7 @@ void InstSGreaterThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstUGreaterThanEqual::GetInstWords(unsigned int* words) const {
+void InstUGreaterThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -920,7 +920,7 @@ void InstUGreaterThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSGreaterThanEqual::GetInstWords(unsigned int* words) const {
+void InstSGreaterThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -929,7 +929,7 @@ void InstSGreaterThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstULessThan::GetInstWords(unsigned int* words) const {
+void InstULessThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -938,7 +938,7 @@ void InstULessThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSLessThan::GetInstWords(unsigned int* words) const {
+void InstSLessThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -947,7 +947,7 @@ void InstSLessThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstULessThanEqual::GetInstWords(unsigned int* words) const {
+void InstULessThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -956,7 +956,7 @@ void InstULessThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstSLessThanEqual::GetInstWords(unsigned int* words) const {
+void InstSLessThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -965,7 +965,7 @@ void InstSLessThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdEqual::GetInstWords(unsigned int* words) const {
+void InstFOrdEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -974,7 +974,7 @@ void InstFOrdEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordEqual::GetInstWords(unsigned int* words) const {
+void InstFUnordEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -983,7 +983,7 @@ void InstFUnordEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdNotEqual::GetInstWords(unsigned int* words) const {
+void InstFOrdNotEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -992,7 +992,7 @@ void InstFOrdNotEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordNotEqual::GetInstWords(unsigned int* words) const {
+void InstFUnordNotEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1001,7 +1001,7 @@ void InstFUnordNotEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdLessThan::GetInstWords(unsigned int* words) const {
+void InstFOrdLessThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1010,7 +1010,7 @@ void InstFOrdLessThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordLessThan::GetInstWords(unsigned int* words) const {
+void InstFUnordLessThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1019,7 +1019,7 @@ void InstFUnordLessThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdGreaterThan::GetInstWords(unsigned int* words) const {
+void InstFOrdGreaterThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1028,7 +1028,7 @@ void InstFOrdGreaterThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordGreaterThan::GetInstWords(unsigned int* words) const {
+void InstFUnordGreaterThan::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1037,7 +1037,7 @@ void InstFUnordGreaterThan::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdLessThanEqual::GetInstWords(unsigned int* words) const {
+void InstFOrdLessThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1046,7 +1046,7 @@ void InstFOrdLessThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordLessThanEqual::GetInstWords(unsigned int* words) const {
+void InstFUnordLessThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1055,7 +1055,7 @@ void InstFUnordLessThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFOrdGreaterThanEqual::GetInstWords(unsigned int* words) const {
+void InstFOrdGreaterThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1064,7 +1064,7 @@ void InstFOrdGreaterThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstFUnordGreaterThanEqual::GetInstWords(unsigned int* words) const {
+void InstFUnordGreaterThanEqual::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
@@ -1073,7 +1073,7 @@ void InstFUnordGreaterThanEqual::GetInstWords(unsigned int* words) const {
 	words[4] = operand2Id;
 }
 
-void InstPhi::GetInstWords(unsigned int* words) const {
+void InstPhi::GetInstWords(uint32* words) const {
 	wordCount += pairCount;
 	InstBase::GetInstWords(words);
 
@@ -1083,7 +1083,7 @@ void InstPhi::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, pairs, pairCount << 3);
 }
 
-void InstLoopMerge::GetInstWords(unsigned int* words) const {
+void InstLoopMerge::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = mergeBlockId;
@@ -1091,26 +1091,26 @@ void InstLoopMerge::GetInstWords(unsigned int* words) const {
 	words[3] = loopControl;
 }
 
-void InstSelectionMerge::GetInstWords(unsigned int* words) const {
+void InstSelectionMerge::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = mergeBlockId;
 	words[2] = selectionControl;
 }
 
-void InstLabel::GetInstWords(unsigned int* words) const {
+void InstLabel::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
 }
 
-void InstBranch::GetInstWords(unsigned int* words) const {
+void InstBranch::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = targetLabelId;
 }
 
-void InstBranchConditional::GetInstWords(unsigned int* words) const {
+void InstBranchConditional::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = conditionId;
@@ -1120,7 +1120,7 @@ void InstBranchConditional::GetInstWords(unsigned int* words) const {
 	words[5] = falseWeight;
 }
 
-void InstSwitch::GetInstWords(unsigned int* words) const {
+void InstSwitch::GetInstWords(uint32* words) const {
 	wordCount += pairCount;
 	InstBase::GetInstWords(words);
 
@@ -1130,7 +1130,7 @@ void InstSwitch::GetInstWords(unsigned int* words) const {
 	memcpy(words+3, pairs, pairCount << 3);
 }
 
-void InstReturnValue::GetInstWords(unsigned int* words) const {
+void InstReturnValue::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = valueId;

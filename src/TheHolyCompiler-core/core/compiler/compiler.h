@@ -35,11 +35,11 @@ namespace compiler {
 
 class IDManager {
 private:
-	static unsigned int count;
+	static uint32 count;
 
 public:
-	static unsigned int GetNewId();
-	static unsigned int GetCount();
+	static uint32 GetNewId();
+	static uint32 GetCount();
 };
 
 class CompilerOptions {

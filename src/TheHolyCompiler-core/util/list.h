@@ -25,6 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include "thc_assert.h"
+#include <core/thctypes.h>
 
 #define THC_PREALLOC_COUNT 128
 
@@ -34,15 +35,15 @@ namespace utils {
 template<typename T>
 class List {
 private:
-	size_t count;
+	uint64 count;
 	T* items;
 
-	size_t allocated;
+	uint64 allocated;
 
 public:
 	List() : count(0), items(nullptr), allocated(0) {}
 
-	List(size_t reserve) : count(0), allocated(reserve) {
+	List(uint64 reserve) : count(0), allocated(reserve) {
 		items = new T[reserve];
 	}
 
@@ -81,7 +82,7 @@ public:
 			allocated = other.allocated;
 			items = new T[allocated];
 			
-			for (size_t i = 0; i < count; i++) {
+			for (uint64 i = 0; i < count; i++) {
 				new (&items[i]) T(std::move(other.items[i]));
 			}
 		}
@@ -105,7 +106,7 @@ public:
 	}
 
 	/*Resizes the list*/
-	inline void Resize(size_t count) {
+	inline void Resize(uint64 count) {
 		if (count > allocated) {
 			Reserve(allocated + THC_PREALLOC_COUNT);
 		}
@@ -115,17 +116,17 @@ public:
 
 	/*Resizes the list and fills the new items with the specifed defaults. If the new sizes is large, all new items will have the default values. If the new size is smaller, all items will have the defaults*/
 	template<typename ...Args>
-	inline void Resize(size_t count, Args&&... defaults) {
+	inline void Resize(uint64 count, Args&&... defaults) {
 		if (count > allocated) {
 			Reserve(allocated + THC_PREALLOC_COUNT);
 		}
 
 		if (count > this->count) {
-			for (size_t i = this->count; i < count; i++) {
+			for (uint64 i = this->count; i < count; i++) {
 				new (items+i) T(defaults...);
 			}
 		} else {
-			for (size_t i = 0; i < count; i++) {
+			for (uint64 i = 0; i < count; i++) {
 				new (items+i) T(defaults...);
 			}
 		}
@@ -134,14 +135,14 @@ public:
 	}
 
 	/*Reserves space*/
-	inline void Reserve(size_t reserve) {
+	inline void Reserve(uint64 reserve) {
 		if (reserve <= allocated) return;
 
 		T* tmp = items;
 
 		items = new T[reserve];
 
-		for (size_t i = 0; i < count; i++) {
+		for (uint64 i = 0; i < count; i++) {
 			new (items+i) T(std::move(tmp[i]));
 		}
 
@@ -167,14 +168,14 @@ public:
 	}
 
 	/*Replaces item*/
-	inline void ReplaceAt(size_t index, const T& item) {
+	inline void ReplaceAt(uint64 index, const T& item) {
 		THC_ASSERT(index < count);
 
 		elements[index] = item;
 	}
 
 	/*Replaces item*/
-	inline void ReplaceAt(size_t index, T&& item) {
+	inline void ReplaceAt(uint64 index, T&& item) {
 		THC_ASSERT(index < count);
 
 		elements[index] = std::move(item);
@@ -192,7 +193,7 @@ public:
 
 	/*Constructs a new item in the specified location*/
 	template <typename ...Args>
-	inline void EmplaceAt(size_t index, Args&&... args) {
+	inline void EmplaceAt(uint64 index, Args&&... args) {
 		THC_ASSERT(index < count);
 
 		new (&items[index]) T(args...);
@@ -200,17 +201,17 @@ public:
 
 	/*Inserts item*/
 	template<typename ...Args>
-	inline void EmplaceInsert(size_t index, Args&&... args) {
+	inline void EmplaceInsert(uint64 index, Args&&... args) {
 		THC_ASSERT(index < count);
 
 		if (count+1 > allocated) {
 			Reserve(allocated + THC_PREALLOC_COUNT);
 		}
 
-		size_t itemsToMove = count++ - index;
+		uint64 itemsToMove = count++ - index;
 		
-		for (size_t i = 0; i < itemsToMove; i++) {
-			size_t location = count - i - 1;
+		for (uint64 i = 0; i < itemsToMove; i++) {
+			uint64 location = count - i - 1;
 			new (items+location) T(std::move(items[itemsToMove+index - i - 1]));
 		}
 
@@ -218,18 +219,18 @@ public:
 	}
 
 	/*Inserts item*/
-	inline void Insert(size_t index, const T& item) {
+	inline void Insert(uint64 index, const T& item) {
 		THC_ASSERT(index < count);
 
 		if (count+1 > allocated) {
 			Reserve(allocated + THC_PREALLOC_COUNT);
 		}
 
-		size_t itemsToMove = count++ - index;
+		uint64 itemsToMove = count++ - index;
 
 
-		for (size_t i = 0; i < itemsToMove; i++) {
-			size_t location = count - i - 1;
+		for (uint64 i = 0; i < itemsToMove; i++) {
+			uint64 location = count - i - 1;
 			new (items+location) T(std::move(items[itemsToMove+index - i - 1]));
 		}
 
@@ -237,18 +238,18 @@ public:
 	}
 
 	/*Inserts item*/
-	inline void Insert(size_t index, T&& item) {
+	inline void Insert(uint64 index, T&& item) {
 		THC_ASSERT(index < count);
 
 		if (count+1 > allocated) {
 			Reserve(allocated + THC_PREALLOC_COUNT);
 		}
 
-		size_t itemsToMove = count++ - index;
+		uint64 itemsToMove = count++ - index;
 
 
-		for (size_t i = 0; i < itemsToMove; i++) {
-			size_t location = count - i - 1;
+		for (uint64 i = 0; i < itemsToMove; i++) {
+			uint64 location = count - i - 1;
 			new (items+location) T(std::move(items[itemsToMove+index - i - 1]));
 		}
 
@@ -256,23 +257,23 @@ public:
 	}
 
 	/*Inserts items from another list*/
-	inline void InsertList(size_t index, const List& other) {
+	inline void InsertList(uint64 index, const List& other) {
 		THC_ASSERT(index <= count);
 
-		size_t totalCount = count + other.count;
+		uint64 totalCount = count + other.count;
 
 		if (totalCount > allocated) {
 			Reserve(totalCount + THC_PREALLOC_COUNT);
 		}
 
-		size_t itemsToMove = count - index;
+		uint64 itemsToMove = count - index;
 
-		for (size_t i = 0; i < itemsToMove; i++) {
-			size_t location = totalCount - i - 1;
+		for (uint64 i = 0; i < itemsToMove; i++) {
+			uint64 location = totalCount - i - 1;
 			new (items+location) T(std::move(items[i+index]));
 		}
 
-		for (size_t i = 0; i < other.count; i++) {
+		for (uint64 i = 0; i < other.count; i++) {
 			new (items+index+i) T(other[i]);
 		}
 
@@ -280,23 +281,23 @@ public:
 	}
 
 	/*Inserts items from another list*/
-	inline void InsertList(size_t index, List&& other) {
+	inline void InsertList(uint64 index, List&& other) {
 		THC_ASSERT(index <= count);
 
-		size_t totalCount = count + other.count;
+		uint64 totalCount = count + other.count;
 
 		if (totalCount > allocated) {
 			Reserve(totalCount + THC_PREALLOC_COUNT);
 		}
 
-		size_t itemsToMove = count - index;
+		uint64 itemsToMove = count - index;
 
-		for (size_t i = 0; i < itemsToMove; i++) {
-			size_t location = totalCount - i - 1;
+		for (uint64 i = 0; i < itemsToMove; i++) {
+			uint64 location = totalCount - i - 1;
 			new (items+location) T(std::move(items[i+index]));
 		}
 
-		for (size_t i = 0; i < other.count; i++) {
+		for (uint64 i = 0; i < other.count; i++) {
 			new (items+index+i) T(std::move(other.items[i]));
 		}
 
@@ -307,7 +308,7 @@ public:
 	}
 
 	/*Removes item at the specified location*/
-	inline T RemoveAt(size_t index) {
+	inline T RemoveAt(uint64 index) {
 		THC_ASSERT(index < count);
 
 		T tmp(std::move(items[index]));
@@ -325,20 +326,20 @@ public:
 	}
 
 	/*Finds the item*/
-	inline size_t Find(const T& item) const {
-		for (size_t i = 0; i < count; i++) {
+	inline uint64 Find(const T& item) const {
+		for (uint64 i = 0; i < count; i++) {
 			if (items[i] == count) return i;
 		}
 
 		return ~0;
 	}
 
-	inline T& operator[](size_t index) {
+	inline T& operator[](uint64 index) {
 		THC_ASSERT(index < count);
 		return items[index];
 	}
 
-	inline const T& operator[](size_t index) const {
+	inline const T& operator[](uint64 index) const {
 		THC_ASSERT(index < count);
 		return items[index];
 	}
@@ -346,11 +347,11 @@ public:
 	inline T* GetData() { return items; }
 	inline const T* GetData() const { return items; }
 
-	inline size_t GetCount() const { return count; }
-	inline size_t GetSize() const { return count * sizeof(T); }
+	inline uint64 GetCount() const { return count; }
+	inline uint64 GetSize() const { return count * sizeof(T); }
 
-	inline size_t GetAllocatedCount() const { return allocated; }
-	inline size_t GetAllocatedSize() const { return allocated * sizeof(T); }
+	inline uint64 GetAllocatedCount() const { return allocated; }
+	inline uint64 GetAllocatedSize() const { return allocated * sizeof(T); }
 };
 
 }

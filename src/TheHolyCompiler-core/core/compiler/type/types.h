@@ -51,97 +51,97 @@ class TypeBase : public instruction::InstBase {
 public:
 	Type type;
 
-	TypeBase(Type type, unsigned int opCode, unsigned int wordCount, const char* const literalName);
+	TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName);
 	virtual ~TypeBase();
 
-	virtual void GetInstWords(unsigned int* words) const = 0;
+	virtual void GetInstWords(uint32* words) const = 0;
 };
 
 class TypeVoid : public TypeBase {
 public:
 	TypeVoid();
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeInt : public TypeBase {
 public:
-	unsigned int bits;
-	unsigned int sign;
+	uint32 bits;
+	uint32 sign;
 
-	TypeInt(unsigned int bits, unsigned int sign);
+	TypeInt(uint32 bits, uint32 sign);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeFloat : public TypeBase {
 public:
-	unsigned int bits;
+	uint32 bits;
 
-	TypeFloat(unsigned int bits);
+	TypeFloat(uint32 bits);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeVector : public TypeBase {
 public:
-	unsigned int componentCount;
-	unsigned int componentTypeId;
+	uint32 componentCount;
+	uint32 componentTypeId;
 
-	TypeVector(unsigned int compCount, unsigned int compTypeId);
+	TypeVector(uint32 compCount, uint32 compTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeMatrix : public TypeBase {
 public:
-	unsigned int columnCount;
-	unsigned int columnTypeId;
+	uint32 columnCount;
+	uint32 columnTypeId;
 
-	TypeMatrix(unsigned int columnCount, unsigned int columnTypeId);
+	TypeMatrix(uint32 columnCount, uint32 columnTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeArray : public TypeBase {
 public:
-	unsigned int elementCount;
-	unsigned int elementTypeId;
+	uint32 elementCount;
+	uint32 elementTypeId;
 
-	TypeArray(unsigned int elementCount, unsigned int elementTypeId);
+	TypeArray(uint32 elementCount, uint32 elementTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeStruct : public TypeBase {
 public:
-	unsigned int memberCount;
-	unsigned int memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
+	uint32 memberCount;
+	uint32 memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
-	TypeStruct(unsigned int memberCount, unsigned int* memberTypeIds);
+	TypeStruct(uint32 memberCount, uint32* memberTypeIds);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypePointer : public TypeBase {
 public:
-	unsigned int storageClass;
-	unsigned int typeId;
+	uint32 storageClass;
+	uint32 typeId;
 
-	TypePointer(unsigned int storageClass, unsigned int typeId);
+	TypePointer(uint32 storageClass, uint32 typeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class TypeFunction : public TypeBase {
 public:
-	unsigned int returnTypeId;
-	unsigned int parameterCount;
-	unsigned int parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
+	uint32 returnTypeId;
+	uint32 parameterCount;
+	uint32 parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
 
-	TypeFunction(unsigned int returnTypeId, unsigned int parameterCount, unsigned int* parameterIds);
+	TypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 }

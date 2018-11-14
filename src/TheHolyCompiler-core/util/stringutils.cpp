@@ -30,14 +30,14 @@ namespace thc {
 namespace utils {
 
 void Utils::CopyString(char*& dst, const char* const src) {
-	size_t len = strlen(src)+1;
+	uint64 len = strlen(src)+1;
 
 	dst = new char[len+1];
 	memcpy(dst, src, len);
 }
 
 String Utils::GetPathFromFile(const String& filepath) {
-	size_t folders = filepath.Count("/");
+	uint64 folders = filepath.Count("/");
 
 	if (folders == 0) {
 		Log::Error("[Utils::GetPathFromFile] Invalid parameter");
@@ -47,9 +47,9 @@ String Utils::GetPathFromFile(const String& filepath) {
 	return filepath.SubString(0, filepath.FindReversed("/"));
 }
 
-unsigned int Utils::FindLine(const String& string, size_t index) {
-	unsigned int line = 1;
-	size_t curr = 0;
+uint32 Utils::FindLine(const String& string, uint64 index) {
+	uint32 line = 1;
+	uint64 curr = 0;
 
 	while ((curr = string.Find("\n", curr+1)) != ~0) {
 		if (curr > index)

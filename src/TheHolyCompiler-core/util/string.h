@@ -35,12 +35,12 @@ class String {
 public:
 	char* str;
 
-	size_t length;
+	uint64 length;
 
 public:
 	String();
 	String(const char* const string);
-	String(const char* const string, size_t len);
+	String(const char* const string, uint64 len);
 	String(const String& string);
 	explicit String(const String* string);
 	String(String&& string);
@@ -57,19 +57,19 @@ public:
 	//Removes part of a string
 	String& Remove(const String& start, const String& end);
 	String& Remove(const char* const start, const char* const end);
-	String& Remove(size_t start, size_t end);
+	String& Remove(uint64 start, uint64 end);
 
 	//Counts how many strings is in the string
-	size_t Count(const String& string) const;
-	size_t Count(const char* const string) const;
+	uint64 Count(const String& string) const;
+	uint64 Count(const char* const string) const;
 
 	//Finds the index of the string, if it exist
-	size_t Find(const String& string, size_t offset = 0) const;
-	size_t Find(const char* const string, size_t offset = 0) const;
+	uint64 Find(const String& string, uint64 offset = 0) const;
+	uint64 Find(const char* const string, uint64 offset = 0) const;
 
 	//Finds the index of the string, if it exist (Starting from the end)
-	size_t FindReversed(const String& string, size_t offset = 0) const;
-	size_t FindReversed(const char* const string, size_t offset = 0) const;
+	uint64 FindReversed(const String& string, uint64 offset = 0) const;
+	uint64 FindReversed(const char* const string, uint64 offset = 0) const;
 
 	//Tests if the string starts with string
 	bool StartsWith(const String& string) const;
@@ -81,15 +81,15 @@ public:
 
 	//Creates a new String from the indexes.
 	//both start and end is inclusive
-	String SubString(size_t start, size_t end) const;
+	String SubString(uint64 start, uint64 end) const;
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
 
 	List<String> Split(const String& delimiters) const;
 	List<String> Split(const char* const delimiters) const;
 
-	char& operator[](size_t index);
-	char operator[](size_t index) const;
+	char& operator[](uint64 index);
+	char operator[](uint64 index) const;
 
 	String operator+(const String& string) const;
 	String operator+(const char* const string) const;

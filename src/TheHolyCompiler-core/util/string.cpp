@@ -39,7 +39,7 @@ String::String(const char* const string) {
 	memcpy(str, string, length+1);
 }
 
-String::String(const char* const string, size_t len) : length(len) {
+String::String(const char* const string, uint64 len) : length(len) {
 	THC_ASSERT(string != nullptr && len != 0);
 	str = new char[length+1];
 	str[length] = 0;
@@ -99,7 +99,7 @@ String& String::Append(const String& string) {
 
 String& String::Append(const char* const string) {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 	char* newStr = new char[length + len + 1];
 
 	memcpy(newStr, str, length);
@@ -121,14 +121,14 @@ String& String::Remove(const char* const start, const char* const end) {
 	return Remove(Find(start), Find(end)+strlen(end)-1);
 }
 
-String& String::Remove(size_t start, size_t end) {
+String& String::Remove(uint64 start, uint64 end) {
 	THC_ASSERT(start <= end);
 	THC_ASSERT(end < length);
 
 	char* tmp = str;
 
-	size_t remLen = end - start + 1;
-	size_t newLen = length - remLen;
+	uint64 remLen = end - start + 1;
+	uint64 newLen = length - remLen;
 
 	str = new char[newLen+1];
 
@@ -141,15 +141,15 @@ String& String::Remove(size_t start, size_t end) {
 	return *this;
 }
 
-size_t String::Count(const String& string) const {
+uint64 String::Count(const String& string) const {
 	return Count(string.str);
 }
 
-size_t String::Count(const char* const string) const {
+uint64 String::Count(const char* const string) const {
 	THC_ASSERT(string != nullptr);
 	
-	size_t index = 0;
-	size_t count = 0;
+	uint64 index = 0;
+	uint64 count = 0;
 
 	while ((index = Find(string, index+1)) != ~0) {
 		count++;
@@ -158,17 +158,17 @@ size_t String::Count(const char* const string) const {
 	return count;
 }
 
-size_t String::Find(const String& string, size_t offset) const {
+uint64 String::Find(const String& string, uint64 offset) const {
 	return Find(string.str, offset);
 }
 
-size_t String::Find(const char* const string, size_t offset) const {
+uint64 String::Find(const char* const string, uint64 offset) const {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 
-	for (size_t i = offset; i < length - len; i++) {
+	for (uint64 i = offset; i < length - len; i++) {
 		bool match = true;
-		for (size_t j = 0; j < len; j++) {
+		for (uint64 j = 0; j < len; j++) {
 			if (str[i + j] != string[j]) {
 				match = false;
 				break;
@@ -183,13 +183,13 @@ size_t String::Find(const char* const string, size_t offset) const {
 	return ~0;
 }
 
-size_t String::FindReversed(const String& string, size_t offset) const {
+uint64 String::FindReversed(const String& string, uint64 offset) const {
 	return FindReversed(string.str, offset);
 }
 
-size_t String::FindReversed(const char* const string, size_t offset) const {
+uint64 String::FindReversed(const char* const string, uint64 offset) const {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 
 	offset = CLAMP(offset, len-1, length - len);
 
@@ -197,9 +197,9 @@ size_t String::FindReversed(const char* const string, size_t offset) const {
 		offset = length-len;
 	}
 
-	for (size_t i = offset; i >= 0; i--) {
+	for (uint64 i = offset; i >= 0; i--) {
 		bool match = true;
-		for (size_t j = 0; j < len; j++) {
+		for (uint64 j = 0; j < len; j++) {
 			if (str[i + j] != string[j]) {
 				match = false;
 				break;
@@ -220,11 +220,11 @@ bool String::StartsWith(const String& string) const {
 
 bool String::StartsWith(const char* const string) const {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 
 	if (len > length) return false;
 
-	for (size_t i = 0; i < len; i++) {
+	for (uint64 i = 0; i < len; i++) {
 		if (str[i] != string[i]) return false;
 	}
 
@@ -237,24 +237,24 @@ bool String::EndsWith(const String& string) const {
 
 bool String::EndsWith(const char* const string) const {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 
 	if (len > length) return false;
 
-	size_t offset = length - len;
+	uint64 offset = length - len;
 
-	for (size_t i = 0; i < len; i++) {
+	for (uint64 i = 0; i < len; i++) {
 		if (str[offset + i] != string[i]) return false;
 	}
 
 	return true;
 }
 
-String String::SubString(size_t start, size_t end) const {
+String String::SubString(uint64 start, uint64 end) const {
 	THC_ASSERT(start != ~0 && end != ~0);
 	THC_ASSERT(end >= start);
 
-	size_t len = end - start + 1;
+	uint64 len = end - start + 1;
 
 	THC_ASSERT(start + len < length);
 
@@ -277,12 +277,12 @@ List<String> String::Split(const String& delimiters) const {
 List<String> String::Split(const char* const delimiters) const {
 	List<String> list;
 
-	size_t numDelimiters = strlen(delimiters);
+	uint64 numDelimiters = strlen(delimiters);
 
-	size_t lastIndex = 0;
+	uint64 lastIndex = 0;
 
-	for (size_t i = 0; i < length; i++) {
-		for (size_t j = 0; j < numDelimiters; j++) {
+	for (uint64 i = 0; i < length; i++) {
+		for (uint64 j = 0; j < numDelimiters; j++) {
 			if (str[i] == delimiters[j]) {
 				if (lastIndex == i-1 || lastIndex == i) {
 					lastIndex++;
@@ -302,12 +302,12 @@ List<String> String::Split(const char* const delimiters) const {
 	return list;
 }
 
-char& String::operator[](size_t index) {
+char& String::operator[](uint64 index) {
 	THC_ASSERT(index < length);
 	return str[index];
 }
 
-char String::operator[](size_t index) const {
+char String::operator[](uint64 index) const {
 	THC_ASSERT(index < length);
 	return str[index];
 }
@@ -330,11 +330,11 @@ bool String::operator==(const String& string) const {
 
 bool String::operator==(const char* const string) const {
 	THC_ASSERT(string != nullptr);
-	size_t len = strlen(string);
+	uint64 len = strlen(string);
 
 	if (len != length) return false;
 
-	for (size_t i = 0; i < len; i++) {
+	for (uint64 i = 0; i < len; i++) {
 		if (str[i] != string[i]) return false;
 	}
 

@@ -29,13 +29,13 @@ namespace thc {
 namespace core {
 namespace type {
 
-void TypeVoid::GetInstWords(unsigned int* words) const {
+void TypeVoid::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
 }
 
-void TypeInt::GetInstWords(unsigned int* words) const {
+void TypeInt::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -43,14 +43,14 @@ void TypeInt::GetInstWords(unsigned int* words) const {
 	words[3] = sign;
 }
 
-void TypeFloat::GetInstWords(unsigned int* words) const {
+void TypeFloat::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
 	words[2] = bits;
 }
 
-void TypeVector::GetInstWords(unsigned int* words) const {
+void TypeVector::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -58,7 +58,7 @@ void TypeVector::GetInstWords(unsigned int* words) const {
 	words[3] = componentCount;
 }
 
-void TypeMatrix::GetInstWords(unsigned int* words) const {
+void TypeMatrix::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -66,7 +66,7 @@ void TypeMatrix::GetInstWords(unsigned int* words) const {
 	words[3] = columnCount;
 }
 
-void TypeArray::GetInstWords(unsigned int* words) const {
+void TypeArray::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -74,7 +74,7 @@ void TypeArray::GetInstWords(unsigned int* words) const {
 	words[3] = elementCount;
 }
 
-void TypeStruct::GetInstWords(unsigned int* words) const {
+void TypeStruct::GetInstWords(uint32* words) const {
 	wordCount += memberCount;
 	InstBase::GetInstWords(words);
 
@@ -82,7 +82,7 @@ void TypeStruct::GetInstWords(unsigned int* words) const {
 	memcpy(words+2, memberTypeId, memberCount << 2);
 }
 
-void TypePointer::GetInstWords(unsigned int* words) const {
+void TypePointer::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id;
@@ -90,7 +90,7 @@ void TypePointer::GetInstWords(unsigned int* words) const {
 	words[3] = typeId;
 }
 
-void TypeFunction::GetInstWords(unsigned int* words) const {
+void TypeFunction::GetInstWords(uint32* words) const {
 	wordCount += parameterCount;
 	InstBase::GetInstWords(words);
 

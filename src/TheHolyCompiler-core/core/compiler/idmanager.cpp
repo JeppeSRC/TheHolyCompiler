@@ -28,13 +28,13 @@ namespace thc {
 namespace core {
 namespace compiler {
 
-unsigned int IDManager::count = 0;
+uint32 IDManager::count = 0;
 
-unsigned int IDManager::GetNewId() {
+uint32 IDManager::GetNewId() {
 	return ++count;
 }
 
-unsigned int IDManager::GetCount() {
+uint32 IDManager::GetCount() {
 	return count;
 }
 

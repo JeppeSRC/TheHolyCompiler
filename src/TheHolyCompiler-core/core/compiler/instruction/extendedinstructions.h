@@ -27,6 +27,7 @@ SOFTWARE.
 #pragma once
 
 #include "instructions.h"
+#include <core/thctypes.h>
 
 namespace thc {
 namespace core {
@@ -34,276 +35,276 @@ namespace instruction {
 
 class InstExt : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int setId;
-	unsigned int opCode;
+	uint32 resultTypeId;
+	uint32 setId;
+	uint32 opCode;
 
-	unsigned int operand0;
-	unsigned int operand1;
-	unsigned int operand2;
+	uint32 operand0;
+	uint32 operand1;
+	uint32 operand2;
 
 
-	InstExt(unsigned int wordCount, const char* const literalName, unsigned int resultTypeId, unsigned int setId, unsigned int opCode, unsigned int operand0, unsigned int operand1 = 0, unsigned int operand2 = 0);
+	InstExt(uint32 wordCount, const char* const literalName, uint32 resultTypeId, uint32 setId, uint32 opCode, uint32 operand0, uint32 operand1 = 0, uint32 operand2 = 0);
 
-	virtual void GetInstWords(unsigned int* words) const override;
+	virtual void GetInstWords(uint32* words) const override;
 };
 
 
 
 class InstExtRound: public InstExt {
 public:
-	InstExtRound(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtRound(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtRoundEven : public InstExt {
 public:
-	InstExtRoundEven(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtRoundEven(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtTrunc : public InstExt {
 public:
-	InstExtTrunc(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtTrunc(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 
 class InstExtFAbs : public InstExt {
 public:
-	InstExtFAbs(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtFAbs(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtSAbs : public InstExt {
 public:
-	InstExtSAbs(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtSAbs(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtFSign : public InstExt {
 public:
-	InstExtFSign(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtFSign(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtSSign : public InstExt {
 public:
-	InstExtSSign(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtSSign(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtFloor : public InstExt {
 public:
-	InstExtFloor(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtFloor(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtCeil : public InstExt {
 public:
-	InstExtCeil(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtCeil(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtFract : public InstExt {
 public:
-	InstExtFract(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtFract(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtRadians : public InstExt {
 public:
-	InstExtRadians(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtRadians(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtDegrees : public InstExt {
 public:
-	InstExtDegrees(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtDegrees(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtSin : public InstExt {
 public:
-	InstExtSin(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtSin(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtCos : public InstExt {
 public:
-	InstExtCos(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtCos(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtTan : public InstExt {
 public:
-	InstExtTan(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtTan(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtASin : public InstExt {
 public:
-	InstExtASin(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtASin(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtACos : public InstExt {
 public:
-	InstExtACos(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtACos(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtATan : public InstExt {
 public:
-	InstExtATan(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtATan(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtSinh : public InstExt {
 public:
-	InstExtSinh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtSinh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtCosh : public InstExt {
 public:
-	InstExtCosh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtCosh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtTanh : public InstExt {
 public:
-	InstExtTanh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtTanh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtASinh : public InstExt {
 public:
-	InstExtASinh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtASinh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtACosh : public InstExt {
 public:
-	InstExtACosh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtACosh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtATanh : public InstExt {
 public:
-	InstExtATanh(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtATanh(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtATan2 : public InstExt {
 public:
-	InstExtATan2(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtATan2(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtPow : public InstExt {
 public:
-	InstExtPow(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtPow(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtExp : public InstExt {
 public:
-	InstExtExp(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtExp(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtLog : public InstExt {
 public:
-	InstExtLog(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtLog(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtExp2 : public InstExt {
 public:
-	InstExtExp2(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtExp2(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtLog2 : public InstExt {
 public:
-	InstExtLog2(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtLog2(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtSqrt  : public InstExt {
 public:
-	InstExtSqrt (unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtSqrt (uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtInvSqrt : public InstExt {
 public:
-	InstExtInvSqrt(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtInvSqrt(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtDeterminant : public InstExt {
 public:
-	InstExtDeterminant(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtDeterminant(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtMatInv : public InstExt {
 public:
-	InstExtMatInv(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtMatInv(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtModf : public InstExt {
 public:
-	InstExtModf(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int iId);
+	InstExtModf(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 iId);
 };
 
 class InstExtFMin : public InstExt {
 public:
-	InstExtFMin(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtFMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtUMin : public InstExt {
 public:
-	InstExtUMin(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtUMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtSMin : public InstExt {
 public:
-	InstExtSMin(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtSMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtFMax : public InstExt {
 public:
-	InstExtFMax(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtFMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtUMax : public InstExt {
 public:
-	InstExtUMax(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtUMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtSMax : public InstExt {
 public:
-	InstExtSMax(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtSMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtFClamp : public InstExt {
 public:
-	InstExtFClamp(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int minValId, unsigned int maxValId);
+	InstExtFClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
 };
 
 class InstExtUClamp : public InstExt {
 public:
-	InstExtUClamp(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int minValId, unsigned int maxValId);
+	InstExtUClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
 };
 
 class InstExtSClamp : public InstExt {
 public:
-	InstExtSClamp(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int minValId, unsigned int maxValId);
+	InstExtSClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
 };
 
 class InstExtFMix : public InstExt {
 public:
-	InstExtFMix(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId, unsigned int aId);
+	InstExtFMix(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId, uint32 aId);
 };
 
 class InstExtFma : public InstExt {
 public:
-	InstExtFma(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId, unsigned int aId);
+	InstExtFma(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId, uint32 aId);
 };
 
 class InstExtLength : public InstExt {
 public:
-	InstExtLength(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtLength(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtDistance : public InstExt {
 public:
-	InstExtDistance(unsigned int resultTypeId, unsigned int setId, unsigned int p0Id, unsigned int p1Id);
+	InstExtDistance(uint32 resultTypeId, uint32 setId, uint32 p0Id, uint32 p1Id);
 };
 
 class InstExtCross : public InstExt {
 public:
-	InstExtCross(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtCross(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 class InstExtNormalize : public InstExt {
 public:
-	InstExtNormalize(unsigned int resultTypeId, unsigned int setId, unsigned int xId);
+	InstExtNormalize(uint32 resultTypeId, uint32 setId, uint32 xId);
 };
 
 class InstExtReflect : public InstExt {
 public:
-	InstExtReflect(unsigned int resultTypeId, unsigned int setId, unsigned int xId, unsigned int yId);
+	InstExtReflect(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
 };
 
 }

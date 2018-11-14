@@ -25,7 +25,7 @@ SOFTWARE.
 #pragma once
 
 #ifdef THC_DEBUG
-#define THC_ASSERT(x) if (!(x)) { printf("Assertion Failed (%s) -> File: \"%s\" Function: \"%s\" Line: %u\n", #x, __FILE__, __FUNCSIG__, __LINE__); *((int*)0x0) = 0; }
+#define THC_ASSERT(x) if (!(x)) { printf("Assertion Failed (%s) -> File: \"%s\" Function: \"%s\" Line: %u\n", #x, __FILE__, __FUNCSIG__, __LINE__); *((int32*)0x0) = 0; }
 #else
 #define THC_ASSERT(x) 
 #endif

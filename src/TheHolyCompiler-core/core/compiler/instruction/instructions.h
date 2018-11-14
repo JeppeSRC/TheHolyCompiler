@@ -28,6 +28,7 @@ SOFTWARE.
 #include <memory>
 #include <core/spirvdefines.h>
 #include <core/spirvlimits.h>
+#include <core/thctypes.h>
 
 
 namespace thc {
@@ -36,15 +37,15 @@ namespace instruction {
 
 class InstBase {
 public:
-	unsigned int id;
-	unsigned int opCode;
-	mutable unsigned int wordCount;
+	uint32 id;
+	uint32 opCode;
+	mutable uint32 wordCount;
 	char* literalName;
 
-	InstBase(unsigned int opCode, unsigned int wordCount, const char* const literalName, bool resultId = false);
+	InstBase(uint32 opCode, uint32 wordCount, const char* const literalName, bool resultId = false);
 	virtual ~InstBase();
 
-	virtual void GetInstWords(unsigned int* words) const;
+	virtual void GetInstWords(uint32* words) const;
 };
 
 #pragma region misc
@@ -57,21 +58,21 @@ public:
 
 class InstUndef : public InstBase {
 public:
-	unsigned int resultTypeId;
+	uint32 resultTypeId;
 
-	InstUndef(unsigned int resultTypeId);
+	InstUndef(uint32 resultTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSizeOf : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int pointerId;
+	uint32 resultTypeId;
+	uint32 pointerId;
 
-	InstSizeOf(unsigned int resultTypeId, unsigned int pointerId);
+	InstSizeOf(uint32 resultTypeId, uint32 pointerId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 #pragma endregion
@@ -84,19 +85,19 @@ public:
 
 	InstSourceContinued(const char* const source);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSource : public InstBase {
 public:
-	unsigned int sourceLanguage;
-	unsigned int version;
-	unsigned int fileNameId;
+	uint32 sourceLanguage;
+	uint32 version;
+	uint32 fileNameId;
 	char* source;
 
-	InstSource(unsigned int sourceLanguage, unsigned int version, unsigned int fileNameId, const char* const source);
+	InstSource(uint32 sourceLanguage, uint32 version, uint32 fileNameId, const char* const source);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSourceExtension : public InstBase {
@@ -105,29 +106,29 @@ public:
 
 	InstSourceExtension(const char* const extension);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstName : public InstBase {
 public:
-	unsigned int targetId;
+	uint32 targetId;
 	char* name;
 
-	InstName(unsigned int targetId, const char* const name);
+	InstName(uint32 targetId, const char* const name);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstMemberName : public InstBase {
 public:
-	unsigned int typeId;
-	unsigned int member;
+	uint32 typeId;
+	uint32 member;
 	char* name;
 
-	InstMemberName(unsigned int typeId, unsigned int member, const char* const name);
+	InstMemberName(uint32 typeId, uint32 member, const char* const name);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
@@ -137,18 +138,18 @@ public:
 
 	InstString(const char* const string);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLine : public InstBase {
 public:
-	unsigned int fileNameId;
-	unsigned int line;
-	unsigned int column;
+	uint32 fileNameId;
+	uint32 line;
+	uint32 column;
 
-	InstLine(unsigned int fileNameId, unsigned int line, unsigned int column);
+	InstLine(uint32 fileNameId, uint32 line, uint32 column);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstNoLine : public InstBase {
@@ -165,44 +166,44 @@ public:
 
 class InstDecorate : public InstBase {
 public:
-	unsigned int targetId;
-	unsigned int decoration;
-	unsigned int numDecorationLiterals;
-	unsigned int literals[THC_LIMIT_DECORATIONS_PER_TARGET];
+	uint32 targetId;
+	uint32 decoration;
+	uint32 numDecorationLiterals;
+	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstDecorate(unsigned int targetId, unsigned int decoration, unsigned int* literals, unsigned int numDecorationLiterals);
+	InstDecorate(uint32 targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstMemberDecorate : public InstBase {
 public:
-	unsigned int structId;
-	unsigned int decoration;
-	unsigned int numDecorationLiterals;
-	unsigned int literals[THC_LIMIT_DECORATIONS_PER_TARGET];
+	uint32 structId;
+	uint32 decoration;
+	uint32 numDecorationLiterals;
+	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstMemberDecorate(unsigned int structId, unsigned int decoration, unsigned int* literals, unsigned int numDecorationLiterals);
+	InstMemberDecorate(uint32 structId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstDecorationGroup : public InstBase {
 public:
 	InstDecorationGroup();
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstGroupDecorate : public InstBase {
 public:
-	unsigned int groupId;
-	unsigned int numTargets;
-	unsigned int targets[THC_LIMIT_DECORATIONS_PER_TARGET];
+	uint32 groupId;
+	uint32 numTargets;
+	uint32 targets[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstGroupDecorate(unsigned int groupId, unsigned int* targets, unsigned int numTargets);
+	InstGroupDecorate(uint32 groupId, uint32* targets, uint32 numTargets);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstGroupMemberDecorate : public InstBase {
@@ -223,7 +224,7 @@ public:
 
 	InstExtension(const char* const extension);
 
-	void GetInstWords(unsigned int* words) const;
+	void GetInstWords(uint32* words) const;
 };
 
 class InstExtInstImport : public InstBase {
@@ -232,7 +233,7 @@ public:
 
 	InstExtInstImport(const char* const extensionSet);
 
-	void GetInstWords(unsigned int* words) const;
+	void GetInstWords(uint32* words) const;
 };
 
 //TODO: OpExtInst will be 
@@ -243,46 +244,46 @@ public:
 
 class InstMemoryModel : public InstBase {
 public:
-	unsigned int addressingModel;
-	unsigned int memoryModel;
+	uint32 addressingModel;
+	uint32 memoryModel;
 
-	InstMemoryModel(unsigned int addressingModel, unsigned int memoryModel);
+	InstMemoryModel(uint32 addressingModel, uint32 memoryModel);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstEntryPoint : public InstBase {
 public:
-	unsigned int executionModel;
-	unsigned int entryPointId;
+	uint32 executionModel;
+	uint32 entryPointId;
 	char* entryPointName;
-	unsigned int inoutVariableCount;
-	unsigned int inoutVariables[THC_LIMIT_GLOBAL_VARIABLES];
+	uint32 inoutVariableCount;
+	uint32 inoutVariables[THC_LIMIT_GLOBAL_VARIABLES];
 
-	InstEntryPoint(unsigned int executionModel, unsigned int entryPointId, const char* const entryPointName, unsigned int inoutVariableCount, unsigned int* inoutVariables);
+	InstEntryPoint(uint32 executionModel, uint32 entryPointId, const char* const entryPointName, uint32 inoutVariableCount, uint32* inoutVariables);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstExecutionMode : public InstBase {
 public:
-	unsigned int entryPointId;
-	unsigned int mode;
-	unsigned int extraOperandCount;
-	unsigned int extraOperand[256];
+	uint32 entryPointId;
+	uint32 mode;
+	uint32 extraOperandCount;
+	uint32 extraOperand[256];
 
-	InstExecutionMode(unsigned int entryPointId, unsigned int mode, unsigned int extraOperandCount, unsigned int* extraOperands);
+	InstExecutionMode(uint32 entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands);
 
-	void GetInstWords(unsigned int* words) const;
+	void GetInstWords(uint32* words) const;
 };
 
 class InstCapability : public InstBase {
 public:
-	unsigned int capability;
+	uint32 capability;
 
-	InstCapability(unsigned int capability);
+	InstCapability(uint32 capability);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpExecutionModeId
@@ -296,31 +297,31 @@ public:
 
 class InstConstant : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueCount;
-	unsigned int* values;
+	uint32 resultTypeId;
+	uint32 valueCount;
+	uint32* values;
 
 	union {
-		unsigned int u32;
+		uint32 u32;
 		float f32;
 	};
 
-	InstConstant(unsigned int resultTypeId, unsigned int valueCount, void* values);
-	InstConstant(unsigned int resultTypeId, unsigned int value);
-	InstConstant(unsigned int resultTypeId, float value);
+	InstConstant(uint32 resultTypeId, uint32 valueCount, void* values);
+	InstConstant(uint32 resultTypeId, uint32 value);
+	InstConstant(uint32 resultTypeId, float value);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstConstantComposite : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int constituentCount;
-	unsigned int constituent[128];
+	uint32 resultTypeId;
+	uint32 constituentCount;
+	uint32 constituent[128];
 
-	InstConstantComposite(unsigned int resultTypeId, unsigned int constituentCount, unsigned int* constituents);
+	InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TOOD: OpConstantNull, OpSpec*
@@ -331,83 +332,83 @@ public:
 
 class InstVariable : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int storageClass;
-	unsigned int initializer;
+	uint32 resultTypeId;
+	uint32 storageClass;
+	uint32 initializer;
 
-	InstVariable(unsigned int resultTypeId, unsigned int storageClass, unsigned int initializer);
+	InstVariable(uint32 resultTypeId, uint32 storageClass, uint32 initializer);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLoad : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int pointerId;
-	unsigned int memoryAccess;
+	uint32 resultTypeId;
+	uint32 pointerId;
+	uint32 memoryAccess;
 
-	InstLoad(unsigned int resultTypeId, unsigned int pointerId, unsigned int memoryAccess);
+	InstLoad(uint32 resultTypeId, uint32 pointerId, uint32 memoryAccess);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstStore : public InstBase {
 public:
-	unsigned int pointerId;
-	unsigned int objectId;
-	unsigned int memoryAccess;
+	uint32 pointerId;
+	uint32 objectId;
+	uint32 memoryAccess;
 
-	InstStore(unsigned int pointerId, unsigned int objectId, unsigned int memoryAccess);
+	InstStore(uint32 pointerId, uint32 objectId, uint32 memoryAccess);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstCopyMemory : public InstBase {
 public:
-	unsigned int targetId;
-	unsigned int sourceId;
-	unsigned int memoryAccess;
+	uint32 targetId;
+	uint32 sourceId;
+	uint32 memoryAccess;
 
-	InstCopyMemory(unsigned int targetId, unsigned int sourceId, unsigned int memoryAccess);
+	InstCopyMemory(uint32 targetId, uint32 sourceId, uint32 memoryAccess);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstCopyMemorySized : public InstBase {
 public:
-	unsigned int targetId;
-	unsigned int sourceId;
-	unsigned int sizeId;
-	unsigned int memoryAccess;
+	uint32 targetId;
+	uint32 sourceId;
+	uint32 sizeId;
+	uint32 memoryAccess;
 
-	InstCopyMemorySized(unsigned int targetId, unsigned int sourceId, unsigned int sizeId, unsigned int memoryAccess);
+	InstCopyMemorySized(uint32 targetId, uint32 sourceId, uint32 sizeId, uint32 memoryAccess);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstAccessChain : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int baseId;
-	unsigned int indexCount;
-	unsigned int index[THC_LIMIT_INDEXES];
+	uint32 resultTypeId;
+	uint32 baseId;
+	uint32 indexCount;
+	uint32 index[THC_LIMIT_INDEXES];
 
-	InstAccessChain(unsigned int resultTypeId, unsigned int baseId, unsigned int indexCount, unsigned int* indices);
+	InstAccessChain(uint32 resultTypeId, uint32 baseId, uint32 indexCount, uint32* indices);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstInBoundsAccessChain : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int baseId;
-	unsigned int indexCount;
-	unsigned int index[THC_LIMIT_INDEXES];
+	uint32 resultTypeId;
+	uint32 baseId;
+	uint32 indexCount;
+	uint32 index[THC_LIMIT_INDEXES];
 
-	InstInBoundsAccessChain(unsigned int resultTypeId, unsigned int baseId, unsigned int indexCount, unsigned int* indices);
+	InstInBoundsAccessChain(uint32 resultTypeId, uint32 baseId, uint32 indexCount, uint32* indices);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpPtrAccessChain, OpInBoundsPtrAccessChain, OpArrayLength
@@ -418,22 +419,22 @@ public:
 
 class InstFunction : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int functionControl;
-	unsigned int functionTypeId;
+	uint32 resultTypeId;
+	uint32 functionControl;
+	uint32 functionTypeId;
 
-	InstFunction(unsigned int resultTypeId, unsigned int functionControl, unsigned int functionTypeId);
+	InstFunction(uint32 resultTypeId, uint32 functionControl, uint32 functionTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 }; 
 
 class InstFunctionParameter : public InstBase {
 public:
-	unsigned int resultTypeId;
+	uint32 resultTypeId;
 
-	InstFunctionParameter(unsigned int resultTypeId);
+	InstFunctionParameter(uint32 resultTypeId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
@@ -445,14 +446,14 @@ public:
 
 class InstFunctionCall : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int functionId;
-	unsigned int argumentCount;
-	unsigned int argument[THC_LIMIT_OPFUNCTIONCALL_ARGUMENTS];
+	uint32 resultTypeId;
+	uint32 functionId;
+	uint32 argumentCount;
+	uint32 argument[THC_LIMIT_OPFUNCTIONCALL_ARGUMENTS];
 
-	InstFunctionCall(unsigned int resultTypeId, unsigned int functionId, unsigned int argumentCount, unsigned int* arguments);
+	InstFunctionCall(uint32 resultTypeId, uint32 functionId, uint32 argumentCount, uint32* arguments);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 #pragma endregion
@@ -467,94 +468,94 @@ public:
 
 class InstConvertFToU : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertFToU(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertFToU(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertFToS : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertFToS(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertFToS(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertSToF : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertSToF(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertSToF(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertUToF : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertUToF(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertUToF(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUConvert : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstUConvert(unsigned int resultTypeId, unsigned int valueId);
+	InstUConvert(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSConvert : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstSConvert(unsigned int resultTypeId, unsigned int valueId);
+	InstSConvert(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFConvert : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstFConvert(unsigned int resultTypeId, unsigned int valueId);
+	InstFConvert(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpQuantizeToF16
 
 class InstConvertPtrToU : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertPtrToU(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertPtrToU(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertUToPtr : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int valueId;
+	uint32 resultTypeId;
+	uint32 valueId;
 
-	InstConvertUToPtr(unsigned int resultTypeId, unsigned int valueId);
+	InstConvertUToPtr(uint32 resultTypeId, uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpBitcast
@@ -565,94 +566,94 @@ public:
 
 class InstVectorExtractDynamic : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
-	unsigned int indexId;
+	uint32 resultTypeId;
+	uint32 vectorId;
+	uint32 indexId;
 
-	InstVectorExtractDynamic(unsigned int resultTypeId, unsigned int vectorId, unsigned int indexId);
+	InstVectorExtractDynamic(uint32 resultTypeId, uint32 vectorId, uint32 indexId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorInsertDynamic : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
-	unsigned int componentId;
-	unsigned int indexId;
+	uint32 resultTypeId;
+	uint32 vectorId;
+	uint32 componentId;
+	uint32 indexId;
 
-	InstVectorInsertDynamic(unsigned int resultTypeId, unsigned int vectorId, unsigned int componentId, unsigned int indexId);
+	InstVectorInsertDynamic(uint32 resultTypeId, uint32 vectorId, uint32 componentId, uint32 indexId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorShuffle : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vector1Id;
-	unsigned int vector2Id;
-	unsigned int componentCount;
-	unsigned int component[4];
+	uint32 resultTypeId;
+	uint32 vector1Id;
+	uint32 vector2Id;
+	uint32 componentCount;
+	uint32 component[4];
 
-	InstVectorShuffle(unsigned int resultTypeId, unsigned int vector1Id, unsigned int vector2Id, unsigned int componentCount, unsigned int* components);
+	InstVectorShuffle(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id, uint32 componentCount, uint32* components);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeConstruct: public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int constituentCount;
-	unsigned int constituent[512];
+	uint32 resultTypeId;
+	uint32 constituentCount;
+	uint32 constituent[512];
 
-	InstCompositeConstruct(unsigned int resultTypeId, unsigned int constituentCount, unsigned int* constituents);
+	InstCompositeConstruct(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeExtract : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int compositeId;
-	unsigned int indexCount;
-	unsigned int index[THC_LIMIT_STRUCT_NESTING_DEPTH];
+	uint32 resultTypeId;
+	uint32 compositeId;
+	uint32 indexCount;
+	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeExtract(unsigned int resultTypeId, unsigned int compositeId, unsigned int indexCount, unsigned int* indices);
+	InstCompositeExtract(uint32 resultTypeId, uint32 compositeId, uint32 indexCount, uint32* indices);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeInsert : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int objectId;
-	unsigned int compositeId;
-	unsigned int indexCount;
-	unsigned int index[THC_LIMIT_STRUCT_NESTING_DEPTH];
+	uint32 resultTypeId;
+	uint32 objectId;
+	uint32 compositeId;
+	uint32 indexCount;
+	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeInsert(unsigned int resultTypeId, unsigned int objectId, unsigned int compositeId, unsigned int indexCount, unsigned int* indices);
+	InstCompositeInsert(uint32 resultTypeId, uint32 objectId, uint32 compositeId, uint32 indexCount, uint32* indices);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstCopyObject : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstCopyObject(unsigned int resultTypeId, unsigned int operandId);
+	InstCopyObject(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstTranspose : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int matrixId;
+	uint32 resultTypeId;
+	uint32 matrixId;
 
-	InstTranspose(unsigned int resultTypeId, unsigned int operandId);
+	InstTranspose(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 #pragma endregion
@@ -661,297 +662,297 @@ public:
 
 class InstSNegate : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstSNegate(unsigned int resultTypeId, unsigned int operandId);
+	InstSNegate(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFNegate : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstFNegate(unsigned int resultTypeId, unsigned int operandId);
+	InstFNegate(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIAdd: InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstIAdd(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstIAdd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFAdd : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFAdd(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFAdd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstISub : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstISub(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstISub(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFSub : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFSub(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFSub(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIMul : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstIMul(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstIMul(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFMul : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFMul(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFMul(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUDiv : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstUDiv(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstUDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSDiv : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSDiv(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFDiv : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFDiv(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUMod : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstUMod(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstUMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSRem : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSRem(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSRem(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSMod : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSMod(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFRem : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFRem(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFRem(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFMod : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFMod(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorTimesScalar : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
-	unsigned int scalarId;
+	uint32 resultTypeId;
+	uint32 vectorId;
+	uint32 scalarId;
 
-	InstVectorTimesScalar(unsigned int resultTypeId, unsigned int vectorId, unsigned int scalarId);
+	InstVectorTimesScalar(uint32 resultTypeId, uint32 vectorId, uint32 scalarId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesScalar : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int matrixId;
-	unsigned int scalarId;
+	uint32 resultTypeId;
+	uint32 matrixId;
+	uint32 scalarId;
 
-	InstMatrixTimesScalar(unsigned int resultTypeId, unsigned int matrixId, unsigned int scalarId);
+	InstMatrixTimesScalar(uint32 resultTypeId, uint32 matrixId, uint32 scalarId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorTimesMatrix : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
-	unsigned int matrixId;
+	uint32 resultTypeId;
+	uint32 vectorId;
+	uint32 matrixId;
 
-	InstVectorTimesMatrix(unsigned int resultTypeId, unsigned int vectorId, unsigned int matrixId);
+	InstVectorTimesMatrix(uint32 resultTypeId, uint32 vectorId, uint32 matrixId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesVector: InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int matrixId;
-	unsigned int vectorId;
+	uint32 resultTypeId;
+	uint32 matrixId;
+	uint32 vectorId;
 
-	InstMatrixTimesVector(unsigned int resultTypeId, unsigned int matrixId, unsigned int vectorId);
+	InstMatrixTimesVector(uint32 resultTypeId, uint32 matrixId, uint32 vectorId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesMatrix : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int matrix1Id;
-	unsigned int matrix2Id;
+	uint32 resultTypeId;
+	uint32 matrix1Id;
+	uint32 matrix2Id;
 
-	InstMatrixTimesMatrix(unsigned int resultTypeId, unsigned int matrix1Id, unsigned int matrix2Id);
+	InstMatrixTimesMatrix(uint32 resultTypeId, uint32 matrix1Id, uint32 matrix2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstOuterProduct : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vector1Id;
-	unsigned int vector2Id;
+	uint32 resultTypeId;
+	uint32 vector1Id;
+	uint32 vector2Id;
 
-	InstOuterProduct(unsigned int resultTypeId, unsigned int vector1Id, unsigned int vector2Id);
+	InstOuterProduct(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstDot : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vector1Id;
-	unsigned int vector2Id;
+	uint32 resultTypeId;
+	uint32 vector1Id;
+	uint32 vector2Id;
 
-	InstDot(unsigned int resultTypeId, unsigned int vector1Id, unsigned int vector2Id);
+	InstDot(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIAddCarry: InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstIAddCarry(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstIAddCarry(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstISubBorrow : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstISubBorrow(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstISubBorrow(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUMulExtended : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstUMulExtended(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstUMulExtended(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSMulExtended : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSMulExtended(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSMulExtended(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 #pragma endregion
@@ -960,88 +961,88 @@ public:
 
 class InstShiftRightLogical : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int baseId;
-	unsigned int shiftId;
+	uint32 resultTypeId;
+	uint32 baseId;
+	uint32 shiftId;
 
-	InstShiftRightLogical(unsigned int resultTypeId, unsigned int baseId, unsigned int shiftId);
+	InstShiftRightLogical(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstShiftRightArithmetic : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int baseId;
-	unsigned int shiftId;
+	uint32 resultTypeId;
+	uint32 baseId;
+	uint32 shiftId;
 
-	InstShiftRightArithmetic(unsigned int resultTypeId, unsigned int baseId, unsigned int shiftId);
+	InstShiftRightArithmetic(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstShiftLeftLogical : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int baseId;
-	unsigned int shiftId;
+	uint32 resultTypeId;
+	uint32 baseId;
+	uint32 shiftId;
 
-	InstShiftLeftLogical(unsigned int resultTypeId, unsigned int baseId, unsigned int shiftId);
+	InstShiftLeftLogical(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseOr: InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstBitwiseOr(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstBitwiseOr(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseXor : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstBitwiseXor(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstBitwiseXor(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseAnd : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstBitwiseAnd(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstBitwiseAnd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstNot : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstNot(unsigned int resultTypeId, unsigned int operandId);
+	InstNot(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitReverse : InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
 
-	InstBitReverse(unsigned int resultTypeId, unsigned int operand1Id);
+	InstBitReverse(uint32 resultTypeId, uint32 operand1Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpBitFieldInsert, OpBitFieldSExtract, OpBitFieldUExtract, OpBitCount
@@ -1052,354 +1053,354 @@ public:
 
 class InstAny : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
+	uint32 resultTypeId;
+	uint32 vectorId;
 
-	InstAny(unsigned int resultTypeId, unsigned int vectorId);
+	InstAny(uint32 resultTypeId, uint32 vectorId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstAll : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int vectorId;
+	uint32 resultTypeId;
+	uint32 vectorId;
 
-	InstAll(unsigned int resultTypeId, unsigned int vectorId);
+	InstAll(uint32 resultTypeId, uint32 vectorId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIsNan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstIsNan(unsigned int resultTypeId, unsigned int operandId);
+	InstIsNan(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIsInf : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstIsInf(unsigned int resultTypeId, unsigned int operandId);
+	InstIsInf(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstLogicalEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstLogicalEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstLogicalEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalNotEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstLogicalNotEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstLogicalNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalOr: public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstLogicalOr(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstLogicalOr(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalAnd : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstLogicalAnd(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstLogicalAnd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalNot : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operandId;
+	uint32 resultTypeId;
+	uint32 operandId;
 
-	InstLogicalNot(unsigned int resultTypeId, unsigned int operandId);
+	InstLogicalNot(uint32 resultTypeId, uint32 operandId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSelect : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int conditionId;
-	unsigned int object1Id;
-	unsigned int object2Id;
+	uint32 resultTypeId;
+	uint32 conditionId;
+	uint32 object1Id;
+	uint32 object2Id;
 
-	InstSelect(unsigned int resultTypeId, unsigned int conditionId, unsigned int object1Id, unsigned int object2Id);
+	InstSelect(uint32 resultTypeId, uint32 conditionId, uint32 object1Id, uint32 object2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstIEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstIEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstIEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstINotEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstINotEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstINotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUGreaterThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstUGreaterThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstUGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstSGreaterThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSGreaterThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstUGreaterThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstUGreaterThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstUGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSGreaterThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSGreaterThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstULessThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstULessThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstULessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 
 class InstSLessThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSLessThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstULessThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstULessThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstULessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSLessThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstSLessThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstSLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdNotEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdNotEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordNotEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordNotEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdLessThan: public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdLessThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordLessThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordLessThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdGreaterThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdGreaterThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordGreaterThan : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordGreaterThan(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdLessThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdLessThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordLessThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordLessThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdGreaterThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFOrdGreaterThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFOrdGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordGreaterThanEqual : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int operand1Id;
-	unsigned int operand2Id;
+	uint32 resultTypeId;
+	uint32 operand1Id;
+	uint32 operand2Id;
 
-	InstFUnordGreaterThanEqual(unsigned int resultTypeId, unsigned int operand1Id, unsigned int operand2Id);
+	InstFUnordGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 #pragma endregion
@@ -1418,35 +1419,35 @@ typedef unsigned long long PhiPair;
 
 class InstPhi : public InstBase {
 public:
-	unsigned int resultTypeId;
-	unsigned int pairCount;
+	uint32 resultTypeId;
+	uint32 pairCount;
 	PhiPair pairs[32];
 
-	InstPhi(unsigned int resultTypeId, unsigned int pairCount, PhiPair* pairs);
+	InstPhi(uint32 resultTypeId, uint32 pairCount, PhiPair* pairs);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLoopMerge : public InstBase {
 public:
-	unsigned int mergeBlockId;
-	unsigned int continueTargetId;
-	unsigned int loopControl;
+	uint32 mergeBlockId;
+	uint32 continueTargetId;
+	uint32 loopControl;
 	//TODO: parameters when needed
 
-	InstLoopMerge(unsigned int mergeBlockId, unsigned int continueTargetId, unsigned int loopControl);
+	InstLoopMerge(uint32 mergeBlockId, uint32 continueTargetId, uint32 loopControl);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstSelectionMerge: public InstBase {
 public:
-	unsigned int mergeBlockId;
-	unsigned int selectionControl;
+	uint32 mergeBlockId;
+	uint32 selectionControl;
 
-	InstSelectionMerge(unsigned int mergeBlockId, unsigned int selectionControl);
+	InstSelectionMerge(uint32 mergeBlockId, uint32 selectionControl);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstLabel: public InstBase {
@@ -1454,43 +1455,43 @@ public:
 
 	InstLabel();
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBranch : public InstBase {
 public:
-	unsigned int targetLabelId;
+	uint32 targetLabelId;
 
-	InstBranch(unsigned int targetLabelId);
+	InstBranch(uint32 targetLabelId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstBranchConditional : public InstBase {
 public:
-	unsigned int conditionId;
-	unsigned int trueLabelId;
-	unsigned int falseLabelId;
-	unsigned int trueWeight;
-	unsigned int falseWeight;
+	uint32 conditionId;
+	uint32 trueLabelId;
+	uint32 falseLabelId;
+	uint32 trueWeight;
+	uint32 falseWeight;
 
-	InstBranchConditional(unsigned int conditionId, unsigned int trueLabelId, unsigned int falseLabelId, unsigned int trueWeight, unsigned int falseWeight);
+	InstBranchConditional(uint32 conditionId, uint32 trueLabelId, uint32 falseLabelId, uint32 trueWeight, uint32 falseWeight);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 typedef unsigned long long SwitchPair;
 
 class InstSwitch : public InstBase {
 public:
-	unsigned int selectorId;
-	unsigned int defaultId;
-	unsigned int pairCount;
+	uint32 selectorId;
+	uint32 defaultId;
+	uint32 pairCount;
 	SwitchPair pairs[THC_LIMIT_OPSWITCH_PAIRS];
 
-	InstSwitch(unsigned int selectorId, unsigned int defaultId);
+	InstSwitch(uint32 selectorId, uint32 defaultId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 class InstKill : public InstBase {
@@ -1507,11 +1508,11 @@ public:
 
 class InstReturnValue : public InstBase {
 public:
-	unsigned int valueId;
+	uint32 valueId;
 
-	InstReturnValue(unsigned int valueId);
+	InstReturnValue(uint32 valueId);
 
-	void GetInstWords(unsigned int* words) const override;
+	void GetInstWords(uint32* words) const override;
 };
 
 //TODO: OpLifetimeStart, OpLifetimeStop

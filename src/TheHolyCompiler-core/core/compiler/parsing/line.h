@@ -24,6 +24,7 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
+#include <core/thctypes.h>
 
 namespace thc {
 namespace core {
@@ -33,11 +34,11 @@ class Line {
 public:
 	utils::String string;
 	utils::String sourceFile;
-	unsigned int lineNumber;
+	uint32 lineNumber;
 
 public:
 	Line();
-	Line(const utils::String& string, const utils::String& file, unsigned int line);
+	Line(const utils::String& string, const utils::String& file, uint32 line);
 	Line(const Line& other);
 	Line(Line&& other);
 

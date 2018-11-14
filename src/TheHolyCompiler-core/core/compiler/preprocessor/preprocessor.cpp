@@ -35,10 +35,10 @@ using namespace utils;
 using namespace parsing;
 
 void PreProcessor::RemoveComments(String& code) {
-	size_t index = 0;
+	uint64 index = 0;
 
 	while ((index = code.Find("/*")) != ~0) {
-		size_t next = code.Find("*/", index);
+		uint64 next = code.Find("*/", index);
 
 		if (next != ~0) {
 			code.Remove(index, next+1);
@@ -48,41 +48,41 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(size_t lineNumber) {
+void PreProcessor::ProcessInclude(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessDefine(size_t lineNumber) {
+void PreProcessor::ProcessDefine(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessUndef(size_t lineNumber) {
+void PreProcessor::ProcessUndef(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessIf(size_t lineNumber) {
+void PreProcessor::ProcessIf(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessDefined(size_t lineNumber) {
+void PreProcessor::ProcessDefined(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessIfdef(size_t lineNumber) {
+void PreProcessor::ProcessIfdef(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessMessage(size_t lineNumber) {
+void PreProcessor::ProcessMessage(uint64 lineNumber) {
 
 }
 
-void PreProcessor::ProcessError(size_t lineNumber) {
+void PreProcessor::ProcessError(uint64 lineNumber) {
 
 }
 
 void PreProcessor::Process() {
 
-	for (size_t i = 0; i < lines.GetCount(); i++) {
+	for (uint64 i = 0; i < lines.GetCount(); i++) {
 		const Line& line = lines[i];
 
 	}
@@ -92,7 +92,7 @@ void PreProcessor::Process() {
 PreProcessor::PreProcessor(String code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) : fileName(fileName), includeDirectories(includeDirs) {
 	this->defines.Reserve(defines.GetCount());
 
-	for (size_t i = 0; i < defines.GetCount(); i++) {
+	for (uint64 i = 0; i < defines.GetCount(); i++) {
 		this->defines.Emplace(defines[i], "");
 	}
 

@@ -38,7 +38,7 @@ String Utils::ReadFile(const String& filename) {
 		return String("");
 	}
 
-	size_t len = ftell(file);
+	uint64 len = ftell(file);
 
 	char* data = new char[len+1];
 	data[len] = 0;

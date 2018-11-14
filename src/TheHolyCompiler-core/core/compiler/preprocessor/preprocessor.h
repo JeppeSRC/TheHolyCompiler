@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <util/string.h>
 #include <core/compiler/parsing/line.h>
+#include <core/thctypes.h>
 
 namespace thc {
 namespace core {
@@ -60,14 +61,14 @@ private:
 	utils::String FindFile(const utils::String& fileName);
 
 	void RemoveComments(utils::String& code);
-	void ProcessInclude(size_t lineNumber);
-	void ProcessDefine(size_t lineNumber);
-	void ProcessUndef(size_t lineNumber);
-	void ProcessIf(size_t lineNumber);
-	void ProcessDefined(size_t lineNumber);
-	void ProcessIfdef(size_t lineNumber);
-	void ProcessMessage(size_t lineNumber);
-	void ProcessError(size_t lineNumber);
+	void ProcessInclude(uint64 lineNumber);
+	void ProcessDefine(uint64 lineNumber);
+	void ProcessUndef(uint64 lineNumber);
+	void ProcessIf(uint64 lineNumber);
+	void ProcessDefined(uint64 lineNumber);
+	void ProcessIfdef(uint64 lineNumber);
+	void ProcessMessage(uint64 lineNumber);
+	void ProcessError(uint64 lineNumber);
 	void Process();
 
 private:
