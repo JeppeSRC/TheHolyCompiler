@@ -35,6 +35,7 @@ class Utils {
 public:
 	static void CopyString(char*& dst, const char* const src);
 	static String GetPathFromFile(const String& filepath);
+	static unsigned int FindLine(const String& string, size_t index);
 	
 	static String ReadFile(const String& filename);
 

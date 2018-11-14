@@ -47,5 +47,19 @@ String Utils::GetPathFromFile(const String& filepath) {
 	return filepath.SubString(0, filepath.FindReversed("/"));
 }
 
+unsigned int Utils::FindLine(const String& string, size_t index) {
+	unsigned int line = 1;
+	size_t curr = 0;
+
+	while ((curr = string.Find("\n", curr+1)) != ~0) {
+		if (curr > index)
+			break;
+
+		line++;
+	}
+
+	return line;
+}
+
 }
 }

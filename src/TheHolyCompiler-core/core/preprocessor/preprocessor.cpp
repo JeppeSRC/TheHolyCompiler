@@ -34,20 +34,6 @@ namespace preprocessor {
 using namespace utils;
 using namespace parsing;
 
-unsigned int FindLine(const String& string, size_t index) {
-	unsigned int line = 1;
-	size_t curr = 0;
-
-	while ((curr = string.Find("\n", curr+1)) != ~0) {
-		if (curr > index)
-			break;
-
-		line++;
-	}
-
-	return line;
-}
-
 void PreProcessor::RemoveComments(String& code) {
 	size_t index = 0;
 
@@ -57,7 +43,7 @@ void PreProcessor::RemoveComments(String& code) {
 		if (next != ~0) {
 			code.Remove(index, next+1);
 		} else {
-			Log::CompilerError(fileName.str, FindLine(code, index) , "Multiline comment is missing end");
+			Log::CompilerError(fileName.str, Utils::FindLine(code, index) , "Multiline comment is missing end");
 		}
 	}
 }
