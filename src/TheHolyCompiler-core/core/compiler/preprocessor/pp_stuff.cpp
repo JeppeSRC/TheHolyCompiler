@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include "preprocessor.h"
 #include <util/log.h>
+#include <util/utils.h>
 #include <stdio.h>
 
 namespace thc {
@@ -32,7 +33,20 @@ namespace preprocessor {
 
 using namespace utils;
 
-String PreProcessor::FindFile(const String& fileName) {
+String PreProcessor::FindFile(const String& fileName, String parentDir) {
+	parentDir.Append(fileName);
+
+	if (includedFiles.Find(parentDir) != ~0) {
+		return "AlreadyIncluded";
+	}
+
+	FILE* f = fopen(parentDir.str, "rb");
+
+	if (f != nullptr) {
+		fclose(f);
+		return parentDir;
+	}
+
 	for (uint64 i = 0; i < includeDirectories.GetCount(); i++) {
 		String path = includeDirectories[i];
 		
@@ -46,13 +60,15 @@ String PreProcessor::FindFile(const String& fileName) {
 			return "AlreadyIncluded";
 		}
 
-		FILE* f = fopen(path.str, "rb");
+		f = fopen(path.str, "rb");
 
-		if (!f) {
+		if (f != nullptr) {
 			continue;
 		}
 
 		fclose(f);
+
+		includedFiles.Add(path);
 
 		return path;
 	}
