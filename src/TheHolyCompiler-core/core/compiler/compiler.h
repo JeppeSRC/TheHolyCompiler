@@ -27,7 +27,7 @@ SOFTWARE.
 #include <util/string.h>
 #include <util/utils.h>
 #include <util/list.h>
-#include <core/parsing/line.h>
+#include <core/compiler/parsing/line.h>
 
 namespace thc {
 namespace core {

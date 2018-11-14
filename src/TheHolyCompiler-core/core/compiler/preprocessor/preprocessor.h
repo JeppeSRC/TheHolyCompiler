@@ -25,7 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <core/parsing/line.h>
+#include <core/compiler/parsing/line.h>
 
 namespace thc {
 namespace core {

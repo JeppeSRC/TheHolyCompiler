@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <core/preprocessor/preprocessor.h>
-#include <core/parsing/line.h>
+#include <core/compiler/preprocessor/preprocessor.h>
+#include <core/compiler/parsing/line.h>
 #include <util/utils.h>
 #include <util/log.h>
 
