@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include "utils.h"
 #include <memory>
+#include <util/log.h>
 
 namespace thc {
 namespace utils {
@@ -33,6 +34,17 @@ void Utils::CopyString(char*& dst, const char* const src) {
 
 	dst = new char[len+1];
 	memcpy(dst, src, len);
+}
+
+String Utils::GetPathFromFile(const String& filepath) {
+	size_t folders = filepath.Count("/");
+
+	if (folders == 0) {
+		Log::Error("[Utils::GetPathFromFile] Invalid parameter");
+		return "";
+	}
+
+	return filepath.SubString(0, filepath.FindReversed("/"));
 }
 
 }

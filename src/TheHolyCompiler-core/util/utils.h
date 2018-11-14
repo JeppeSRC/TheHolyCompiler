@@ -24,6 +24,8 @@ SOFTWARE.
 
 #pragma once
 
+#define CLAMP(x, min, max) (x > max ? max : x < min ? min : x)
+
 #include "string.h"
 
 namespace thc {
@@ -32,6 +34,7 @@ namespace utils {
 class Utils {
 public:
 	static void CopyString(char*& dst, const char* const src);
+	static String GetPathFromFile(const String& filepath);
 	
 	static String ReadFile(const String& filename);
 
