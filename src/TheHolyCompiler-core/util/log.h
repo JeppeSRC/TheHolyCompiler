@@ -55,6 +55,7 @@ public:
 	static void Warning(const char* const message...);
 	static void Error(const char* const message...);
 
+	static void CompilerDebug(const char* const filename, int line, const char* const message...);
 	static void CompilerWarning(const char* const filename, int line, const char* const message...);
 	static void CompilerError(const char* const filename, int line, const char* const message...);
 

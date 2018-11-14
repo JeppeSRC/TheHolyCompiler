@@ -111,6 +111,19 @@ void Log::Error(const char* const message...) {
 	va_end(list);
 }
 
+void Log::CompilerDebug(const char* const filename, int line, const char* const message...) {
+#ifdef THC_DEBUG
+	char buf[2048] = { 0 };
+
+	sprintf(buf, "%s:%d -> %s", filename, line, message);
+
+	va_list list;
+	va_start(list, message);
+	LogInternal(LogLevel::Warning, buf, list);
+	va_end(list);
+#endif
+}
+
 void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
 	if (!warnings) return;
 	char buf[2048] = { 0 };
