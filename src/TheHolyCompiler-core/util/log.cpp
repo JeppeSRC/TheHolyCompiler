@@ -29,9 +29,12 @@ SOFTWARE.
 #define THC_LOG_COLOR_ERROR 0b00001100
 
 #include "log.h"
+#include <core/compiler/compiler.h>
 
 namespace thc {
 namespace utils {
+
+using namespace core::compiler;
 
 bool Log::warnings = true;
 bool Log::stopOnError = false;
@@ -112,7 +115,7 @@ void Log::Error(const char* const message...) {
 }
 
 void Log::CompilerDebug(const char* const filename, int line, const char* const message...) {
-#ifdef THC_DEBUG
+	if (!CompilerOptions::DebugMessages()) return;
 	char buf[2048] = { 0 };
 
 	sprintf(buf, "%s:%d -> %s", filename, line, message);
@@ -121,11 +124,10 @@ void Log::CompilerDebug(const char* const filename, int line, const char* const 
 	va_start(list, message);
 	LogInternal(LogLevel::Warning, buf, list);
 	va_end(list);
-#endif
 }
 
 void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
-	if (!warnings) return;
+	if (!CompilerOptions::WarningMessages()) return;
 	char buf[2048] = { 0 };
 
 	sprintf(buf, "%s:%d -> %s", filename, line, message);
@@ -146,7 +148,7 @@ void Log::CompilerError(const char* const filename, int line, const char* const 
 	LogInternal(LogLevel::Error, buf, list);
 	va_end(list);
 
-	if (stopOnError) {
+	if (CompilerOptions::StopOnError()) {
 		//TODO: handle error
 	}
 }
@@ -160,13 +162,6 @@ void Log::SetLogCallback(LogCallback logCallback) {
 	Log::logCallback = logCallback;
 }
 
-void Log::DisableWarnings() {
-	warnings = false;
-}
-
-void Log::EnableStopOnError() {
-	stopOnError = true;
-}
 
 }
 }
