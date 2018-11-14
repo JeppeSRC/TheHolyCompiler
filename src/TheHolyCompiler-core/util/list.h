@@ -328,7 +328,7 @@ public:
 	/*Finds the item*/
 	inline uint64 Find(const T& item) const {
 		for (uint64 i = 0; i < count; i++) {
-			if (items[i] == count) return i;
+			if (items[i] == item) return i;
 		}
 
 		return ~0;
