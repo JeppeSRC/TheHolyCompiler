@@ -43,7 +43,7 @@ String PreProcessor::FindFile(const String& fileName) {
 		}
 
 		if (includedFiles.Find(path) != ~0) {
-			return "";
+			return "AlreadyIncluded";
 		}
 
 		FILE* f = fopen(path.str, "rb");
@@ -57,7 +57,7 @@ String PreProcessor::FindFile(const String& fileName) {
 		return path;
 	}
 
-	return "";
+	return "NotFound";
 }
 
 bool PreProcessor::IsDefined(const String& name) {
