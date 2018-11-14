@@ -48,35 +48,35 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(size_t line) {
+void PreProcessor::ProcessInclude(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessDefine(size_t line) {
+void PreProcessor::ProcessDefine(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessUndef(size_t line) {
+void PreProcessor::ProcessUndef(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessIf(size_t line) {
+void PreProcessor::ProcessIf(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessDefined(size_t line) {
+void PreProcessor::ProcessDefined(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessIfdef(size_t line) {
+void PreProcessor::ProcessIfdef(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessMessage(size_t line) {
+void PreProcessor::ProcessMessage(size_t lineNumber) {
 
 }
 
-void PreProcessor::ProcessError(size_t line) {
+void PreProcessor::ProcessError(size_t lineNumber) {
 
 }
 

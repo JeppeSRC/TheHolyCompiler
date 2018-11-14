@@ -60,14 +60,14 @@ private:
 	utils::String FindFile(const utils::String& fileName);
 
 	void RemoveComments(utils::String& code);
-	void ProcessInclude(size_t line);
-	void ProcessDefine(size_t line);
-	void ProcessUndef(size_t line);
-	void ProcessIf(size_t line);
-	void ProcessDefined(size_t line);
-	void ProcessIfdef(size_t line);
-	void ProcessMessage(size_t line);
-	void ProcessError(size_t line);
+	void ProcessInclude(size_t lineNumber);
+	void ProcessDefine(size_t lineNumber);
+	void ProcessUndef(size_t lineNumber);
+	void ProcessIf(size_t lineNumber);
+	void ProcessDefined(size_t lineNumber);
+	void ProcessIfdef(size_t lineNumber);
+	void ProcessMessage(size_t lineNumber);
+	void ProcessError(size_t lineNumber);
 	void Process();
 
 private:
