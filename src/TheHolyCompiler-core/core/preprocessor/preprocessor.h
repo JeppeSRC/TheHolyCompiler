@@ -32,7 +32,7 @@ namespace core {
 namespace preprocessor {
 
 class PreProcessor {
-public:
+private:
 	struct Define {
 		utils::String name;
 		utils::String value;
@@ -49,15 +49,14 @@ public:
 	};
 
 private:
-	static utils::List<utils::String> includeDirectories;
-	static utils::List<Define> predefinedDefines;
-
-	static utils::String FindFile(const utils::String& fileName);
-	static bool IsDefined(const utils::String& name);
-
-private:
 	utils::String fileName;
 	utils::List<parsing::Line> lines;
+
+	utils::List<Define> defines;
+	utils::List<utils::String> includeDirectories;
+
+	bool IsDefined(const utils::String& name);
+	utils::String FindFile(const utils::String& fileName);
 
 	void RemoveComments(utils::String& code);
 	void ProcessInclude(size_t line);
@@ -71,18 +70,11 @@ private:
 	void Process();
 
 private:
-	PreProcessor(utils::String code, const utils::String& fileName);
+	PreProcessor(utils::String code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
 
 public:
-	static utils::String Run(const utils::String& code, const utils::String& fileName);
-	static utils::String Run(const utils::String& fileName);
-
-	static inline void SetIncludeDirectories(const utils::List<utils::String>& dirs) { includeDirectories = dirs; }
-	static inline void SetDefinitions(const utils::List<Define>& defs) { predefinedDefines = defs; }
-
-	static inline void AddIncludeDirectory(const utils::String& path) { includeDirectories.Add(path); }
-	static inline void AddDefine(const Define& def) { predefinedDefines.Add(def); }
-
+	static utils::String Run(const utils::String& code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
+	static utils::String Run(const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
 };
 
 }

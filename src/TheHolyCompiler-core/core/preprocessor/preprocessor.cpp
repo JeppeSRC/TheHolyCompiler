@@ -89,22 +89,28 @@ void PreProcessor::Process() {
 
 }
 
-PreProcessor::PreProcessor(String code, const String& fileName) : fileName(fileName) {
+PreProcessor::PreProcessor(String code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) : fileName(fileName), includeDirectories(includeDirs) {
+	this->defines.Reserve(defines.GetCount());
+
+	for (size_t i = 0; i < defines.GetCount(); i++) {
+		this->defines.Emplace(defines[i], "");
+	}
+
 	RemoveComments(code);
 
 	lines = Line::GetLinesFromString(code, fileName);
 }
 
-String PreProcessor::Run(const String& code, const String& fileName) {
-	PreProcessor pp(code, fileName);
+String PreProcessor::Run(const String& code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
+	PreProcessor pp(code, fileName, defines, includeDirs);
 	
 	pp.Process();
 
 	return Line::ToString(pp.lines);
 }
 
-String PreProcessor::Run(const String& fileName) {
-	return Run(Utils::ReadFile(fileName), fileName);
+String PreProcessor::Run(const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
+	return Run(Utils::ReadFile(fileName), fileName, defines, includeDirs);
 }
 
 
