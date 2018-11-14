@@ -102,10 +102,17 @@ void PreProcessor::ProcessError(uint64 index) {
 void PreProcessor::Process() {
 
 	for (uint64 i = 0; i < lines.GetCount(); i++) {
-		const Line& line = lines[i];
-
+		const Line& l = lines[i];
+		const String& line = l.string;
+		
+		if (line.Find("#include ") != ~0) {
+			ProcessInclude(i--);
+		} else if (line.Find("#define ") != ~0) {
+			ProcessDefine(i--);
+		} else if (line.Find("#undef ") != ~0) {
+			ProcessUndef(i--);
+		} 
 	}
-
 }
 
 PreProcessor::PreProcessor(String code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) : fileName(fileName), includeDirectories(includeDirs) {
