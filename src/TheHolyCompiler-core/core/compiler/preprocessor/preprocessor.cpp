@@ -57,7 +57,7 @@ void PreProcessor::ProcessInclude(uint64 index) {
 
 	String file = line.SubString(firstBracket+1, secondBracket-1);
 
-	String fullPath = FindFile(file);
+	String fullPath = FindFile(file, Utils::GetPathFromFile(fileName));
 
 	if (fullPath == "AlreadyIncluded") {
 		Log::CompilerDebug(fileName.str, l.lineNumber, "File \"%s\" has already been included", fullPath.str);
