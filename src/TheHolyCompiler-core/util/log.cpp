@@ -36,9 +36,6 @@ namespace utils {
 
 using namespace core::compiler;
 
-bool Log::warnings = true;
-bool Log::stopOnError = false;
-
 HANDLE Log::logHandle = INVALID_HANDLE_VALUE;
 LogCallback Log::logCallback = nullptr;
 
