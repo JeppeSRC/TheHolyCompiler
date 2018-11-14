@@ -48,35 +48,35 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(uint64 lineNumber) {
+void PreProcessor::ProcessInclude(uint64 index) {
 
 }
 
-void PreProcessor::ProcessDefine(uint64 lineNumber) {
+void PreProcessor::ProcessDefine(uint64 index) {
 
 }
 
-void PreProcessor::ProcessUndef(uint64 lineNumber) {
+void PreProcessor::ProcessUndef(uint64 index) {
 
 }
 
-void PreProcessor::ProcessIf(uint64 lineNumber) {
+void PreProcessor::ProcessIf(uint64 index) {
 
 }
 
-void PreProcessor::ProcessDefined(uint64 lineNumber) {
+void PreProcessor::ProcessDefined(uint64 index) {
 
 }
 
-void PreProcessor::ProcessIfdef(uint64 lineNumber) {
+void PreProcessor::ProcessIfdef(uint64 index) {
 
 }
 
-void PreProcessor::ProcessMessage(uint64 lineNumber) {
+void PreProcessor::ProcessMessage(uint64 index) {
 
 }
 
-void PreProcessor::ProcessError(uint64 lineNumber) {
+void PreProcessor::ProcessError(uint64 index) {
 
 }
 
