@@ -35,6 +35,7 @@ namespace thc {
 namespace utils {
 
 using namespace core::compiler;
+using namespace core::parsing;
 
 HANDLE Log::logHandle = INVALID_HANDLE_VALUE;
 LogCallback Log::logCallback = nullptr;
@@ -111,38 +112,65 @@ void Log::Error(const char* const message...) {
 	va_end(list);
 }
 
-void Log::CompilerDebug(const char* const filename, int line, const char* const message...) {
-	if (!CompilerOptions::DebugMessages()) return;
+void Log::CompilerLog(LogLevel level, const char* filename, int line, const char* message, va_list args) {
 	char buf[2048] = { 0 };
 
 	sprintf(buf, "%s:%d -> %s", filename, line, message);
 
+	LogInternal(level, buf, args);
+}
+
+void Log::CompilerDebug(const char* const filename, int line, const char* const message...) {
+	if (!CompilerOptions::DebugMessages()) return;
+
 	va_list list;
 	va_start(list, message);
-	LogInternal(LogLevel::Warning, buf, list);
+	CompilerLog(LogLevel::Debug, filename, line, message, list);
 	va_end(list);
 }
 
 void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
 	if (!CompilerOptions::WarningMessages()) return;
-	char buf[2048] = { 0 };
-
-	sprintf(buf, "%s:%d -> %s", filename, line, message);
 	
 	va_list list;
 	va_start(list, message);
-	LogInternal(LogLevel::Warning, buf, list);
+	CompilerLog(LogLevel::Warning, filename, line, message, list);
 	va_end(list);
 }
 
 void Log::CompilerError(const char* const filename, int line, const char* const message...) {
-	char buf[2048] = { 0 };
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Error, filename, line, message, list);
+	va_end(list);
 
-	sprintf(buf, "%s:%d -> %s", filename, line, message);
+	if (CompilerOptions::StopOnError()) {
+		//TODO: handle error
+	}
+}
+
+void Log::CompilerDebug(const Line& line, const char* const message...) {
+	if (!CompilerOptions::DebugMessages()) return;
 
 	va_list list;
 	va_start(list, message);
-	LogInternal(LogLevel::Error, buf, list);
+	CompilerLog(LogLevel::Debug, line.sourceFile.str, line.lineNumber, message, list);
+	va_end(list);
+}
+
+void Log::CompilerWarning(const Line& line, const char* const message...) {
+	if (!CompilerOptions::WarningMessages()) return;
+
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Warning, line.sourceFile.str, line.lineNumber, message, list);
+	va_end(list);
+}
+
+void Log::CompilerError(const Line& line, const char* const message...) {
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Error, line.sourceFile.str, line.lineNumber, message, list);
 	va_end(list);
 
 	if (CompilerOptions::StopOnError()) {
