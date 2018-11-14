@@ -48,64 +48,50 @@ public:
 
 	};
 
-	struct CodeUnit {
-		utils::List<parsing::Line> lines;
-
-		utils::List<Define> defines;
-		utils::List<utils::String> includes;
-
-		CodeUnit() {}
-		CodeUnit(const CodeUnit& other);
-		CodeUnit(const CodeUnit* other);
-		CodeUnit(CodeUnit&& other);
-
-		CodeUnit& operator=(const CodeUnit& other);
-		CodeUnit& operator=(CodeUnit&& other);
-	};
-
 private:
 	static utils::List<utils::String> includeDirectories;
-	static utils::List<Define> defines;
+	static utils::List<Define> predefinedDefines;
 
 	static utils::String FindFile(const utils::String& fileName);
 	static bool IsDefined(const utils::String& name);
 
 private:
-	utils::String code;
 	utils::String fileName;
+
+	utils::List<parsing::Line> lines;
 
 	void RemoveComments(utils::String& code);
 
-	void ProcessInclude(utils::List<parsing::Line>& lines);
+	void ProcessInclude(size_t line);
 
-	void ProcessDefine(utils::List<parsing::Line>& lines);
+	void ProcessDefine(size_t line);
 
-	void ProcessUndef(utils::List<parsing::Line>& lines);
+	void ProcessUndef(size_t line);
 
-	void ProcessIf(utils::List<parsing::Line>& lines);
+	void ProcessIf(size_t line);
 
-	void ProcessDefined(utils::List<parsing::Line>& lines);
+	void ProcessDefined(size_t line);
 
-	void ProcessIfdef(utils::List<parsing::Line>& lines);
+	void ProcessIfdef(size_t line);
 
-	void ProcessMessage(utils::List<parsing::Line>& lines);
+	void ProcessMessage(size_t line);
 
-	void ProcessError(utils::List<parsing::Line>& lines);
+	void ProcessError(size_t line);
 
-	CodeUnit Process();
+	void Process();
 
 private:
-	PreProcessor(const utils::String& code, const utils::String& fileName);
+	PreProcessor(utils::String code, const utils::String& fileName);
 
 public:
 	static utils::String Run(const utils::String& code, const utils::String& fileName);
 	static utils::String Run(const utils::String& fileName);
 
 	static inline void SetIncludeDirectories(const utils::List<utils::String>& dirs) { includeDirectories = dirs; }
-	static inline void SetDefinitions(const utils::List<Define>& defs) { defines = defs; }
+	static inline void SetDefinitions(const utils::List<Define>& defs) { predefinedDefines = defs; }
 
 	static inline void AddIncludeDirectory(const utils::String& path) { includeDirectories.Add(path); }
-	static inline void AddDefine(const Define& def) { defines.Add(def); }
+	static inline void AddDefine(const Define& def) { predefinedDefines.Add(def); }
 
 };
 

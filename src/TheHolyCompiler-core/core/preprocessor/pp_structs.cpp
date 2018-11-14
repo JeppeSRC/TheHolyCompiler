@@ -56,46 +56,6 @@ PreProcessor::Define& PreProcessor::Define::operator=(PreProcessor::Define&& oth
 	return *this;
 }
 
-
-
-PreProcessor::CodeUnit::CodeUnit(const PreProcessor::CodeUnit& other) {
-	lines = other.lines;
-	defines = other.defines;
-	includes = other.includes;
-}
-
-PreProcessor::CodeUnit::CodeUnit(const PreProcessor::CodeUnit* other) {
-	lines = other->lines;
-	defines = other->defines;
-	includes = other->includes;
-}
-
-PreProcessor::CodeUnit::CodeUnit(PreProcessor::CodeUnit&& other) {
-	lines = std::move(other.lines);
-	defines = std::move(other.defines);
-	includes = std::move(other.includes);
-}
-
-PreProcessor::CodeUnit& PreProcessor::CodeUnit::operator=(const PreProcessor::CodeUnit& other) {
-	if (this != &other) {
-		lines = other.lines;
-		defines = other.defines;
-		includes = other.includes;
-	}
-
-	return *this;
-}
-
-PreProcessor::CodeUnit& PreProcessor::CodeUnit::operator=(PreProcessor::CodeUnit&& other) {
-	if (this != &other) {
-		lines = std::move(other.lines);
-		defines = std::move(other.defines);
-		includes = std::move(other.includes);
-	}
-
-	return *this;
-}
-
 }
 }
 }

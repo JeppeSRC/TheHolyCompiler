@@ -48,61 +48,59 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(List<parsing::Line>& lines) {
+void PreProcessor::ProcessInclude(size_t line) {
 
 }
 
-void PreProcessor::ProcessDefine(List<parsing::Line>& lines) {
+void PreProcessor::ProcessDefine(size_t line) {
 
 }
 
-void PreProcessor::ProcessUndef(List<parsing::Line>& lines) {
+void PreProcessor::ProcessUndef(size_t line) {
 
 }
 
-void PreProcessor::ProcessIf(List<parsing::Line>& lines) {
+void PreProcessor::ProcessIf(size_t line) {
 
 }
 
-void PreProcessor::ProcessDefined(List<parsing::Line>& lines) {
+void PreProcessor::ProcessDefined(size_t line) {
 
 }
 
-void PreProcessor::ProcessIfdef(List<parsing::Line>& lines) {
+void PreProcessor::ProcessIfdef(size_t line) {
 
 }
 
-void PreProcessor::ProcessMessage(List<parsing::Line>& lines) {
+void PreProcessor::ProcessMessage(size_t line) {
 
 }
 
-void PreProcessor::ProcessError(List<parsing::Line>& lines) {
+void PreProcessor::ProcessError(size_t line) {
 
 }
 
-PreProcessor::CodeUnit PreProcessor::Process() {
-	CodeUnit d;
-
-	List<Line> lines = Line::GetLinesFromString(code, fileName);
+void PreProcessor::Process() {
 
 	for (size_t i = 0; i < lines.GetCount(); i++) {
 		const Line& line = lines[i];
 
 	}
 
-	return d;
 }
 
-PreProcessor::PreProcessor(const String& code, const String& fileName) : code(code), fileName(fileName) {
-	RemoveComments(this->code);
+PreProcessor::PreProcessor(String code, const String& fileName) : fileName(fileName) {
+	RemoveComments(code);
+
+	lines = Line::GetLinesFromString(code, fileName);
 }
 
 String PreProcessor::Run(const String& code, const String& fileName) {
 	PreProcessor pp(code, fileName);
 	
-	CodeUnit cu = pp.Process();
+	pp.Process();
 
-	return Line::ToString(cu.lines);
+	return Line::ToString(pp.lines);
 }
 
 String PreProcessor::Run(const String& fileName) {
