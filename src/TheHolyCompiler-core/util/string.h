@@ -67,6 +67,10 @@ public:
 	size_t Find(const String& string, size_t offset = 0) const;
 	size_t Find(const char* const string, size_t offset = 0) const;
 
+	//Finds the index of the string, if it exist (Starting from the end)
+	size_t FindReversed(const String& string, size_t offset = 0) const;
+	size_t FindReversed(const char* const string, size_t offset = 0) const;
+
 	//Tests if the string starts with string
 	bool StartsWith(const String& string) const;
 	bool StartsWith(const char* const string) const;

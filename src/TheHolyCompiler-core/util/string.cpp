@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include "string.h"
 #include "thc_assert.h"
+#include "utils.h"
 
 namespace thc {
 namespace utils {
@@ -179,6 +180,37 @@ size_t String::Find(const char* const string, size_t offset) const {
 		}
 	}
 	
+	return ~0;
+}
+
+size_t String::FindReversed(const String& string, size_t offset) const {
+	return FindReversed(string.str, offset);
+}
+
+size_t String::FindReversed(const char* const string, size_t offset) const {
+	THC_ASSERT(string != nullptr);
+	size_t len = strlen(string);
+
+	offset = CLAMP(offset, len-1, length - len);
+
+	if (offset == 0) {
+		offset = length-len;
+	}
+
+	for (size_t i = offset; i >= 0; i--) {
+		bool match = true;
+		for (size_t j = 0; j < len; j++) {
+			if (str[i + j] != string[j]) {
+				match = false;
+				break;
+			}
+		}
+
+		if (match) {
+			return i;
+		}
+	}
+
 	return ~0;
 }
 
