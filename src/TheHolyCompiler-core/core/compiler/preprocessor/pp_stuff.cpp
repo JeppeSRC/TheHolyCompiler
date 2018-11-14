@@ -56,8 +56,8 @@ String PreProcessor::FindFile(const String& fileName) {
 }
 
 bool PreProcessor::IsDefined(const String& name) {
-	for (size_t i = 0; i < predefinedDefines.GetCount(); i++) {
-		if (predefinedDefines[i].name == name) return true;
+	for (size_t i = 0; i < defines.GetCount(); i++) {
+		if (defines[i].name == name) return true;
 	}
 
 	return false;
