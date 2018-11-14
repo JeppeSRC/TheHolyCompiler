@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #include "preprocessor.h"
+#include <util/log.h>
 #include <stdio.h>
 
 namespace thc {
@@ -39,6 +40,10 @@ String PreProcessor::FindFile(const String& fileName) {
 			path.Append(fileName);
 		} else {
 			path.Append("/").Append(fileName);
+		}
+
+		if (includedFiles.Find(path) != ~0) {
+			return "";
 		}
 
 		FILE* f = fopen(path.str, "rb");

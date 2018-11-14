@@ -53,6 +53,7 @@ private:
 	utils::List<parsing::Line> lines;
 
 	utils::List<Define> defines;
+	utils::List<utils::String> includedFiles;
 	utils::List<utils::String> includeDirectories;
 
 	bool IsDefined(const utils::String& name);
