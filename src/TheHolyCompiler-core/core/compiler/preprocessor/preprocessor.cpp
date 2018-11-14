@@ -49,7 +49,26 @@ void PreProcessor::RemoveComments(String& code) {
 }
 
 void PreProcessor::ProcessInclude(uint64 index) {
+	const Line& l = lines[index];
+	const String& line = l.string;
 
+	uint64 firstBracket = line.Find("<");
+	uint64 secondBracket = line.Find(">", firstBracket+1);
+
+	String file = line.SubString(firstBracket+1, secondBracket-1);
+
+	String fullPath = FindFile(file);
+
+	if (fullPath == "AlreadyIncluded") {
+		Log::CompilerDebug(fileName.str, l.lineNumber, "File \"%s\" has already been included", fullPath.str);
+		return;
+	} else if (fullPath == "NotFound") {
+		Log::CompilerError(fileName.str, l.lineNumber, "File \"%s\" not found", file.str);
+		return;
+	}
+
+	lines.RemoveAt(index);
+	lines.InsertList(index, Line::GetLinesFromFile(fullPath));
 }
 
 void PreProcessor::ProcessDefine(uint64 index) {
