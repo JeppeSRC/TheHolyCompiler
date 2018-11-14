@@ -48,7 +48,7 @@ void PreProcessor::RemoveComments(String& code) {
 	}
 }
 
-void PreProcessor::ProcessInclude(uint64 index) {
+void PreProcessor::ProcessInclude(uint64& index) {
 	const Line& l = lines[index];
 	const String& line = l.string;
 
@@ -69,33 +69,35 @@ void PreProcessor::ProcessInclude(uint64 index) {
 
 	lines.RemoveAt(index);
 	lines.InsertList(index, Line::GetLinesFromFile(fullPath));
+
+	index--;
 }
 
-void PreProcessor::ProcessDefine(uint64 index) {
-
-}
-
-void PreProcessor::ProcessUndef(uint64 index) {
-
-}
-
-void PreProcessor::ProcessIf(uint64 index) {
+void PreProcessor::ProcessDefine(uint64& index) {
 
 }
 
-void PreProcessor::ProcessDefined(uint64 index) {
+void PreProcessor::ProcessUndef(uint64& index) {
 
 }
 
-void PreProcessor::ProcessIfdef(uint64 index) {
+void PreProcessor::ProcessIf(uint64& index) {
 
 }
 
-void PreProcessor::ProcessMessage(uint64 index) {
+void PreProcessor::ProcessDefined(uint64& index) {
 
 }
 
-void PreProcessor::ProcessError(uint64 index) {
+void PreProcessor::ProcessIfdef(uint64& index) {
+
+}
+
+void PreProcessor::ProcessMessage(uint64& index) {
+
+}
+
+void PreProcessor::ProcessError(uint64& index) {
 
 }
 
@@ -106,11 +108,11 @@ void PreProcessor::Process() {
 		const String& line = l.string;
 		
 		if (line.Find("#include ") != ~0) {
-			ProcessInclude(i--);
+			ProcessInclude(i);
 		} else if (line.Find("#define ") != ~0) {
-			ProcessDefine(i--);
+			ProcessDefine(i);
 		} else if (line.Find("#undef ") != ~0) {
-			ProcessUndef(i--);
+			ProcessUndef(i);
 		} 
 	}
 }

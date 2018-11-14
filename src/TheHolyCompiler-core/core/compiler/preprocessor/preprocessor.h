@@ -61,14 +61,14 @@ private:
 	utils::String FindFile(const utils::String& fileName, utils::String parentDir);
 
 	void RemoveComments(utils::String& code);
-	void ProcessInclude(uint64 index);
-	void ProcessDefine(uint64 index);
-	void ProcessUndef(uint64 index);
-	void ProcessIf(uint64 index);
-	void ProcessDefined(uint64 index);
-	void ProcessIfdef(uint64 index);
-	void ProcessMessage(uint64 index);
-	void ProcessError(uint64 index);
+	void ProcessInclude(uint64& index);
+	void ProcessDefine(uint64& index);
+	void ProcessUndef(uint64& index);
+	void ProcessIf(uint64& index);
+	void ProcessDefined(uint64& index);
+	void ProcessIfdef(uint64& index);
+	void ProcessMessage(uint64& index);
+	void ProcessError(uint64& index);
 	void Process();
 
 private:
