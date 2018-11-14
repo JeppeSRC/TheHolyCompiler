@@ -57,27 +57,17 @@ private:
 
 private:
 	utils::String fileName;
-
 	utils::List<parsing::Line> lines;
 
 	void RemoveComments(utils::String& code);
-
 	void ProcessInclude(size_t line);
-
 	void ProcessDefine(size_t line);
-
 	void ProcessUndef(size_t line);
-
 	void ProcessIf(size_t line);
-
 	void ProcessDefined(size_t line);
-
 	void ProcessIfdef(size_t line);
-
 	void ProcessMessage(size_t line);
-
 	void ProcessError(size_t line);
-
 	void Process();
 
 private:
