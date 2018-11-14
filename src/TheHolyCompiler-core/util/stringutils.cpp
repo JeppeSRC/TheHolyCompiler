@@ -26,6 +26,8 @@ SOFTWARE.
 #include <memory>
 #include <util/log.h>
 
+
+
 namespace thc {
 namespace utils {
 
@@ -59,6 +61,16 @@ uint32 Utils::FindLine(const String& string, uint64 index) {
 	}
 
 	return line;
+}
+
+
+void Utils::RemoveWhiteSpace(String& string) {
+#define REM_THING(x) while ((index = string.Find(" ", index)) != ~0) { string.Remove(index, index); } index = 0;
+	
+	uint64 index = 0;
+
+	REM_THING(" ");
+	REM_THING("\t");
 }
 
 }

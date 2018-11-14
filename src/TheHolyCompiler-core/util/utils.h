@@ -36,6 +36,7 @@ public:
 	static void CopyString(char*& dst, const char* const src);
 	static String GetPathFromFile(const String& filepath);
 	static uint32 FindLine(const String& string, uint64 index);
+	static void RemoveWhiteSpace(String& string);
 	
 	static String ReadFile(const String& filename);
 
