@@ -100,7 +100,23 @@ void PreProcessor::ProcessDefine(uint64& index) {
 }
 
 void PreProcessor::ProcessUndef(uint64& index) {
+	const Line& l = lines[index];
+	String& line = lines[index].string;
 
+	uint64 nameStart = line.Find("#undef")+6;
+
+	String name = line.SubString(nameStart, line.length-1);
+	Utils::RemoveWhiteSpace(name);
+
+	uint64 index = IsDefined(name);
+
+	if (index != ~0) {
+		defines.RemoveAt(index);
+	} else {
+		Log::CompilerWarning(l, "No macro \"%s\" is not defined");
+	}
+
+	lines.RemoveAt(index--);
 }
 
 void PreProcessor::ProcessIf(uint64& index) {
