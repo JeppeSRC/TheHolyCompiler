@@ -97,6 +97,10 @@ uint64 Utils::StringToUint64(const char* string) {
 				if (!(string[i] >= '0' && string[i] <= '1')) {
 					return i;
 				}
+			} else if (base == 8) {
+				if (!(string[i] >= '0' && string[i] <= '7')) {
+					return i;
+				}
 			} else if (base == 10) {
 				if (!(string[i] >= '0' && string[i] <= '9')) {
 					return i;
@@ -170,11 +174,15 @@ uint64 Utils::StringToUint64(const char* string) {
 	if (string[0] == '0') {
 		if (string[1] == 'x' || string[1] == 'X') {
 			base = 16;
+			string += 2;
 		} else if (string[1] == 'b' || string[1] == 'B') {
 			base = 2;
+			string += 2;
+		} else {
+			base = 8;
+			string++;
 		}
 
-		string += 2;
 	} 
 
 	uint64 len = FindLength(string, base);
