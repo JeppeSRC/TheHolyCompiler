@@ -25,7 +25,7 @@ SOFTWARE.
 #include "utils.h"
 #include <memory>
 #include <util/log.h>
-
+#include <math.h>
 
 
 namespace thc {
@@ -88,6 +88,104 @@ uint64 Utils::FindMatchingSymbol(const String& code, const char startSymbol, con
 	}
 
 	return ~0;
+}
+
+uint64 Utils::StringToUint64(const char* string) {
+	auto FindLength = [](const char* const string, int base) -> uint64 {
+		for (uint64 i = 0;; i++) {
+			if (base == 2) {
+				if (!(string[i] >= '0' && string[i] <= '1')) {
+					return i;
+				}
+			} else if (base == 10) {
+				if (!(string[i] >= '0' && string[i] <= '9')) {
+					return i;
+				}
+			} else if (base == 16) {
+				if (!((string[i] >= '0' && string[i] <= '9') || (string[i] >= 'a' && string[i] <= 'f') || (string[i] >= 'A' && string[i] <= 'F'))) {
+					return i;
+				}
+			}
+		}
+	};
+
+	auto GetValue = [](const char c) -> uint64 {
+		switch (c) {
+			case '0':
+				return 0;
+			case '1':
+				return 1;
+			case '2':
+				return 2;
+			case '3':
+				return 3;
+			case '4':
+				return 4;
+			case '5':
+				return 5;
+			case '6':
+				return 6;
+			case '7':
+				return 7;
+			case '8':
+				return 8;
+			case '9':
+				return 9;
+			case 'a':
+			case 'A':
+				return 10;
+			case 'b':
+			case 'B':
+				return 11;
+			case 'c':
+			case 'C':
+				return 12;
+			case 'd':
+			case 'D':
+				return 13;
+			case 'e':
+			case 'E':
+				return 14;
+			case 'f':
+			case 'F':
+				return 15;
+		}
+
+		return ~0;
+	};
+
+	uint64 value = 0;
+
+	bool sign = false;
+
+	if (string[0] == '-') {
+		sign = true;
+		string++;
+	} else if (string[0] == '+') {
+		string++;
+	}
+
+	int base = 10;
+
+	if (string[0] == '0') {
+		if (string[1] == 'x' || string[1] == 'X') {
+			base = 16;
+		} else if (string[1] == 'b' || string[1] == 'B') {
+			base = 2;
+		}
+
+		string += 2;
+	} 
+
+	uint64 len = FindLength(string, base);
+
+	for (uint64 i = 0; i < len; i++) {
+		value += GetValue(string[len - i - 1]) * (uint64)pow(base, i);
+	}
+
+	if (sign) value |= (uint64)pow(2, 63);
+
+	return value;
 }
 
 }
