@@ -86,12 +86,12 @@ void PreProcessor::ProcessDefine(uint64& index) {
 
 	String value = line.SubString(nameEnd, line.length-1);
 
-	uint64 index = IsDefined(name);
+	uint64 defIndex = IsDefined(name);
 
-	if (index != ~0) {
+	if (defIndex != ~0) {
 		Log::CompilerWarning(l, "Macro redefinition \"%s\"", name.str);
 
-		defines[index].value = value;
+		defines[defIndex].value = value;
 	} else {
 		defines.Emplace(name, value);
 	}
@@ -108,10 +108,10 @@ void PreProcessor::ProcessUndef(uint64& index) {
 	String name = line.SubString(nameStart, line.length-1);
 	Utils::RemoveWhiteSpace(name);
 
-	uint64 index = IsDefined(name);
+	uint64 defIndex = IsDefined(name);
 
-	if (index != ~0) {
-		defines.RemoveAt(index);
+	if (defIndex != ~0) {
+		defines.RemoveAt(defIndex);
 	} else {
 		Log::CompilerWarning(l, "No macro \"%s\" is not defined");
 	}
@@ -151,7 +151,9 @@ void PreProcessor::Process() {
 			ProcessDefine(i);
 		} else if (line.Find("#undef ") != ~0) {
 			ProcessUndef(i);
-		} 
+		} else if (line.Find("#if ") != ~0) {
+			ProcessIf(i);
+		}
 	}
 }
 
