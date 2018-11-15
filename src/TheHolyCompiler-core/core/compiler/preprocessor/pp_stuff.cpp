@@ -76,18 +76,13 @@ String PreProcessor::FindFile(const String& fileName, String parentDir) {
 	return "NotFound";
 }
 
-bool PreProcessor::IsDefined(const String& name, const String& value) {
+uint64 PreProcessor::IsDefined(const String& name) {
 	uint64 index = defines.Find<String>(name, [](const Define& current, const String& name) -> bool {
 		if (current.name == name) return true;
 		return false;
 	});
-
-	if (index != ~0) {
-		defines[index].value = value;
-		return true;
-	}
-
-	return false;
+	
+	return index;
 }
 
 }

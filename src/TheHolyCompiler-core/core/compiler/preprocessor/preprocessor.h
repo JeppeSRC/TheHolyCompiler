@@ -57,7 +57,7 @@ private:
 	utils::List<utils::String> includedFiles;
 	utils::List<utils::String> includeDirectories;
 
-	bool IsDefined(const utils::String& name, const utils::String& value);
+	uint64 IsDefined(const utils::String& name);
 	utils::String FindFile(const utils::String& fileName, utils::String parentDir);
 
 	void RemoveComments(utils::String& code);

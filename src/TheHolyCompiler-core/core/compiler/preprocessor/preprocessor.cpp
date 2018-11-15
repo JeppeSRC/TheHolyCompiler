@@ -86,8 +86,12 @@ void PreProcessor::ProcessDefine(uint64& index) {
 
 	String value = line.SubString(nameEnd, line.length-1);
 
-	if (IsDefined(name, value)) {
+	uint64 index = IsDefined(name);
+
+	if (index != ~0) {
 		Log::CompilerWarning(l, "Macro redefinition \"%s\"", name.str);
+
+		defines[index].value = value;
 	} else {
 		defines.Emplace(name, value);
 	}
