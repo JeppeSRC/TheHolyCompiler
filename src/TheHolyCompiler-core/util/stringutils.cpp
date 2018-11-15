@@ -90,7 +90,7 @@ uint64 Utils::FindMatchingSymbol(const String& code, const char startSymbol, con
 	return ~0;
 }
 
-uint64 Utils::StringToUint64(const char* string) {
+uint64 Utils::StringToUint64(const char* string, uint64* length) {
 	auto FindLength = [](const char* const string, int base) -> uint64 {
 		for (uint64 i = 0;; i++) {
 			if (base == 2) {
@@ -191,7 +191,9 @@ uint64 Utils::StringToUint64(const char* string) {
 		value += GetValue(string[len - i - 1]) * (uint64)pow(base, i);
 	}
 
-	if (sign) value |= (uint64)pow(2, 63);
+	if (sign) value *= -1;
+
+	if (length) *length = len;
 
 	return value;
 }

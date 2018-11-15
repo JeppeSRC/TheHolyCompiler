@@ -38,7 +38,7 @@ public:
 	static uint32 FindLine(const String& string, uint64 index);
 	static void RemoveWhiteSpace(String& string);
 	static uint64 FindMatchingSymbol(const String& code, const char start, const char end);
-	static uint64 StringToUint64(const char* string);
+	static uint64 StringToUint64(const char* string, uint64* length = nullptr);
 	
 	static String ReadFile(const String& filename);
 
