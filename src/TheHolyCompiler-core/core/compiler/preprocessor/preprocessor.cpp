@@ -60,10 +60,10 @@ void PreProcessor::ProcessInclude(uint64& index) {
 	String fullPath = FindFile(file, Utils::GetPathFromFile(fileName));
 
 	if (fullPath == "AlreadyIncluded") {
-		Log::CompilerDebug(fileName.str, l.lineNumber, "File \"%s\" has already been included", fullPath.str);
+		Log::CompilerDebug(l, "File \"%s\" has already been included", fullPath.str);
 		return;
 	} else if (fullPath == "NotFound") {
-		Log::CompilerError(fileName.str, l.lineNumber, "File \"%s\" not found", file.str);
+		Log::CompilerError(l, "File \"%s\" not found", file.str);
 		return;
 	}
 
@@ -74,7 +74,25 @@ void PreProcessor::ProcessInclude(uint64& index) {
 }
 
 void PreProcessor::ProcessDefine(uint64& index) {
+	const Line& l = lines[index];
+	String& line = lines[index].string;
 
+
+	uint64 nameStart = line.Find("#define")+7;
+	uint64 nameEnd = line.Find(" ", nameStart+1);
+
+	String name = line.SubString(nameStart, nameEnd);
+	Utils::RemoveWhiteSpace(name);
+
+	String value = line.SubString(nameEnd, line.length-1);
+
+	if (IsDefined(name, value)) {
+		Log::CompilerWarning(l, "Macro redefinition \"%s\"", name.str);
+	} else {
+		defines.Emplace(name, value);
+	}
+
+	lines.RemoveAt(index--);
 }
 
 void PreProcessor::ProcessUndef(uint64& index) {
