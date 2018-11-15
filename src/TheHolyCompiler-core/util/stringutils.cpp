@@ -73,5 +73,22 @@ void Utils::RemoveWhiteSpace(String& string) {
 	REM_THING("\t");
 }
 
+uint64 Utils::FindMatchingSymbol(const String& code, const char startSymbol, const char endSymbol) {
+	uint64 firstSymbol = code.Find(startSymbol);
+	uint64 firstSymbolCount = 0;
+
+	for (uint64 i = firstSymbol+1; i < code.length; i++) {
+		if (code[i] == startSymbol) {
+			firstSymbolCount++;
+		} else if (code[i] == endSymbol) {
+			if (firstSymbolCount-- == 0) {
+				return i;
+			}
+		}
+	}
+
+	return ~0;
+}
+
 }
 }
