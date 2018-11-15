@@ -334,6 +334,15 @@ public:
 		return ~0;
 	}
 
+	template<typename K>
+	inline uint64 Find(const K& item, bool(*CmpFunc)(const T&, const K&)) const {
+		for (uint64 i = 0; i < count; i++) {
+			if (CmpFunc(items[i], item)) return i;
+		}
+
+		return ~0;
+	}
+
 	inline T& operator[](uint64 index) {
 		THC_ASSERT(index < count);
 		return items[index];
