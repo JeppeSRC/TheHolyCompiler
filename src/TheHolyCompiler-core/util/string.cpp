@@ -183,6 +183,14 @@ uint64 String::Find(const char* const string, uint64 offset) const {
 	return ~0;
 }
 
+uint64 String::Find(const char character, uint64 offset) const {
+	for (uint64 i = offset; i < length; i++) {
+		if (str[i] == character) return i;
+	}
+
+	return ~0;
+}
+
 uint64 String::FindReversed(const String& string, uint64 offset) const {
 	return FindReversed(string.str, offset);
 }
@@ -209,6 +217,20 @@ uint64 String::FindReversed(const char* const string, uint64 offset) const {
 		if (match) {
 			return i;
 		}
+	}
+
+	return ~0;
+}
+
+uint64 String::FindReversed(const char character, uint64 offset) const {
+	offset = CLAMP(offset, 0, length-1);
+
+	if (offset == 0) {
+		offset = length-1;
+	}
+
+	for (uint64 i = offset; i >= 0; i--) {
+		if (str[i] == character) return i;
 	}
 
 	return ~0;

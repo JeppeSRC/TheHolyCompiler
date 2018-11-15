@@ -66,10 +66,12 @@ public:
 	//Finds the index of the string, if it exist
 	uint64 Find(const String& string, uint64 offset = 0) const;
 	uint64 Find(const char* const string, uint64 offset = 0) const;
+	uint64 Find(const char character, uint64 offset = 0) const;
 
 	//Finds the index of the string, if it exist (Starting from the end)
 	uint64 FindReversed(const String& string, uint64 offset = 0) const;
 	uint64 FindReversed(const char* const string, uint64 offset = 0) const;
+	uint64 FindReversed(const char string, uint64 offset = 0) const;
 
 	//Tests if the string starts with string
 	bool StartsWith(const String& string) const;
