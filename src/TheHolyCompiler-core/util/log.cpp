@@ -112,36 +112,36 @@ void Log::Error(const char* const message...) {
 	va_end(list);
 }
 
-void Log::CompilerLog(LogLevel level, const char* filename, int line, const char* message, va_list args) {
+void Log::CompilerLog(LogLevel level, const char* filename, int line, int col, const char* message, va_list args) {
 	char buf[2048] = { 0 };
 
-	sprintf(buf, "%s:%d -> %s", filename, line, message);
+	sprintf(buf, "%s [%d:%d] -> %s", filename, line, col, message);
 
 	LogInternal(level, buf, args);
 }
 
-void Log::CompilerDebug(const char* const filename, int line, const char* const message...) {
+void Log::CompilerDebug(const char* const filename, int line, int col, const char* const message...) {
 	if (!CompilerOptions::DebugMessages()) return;
 
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Debug, filename, line, message, list);
+	CompilerLog(LogLevel::Debug, filename, line, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerWarning(const char* const filename, int line, const char* const message...) {
+void Log::CompilerWarning(const char* const filename, int line, int col, const char* const message...) {
 	if (!CompilerOptions::WarningMessages()) return;
 	
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Warning, filename, line, message, list);
+	CompilerLog(LogLevel::Warning, filename, line, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerError(const char* const filename, int line, const char* const message...) {
+void Log::CompilerError(const char* const filename, int line, int col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Error, filename, line, message, list);
+	CompilerLog(LogLevel::Error, filename, line, col, message, list);
 	va_end(list);
 
 	if (CompilerOptions::StopOnError()) {
@@ -149,28 +149,28 @@ void Log::CompilerError(const char* const filename, int line, const char* const 
 	}
 }
 
-void Log::CompilerDebug(const Line& line, const char* const message...) {
+void Log::CompilerDebug(const Line& line, int col, const char* const message...) {
 	if (!CompilerOptions::DebugMessages()) return;
 
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Debug, line.sourceFile.str, line.lineNumber, message, list);
+	CompilerLog(LogLevel::Debug, line.sourceFile.str, line.lineNumber, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerWarning(const Line& line, const char* const message...) {
+void Log::CompilerWarning(const Line& line, int col, const char* const message...) {
 	if (!CompilerOptions::WarningMessages()) return;
 
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Warning, line.sourceFile.str, line.lineNumber, message, list);
+	CompilerLog(LogLevel::Warning, line.sourceFile.str, line.lineNumber, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerError(const Line& line, const char* const message...) {
+void Log::CompilerError(const Line& line, int col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
-	CompilerLog(LogLevel::Error, line.sourceFile.str, line.lineNumber, message, list);
+	CompilerLog(LogLevel::Error, line.sourceFile.str, line.lineNumber, col, message, list);
 	va_end(list);
 
 	if (CompilerOptions::StopOnError()) {

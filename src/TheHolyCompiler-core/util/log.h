@@ -48,20 +48,20 @@ private:
 
 	static void LogInternal(LogLevel level, const char* const message, va_list list);
 
-	static void CompilerLog(LogLevel level, const char* filename, int line, const char* message, va_list args);
+	static void CompilerLog(LogLevel level, const char* filename, int line, int col, const char* message, va_list args);
 public:
 	static void Info(const char* const message...);
 	static void Debug(const char* const message...);
 	static void Warning(const char* const message...);
 	static void Error(const char* const message...);
 
-	static void CompilerDebug(const char* const filename, int line, const char* const message...);
-	static void CompilerWarning(const char* const filename, int line, const char* const message...);
-	static void CompilerError(const char* const filename, int line, const char* const message...);
+	static void CompilerDebug(const char* const filename, int line, int col, const char* const message...);
+	static void CompilerWarning(const char* const filename, int line, int col, const char* const message...);
+	static void CompilerError(const char* const filename, int line, int col, const char* const message...);
 
-	static void CompilerDebug(const core::parsing::Line& line, const char* const message...);
-	static void CompilerWarning(const core::parsing::Line& line, const char* const message...);
-	static void CompilerError(const core::parsing::Line& line, const char* const message...);
+	static void CompilerDebug(const core::parsing::Line& line, int col, const char* const message...);
+	static void CompilerWarning(const core::parsing::Line& line, int col, const char* const message...);
+	static void CompilerError(const core::parsing::Line& line, int col, const char* const message...);
 
 	static void SetOutputHandle(HANDLE logHandle);
 	static void SetLogCallback(LogCallback logCallback);
