@@ -296,6 +296,30 @@ List<String> String::Split(const String& delimiters) const {
 	return Split(delimiters.str);
 }
 
+void String::Insert(uint64 start, uint64 end, const String& string) {
+	Insert(start, end, string.str);
+}
+
+void String::Insert(uint64 start, uint64 end, const char* const string) {
+	THC_ASSERT(start <= end);
+	THC_ASSERT(string != nullptr);
+
+	uint64 strLen = strlen(string);
+
+	Remove(start, end);
+
+	char* tmp = str;
+	str = new char[length+strLen+1];
+
+	memcpy(str, tmp, start);
+	memcpy(str+start, string, strLen);
+	memcpy(str+start+strLen, tmp+start, length-start+1);
+
+	length = length + strLen;
+
+	delete[] tmp;
+}
+
 List<String> String::Split(const char* const delimiters) const {
 	List<String> list;
 

@@ -87,6 +87,10 @@ public:
 	String SubString(const String& start, const String& end) const;
 	String SubString(const char* const start, const char* const end) const;
 
+	//Inserts string between indexes, start and end is inclusive
+	void Insert(uint64 start, uint64 end, const String& string);
+	void Insert(uint64 start, uint64 end, const char* const string);
+
 	List<String> Split(const String& delimiters) const;
 	List<String> Split(const char* const delimiters) const;
 
