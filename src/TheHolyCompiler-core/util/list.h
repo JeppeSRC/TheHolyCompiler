@@ -329,7 +329,7 @@ public:
 
 	/*Finds the item*/
 	inline uint64 Find(const T& item, uint64 offset = 0) const {
-		THC_ASSERT(offset < count);
+		THC_ASSERT(offset <= count);
 		for (uint64 i = offset; i < count; i++) {
 			if (items[i] == item) return i;
 		}
