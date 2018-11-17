@@ -146,6 +146,8 @@ public:
 			new (items+i) T(std::move(tmp[i]));
 		}
 
+		allocated = reserve;
+
 		delete[] tmp;
 	}
 
