@@ -49,20 +49,33 @@ String Utils::GetPathFromFile(const String& filepath) {
 	return filepath.SubString(0, filepath.FindReversed("/"));
 }
 
-uint32 Utils::FindLine(const String& string, uint64 index) {
+uint32 Utils::FindLine(const String& string, uint64 index, uint64* col) {
 	uint32 line = 1;
 	uint64 curr = 0;
+	uint64 prev = 0;
 
 	while ((curr = string.Find("\n", curr+1)) != ~0) {
-		if (curr > index)
+		if (curr > index) {
+
 			break;
+		}
+
+		prev = curr;
 
 		line++;
 	}
 
+	if (col) {
+		if (line == 1) {
+			*col = index;
+		} else {
+			*col = index - prev;
+		}
+	}
+	
+
 	return line;
 }
-
 
 void Utils::RemoveWhiteSpace(String& string) {
 #define REM_THING(x) while ((index = string.Find(" ", index)) != ~0) { string.Remove(index, index); } index = 0;
