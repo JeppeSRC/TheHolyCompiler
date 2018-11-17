@@ -78,7 +78,7 @@ uint32 Utils::FindLine(const String& string, uint64 index, uint64* col) {
 }
 
 void Utils::RemoveWhiteSpace(String& string) {
-#define REM_THING(x) while ((index = string.Find(" ", index)) != ~0) { string.Remove(index, index); } index = 0;
+#define REM_THING(x) while ((index = string.Find(x, index)) != ~0) { string.Remove(index, index); } index = 0;
 	
 	uint64 index = 0;
 
