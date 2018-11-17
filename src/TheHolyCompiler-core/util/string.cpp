@@ -278,7 +278,7 @@ String String::SubString(uint64 start, uint64 end) const {
 
 	uint64 len = end - start + 1;
 
-	THC_ASSERT(start + len < length);
+	THC_ASSERT(start + len <= length);
 
 	return String(str+start, len);
 }
