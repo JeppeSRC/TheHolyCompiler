@@ -329,9 +329,9 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<PreProcessor:
 				break;
 			} 
 
-			PreProcessor::Token& rightOperand = tokens[i];
+			PreProcessor::Token& rightOperand = tokens[i+1];
 
-			if (rightOperand.type != TokenType::Operator) {
+			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
 				break;
 			}
