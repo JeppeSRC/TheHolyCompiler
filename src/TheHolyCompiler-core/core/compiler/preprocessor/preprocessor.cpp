@@ -906,7 +906,7 @@ PreProcessor::PreProcessor(String code, const String& fileName, const utils::Lis
 	lines = Line::GetLinesFromString(code, fileName);
 }
 
-String PreProcessor::Run(const String& code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
+String PreProcessor::Run(const String& code, const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
 	auto start = std::chrono::high_resolution_clock::now();
 	PreProcessor pp(code, fileName, defines, includeDirs);
 	
@@ -921,10 +921,9 @@ String PreProcessor::Run(const String& code, const String& fileName, const utils
 	return res;
 }
 
-String PreProcessor::Run(const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
+String PreProcessor::Run(const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
 	return Run(Utils::ReadFile(fileName), fileName, defines, includeDirs);
 }
-
 
 }
 }
