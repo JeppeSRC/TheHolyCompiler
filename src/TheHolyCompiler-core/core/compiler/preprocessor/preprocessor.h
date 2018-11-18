@@ -49,6 +49,61 @@ private:
 
 	};
 
+	enum class TokenType {
+		Value,
+		Parenthesis,
+		Operator,
+	};
+
+	enum class TokenValue : uint64 {
+		None,
+		OperatorLogicalAnd,
+		OperatorLogicalOr,
+		OperatorLogicalNot,
+		OperatorEqual,
+		OperatorNotEqual,
+		OperatorGreater,
+		OperatorLess,
+		OperatorGreaterEqual,
+		OperatorLessEqual,
+		OperatorAdd,
+		OperatorSub,
+		OperatorMul,
+		OperatorDiv,
+		OperatorBitwiseAnd,
+		OperatorBitwiseOr,
+		OperatorBitwiseNot,
+		OperatorBitwiseXor,
+		OperatorBitwiseShitLeft,
+		OperatorBitwiseShiftRight,
+
+		ParenthesisOpen,
+		ParenthesisClose,
+	};
+
+	struct Token {
+		TokenType type;
+
+		union {
+			uint64 value;
+			TokenValue valueType;
+		};
+
+		uint64 column;
+		utils::String string;
+
+		Token() {}
+		Token(TokenType type, uint64 value, const utils::String& string, uint64 column);
+		Token(TokenType type, TokenValue value, const utils::String& string, uint64 column);
+		Token(const Token& other);
+		Token(const Token* other);
+		Token(Token&& other);
+
+		Token& operator=(const Token& other);
+		Token& operator=(Token&& other);
+
+	};
+
 private:
 	utils::String fileName;
 	utils::List<parsing::Line> lines;
@@ -70,6 +125,15 @@ private:
 	void ProcessMessage(uint64& index);
 	void ProcessError(uint64& index);
 	void Process();
+
+private:
+	bool ProcessStatement(uint64 start, uint64 end, utils::List<Token>& tokens, const parsing::Line& line);
+
+private:
+	utils::List<Token> TokenizeStatement(const utils::String& code, const parsing::Line& line);
+	void ReplaceMacrosWithValue(utils::String& code);
+	uint64 FindMatchingParenthesis(const utils::List<Token>& tokens, uint64 start, const parsing::Line& line);
+	uint64 FindLineWith(const utils::String& string, uint64 offset);
 
 private:
 	PreProcessor(utils::String code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
