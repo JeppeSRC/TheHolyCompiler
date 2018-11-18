@@ -148,7 +148,7 @@ void PreProcessor::ProcessUndef(uint64& index) {
 	lines.RemoveAt(index--);
 }
 
-void PreProcessor::ProcessIf(uint64& index) {
+void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 	const Line& l = lines[index];
 	String& line = lines[index].string;
 
@@ -164,8 +164,21 @@ void PreProcessor::ProcessIf(uint64& index) {
 
 	if (elifIndex > endifIndex) elifIndex = ~0;
 	if (elseIndex > endifIndex) elseIndex = ~0;
+
+	bool res = false;
+
+	if (ifdef) {
+		uint64 nameStart = line.Find("#ifdef ")+7;
+		
+		String name = line.SubString(nameStart, line.length-1);
+		Utils::RemoveWhiteSpace(name);
+
+		res = IsDefined(name) != ~0 ? true : false;
+	} else {
+		res = ProcessStatement(0, ~0, TokenizeStatement(line, l), l);
+	}
 	
-	if (ProcessStatement(0, ~0, TokenizeStatement(line, l), l)) {
+	if (res) {
 		if (elifIndex != ~0) {
 			for (uint64 i = endifIndex; i >= elifIndex; i--) {
 				lines.RemoveAt(i);
@@ -220,10 +233,6 @@ void PreProcessor::ProcessIf(uint64& index) {
 	index--;
 }
 
-void PreProcessor::ProcessIfdef(uint64& index) {
-
-}
-
 void PreProcessor::ProcessMessage(uint64& index) {
 
 }
@@ -245,7 +254,9 @@ void PreProcessor::Process() {
 		} else if (line.Find("#undef ") != ~0) {
 			ProcessUndef(i);
 		} else if (line.Find("#if ") != ~0) {
-			ProcessIf(i);
+			ProcessIf(i, false);
+		} else if (line.Find("#ifdef ") != ~0) {
+			ProcessIf(i, true);
 		}
 	}
 }

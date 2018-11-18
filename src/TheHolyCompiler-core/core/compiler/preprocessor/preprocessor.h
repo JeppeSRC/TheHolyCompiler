@@ -119,8 +119,7 @@ private:
 	void ProcessInclude(uint64& index);
 	void ProcessDefine(uint64& index);
 	void ProcessUndef(uint64& index);
-	void ProcessIf(uint64& index);
-	void ProcessIfdef(uint64& index);
+	void ProcessIf(uint64& index, bool ifdef);
 	void ProcessMessage(uint64& index);
 	void ProcessError(uint64& index);
 	void Process();
