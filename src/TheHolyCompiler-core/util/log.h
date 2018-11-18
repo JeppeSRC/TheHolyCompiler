@@ -55,10 +55,12 @@ public:
 	static void Warning(const char* const message...);
 	static void Error(const char* const message...);
 
+	static void CompilerInfo(const char* const filename, int line, int col, const char* const message...);
 	static void CompilerDebug(const char* const filename, int line, int col, const char* const message...);
 	static void CompilerWarning(const char* const filename, int line, int col, const char* const message...);
 	static void CompilerError(const char* const filename, int line, int col, const char* const message...);
 
+	static void CompilerInfo(const core::parsing::Line& line, int col, const char* const message...);
 	static void CompilerDebug(const core::parsing::Line& line, int col, const char* const message...);
 	static void CompilerWarning(const core::parsing::Line& line, int col, const char* const message...);
 	static void CompilerError(const core::parsing::Line& line, int col, const char* const message...);

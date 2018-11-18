@@ -120,6 +120,13 @@ void Log::CompilerLog(LogLevel level, const char* filename, int line, int col, c
 	LogInternal(level, buf, args);
 }
 
+void Log::CompilerInfo(const char* const filename, int line, int col, const char* const message...) {
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Info, filename, line, col, message, list);
+	va_end(list);
+}
+
 void Log::CompilerDebug(const char* const filename, int line, int col, const char* const message...) {
 	if (!CompilerOptions::DebugMessages()) return;
 
@@ -147,6 +154,13 @@ void Log::CompilerError(const char* const filename, int line, int col, const cha
 	if (CompilerOptions::StopOnError()) {
 		//TODO: handle error
 	}
+}
+
+void Log::CompilerInfo(const Line& line, int col, const char* const message...) {
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Info, line.sourceFile.str, line.lineNumber, col, message, list);
+	va_end(list);
 }
 
 void Log::CompilerDebug(const Line& line, int col, const char* const message...) {
