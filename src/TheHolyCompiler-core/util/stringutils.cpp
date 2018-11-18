@@ -39,7 +39,7 @@ void Utils::CopyString(char*& dst, const char* const src) {
 }
 
 String Utils::GetPathFromFile(const String& filepath) {
-	uint64 folders = filepath.Count("/");
+	uint64 folders = filepath.Count("/") + filepath.Count("\\") + filepath.Count("\\\\");
 
 	if (folders == 0) {
 		Log::Error("[Utils::GetPathFromFile] Invalid parameter");
@@ -201,7 +201,12 @@ uint64 Utils::StringToUint64(const char* string, uint64* length) {
 	uint64 len = FindLength(string, base);
 
 	for (uint64 i = 0; i < len; i++) {
-		value += GetValue(string[len - i - 1]) * (uint64)pow(base, i);
+		uint64 v = GetValue(string[len - i - 1]);
+		value += v * (uint64)pow(base, i);
+
+		if (v == ~0) {
+			return ~0;
+		}
 	}
 
 	if (sign) value *= -1;
