@@ -233,7 +233,7 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 	index--;
 }
 
-void PreProcessor::ProcessMessage(uint64& index) {
+void PreProcessor::ProcessMessage(uint64& index, bool error) {
 	const Line& l = lines[index];
 	String& line = lines[index].string;
 
@@ -255,11 +255,11 @@ void PreProcessor::ProcessMessage(uint64& index) {
 
 	String message = line.SubString(messageStart, messageEnd);
 
-	Log::CompilerInfo(l, 1, "Message: %s", message.str);
-}
-
-void PreProcessor::ProcessError(uint64& index) {
-
+	if (error) {
+		Log::CompilerError(l, 1, message.str);
+	} else {
+		Log::CompilerInfo(l, 1, message.str);
+	}
 }
 
 void PreProcessor::Process() {
@@ -279,7 +279,9 @@ void PreProcessor::Process() {
 		} else if (line.Find("#ifdef ") != ~0) {
 			ProcessIf(i, true);
 		} else if (line.Find("#message ") != ~0) {
-			ProcessMessage(i);
+			ProcessMessage(i, false);
+		} else if (line.Find("#error ") != ~0) {
+			ProcessMessage(i, true);
 		}
 	}
 }
