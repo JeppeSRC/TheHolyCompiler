@@ -88,7 +88,7 @@ project("TheHolyCompiler")
 
     kind "ConsoleApp"
     location "../solution/TheHolyCompiler/"
-    targetdir "%{sln.location}/../bin/TheHolyCompiler/"
+    targetdir "%{sln.location}/../bin/TheHolyCompiler/%{cfg.buildcfg}/"
     objdir "%{sln.location}/../bin/TheHolyCompiler/intermediates/"
     filename "thc"
 
