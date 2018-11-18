@@ -152,7 +152,7 @@ void Log::CompilerError(const char* const filename, uint64 line, uint64 col, con
 	va_end(list);
 
 	if (CompilerOptions::StopOnError()) {
-		//TODO: handle error
+		exit(1);
 	}
 }
 
@@ -188,7 +188,7 @@ void Log::CompilerError(const Line& line, uint64 col, const char* const message.
 	va_end(list);
 
 	if (CompilerOptions::StopOnError()) {
-		//TODO: handle error
+		exit(1);
 	}
 }
 
