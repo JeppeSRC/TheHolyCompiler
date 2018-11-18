@@ -852,7 +852,7 @@ void PreProcessor::ReplaceMacrosWithValue(String& code) {
 
 		uint64 num = code.Count(name);
 
-		for (uint64 i = 0; i < num; i++) {
+		for (uint64 j = 0; j < num; j++) {
 			uint64 index = code.Find(name);
 
 			code.Insert(index, index+name.length-1, defines[i].value);
