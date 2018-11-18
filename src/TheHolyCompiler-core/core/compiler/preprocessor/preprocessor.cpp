@@ -329,7 +329,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<PreProcessor:
 		
 		if (token.type == TokenType::Operator && (token.valueType == TokenValue::OperatorBitwiseNot || token.valueType == TokenValue::OperatorLogicalNot)) {
 			if (i == end) {
-				Log::CompilerError(line, token.column, "Operator \%s\" requires a right-hand operand", token.string.str);
+				Log::CompilerError(line, token.column, "Operator \"%s\" requires a right-hand operand", token.string.str);
 				break;
 			} 
 
