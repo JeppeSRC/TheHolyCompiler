@@ -141,17 +141,18 @@ String& String::Remove(uint64 start, uint64 end) {
 	return *this;
 }
 
-uint64 String::Count(const String& string) const {
-	return Count(string.str);
+uint64 String::Count(const String& string, uint64 offset, uint64 end) const {
+	return Count(string.str, offset, end);
 }
 
-uint64 String::Count(const char* const string) const {
+uint64 String::Count(const char* const string, uint64 offset, uint64 end) const {
 	THC_ASSERT(string != nullptr);
 	
-	uint64 index = 0;
+	uint64 index = offset-1;
 	uint64 count = 0;
 
 	while ((index = Find(string, index+1)) != ~0) {
+		if (index > end) break;
 		count++;
 	}
 	
