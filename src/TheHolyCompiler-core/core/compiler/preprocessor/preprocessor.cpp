@@ -89,7 +89,7 @@ void PreProcessor::ProcessInclude(uint64& index) {
 	String fullPath = FindFile(file, Utils::GetPathFromFile(fileName));
 
 	if (fullPath == "AlreadyIncluded") {
-		Log::CompilerDebug(l, firstBracket+1, "File \"%s\" has already been included", fullPath.str);
+		Log::CompilerDebug(l, firstBracket+1, "File \"%s\" has already been included", file.str);
 		return;
 	} else if (fullPath == "NotFound") {
 		Log::CompilerError(l, firstBracket+1, "File \"%s\" not found", file.str);
