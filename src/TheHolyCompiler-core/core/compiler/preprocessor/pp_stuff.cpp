@@ -44,6 +44,7 @@ String PreProcessor::FindFile(const String& fileName, String parentDir) {
 
 	if (f != nullptr) {
 		fclose(f);
+		includedFiles.Add(parentDir);
 		return parentDir;
 	}
 
