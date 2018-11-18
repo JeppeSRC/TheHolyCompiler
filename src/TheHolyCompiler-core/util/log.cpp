@@ -112,22 +112,22 @@ void Log::Error(const char* const message...) {
 	va_end(list);
 }
 
-void Log::CompilerLog(LogLevel level, const char* filename, int line, int col, const char* message, va_list args) {
+void Log::CompilerLog(LogLevel level, const char* filename, uint64 line, uint64 col, const char* message, va_list args) {
 	char buf[2048] = { 0 };
 
-	sprintf(buf, "%s [%d:%d] -> %s", filename, line, col, message);
+	sprintf(buf, "%s [%llu:%llu] -> %s", filename, line, col, message);
 
 	LogInternal(level, buf, args);
 }
 
-void Log::CompilerInfo(const char* const filename, int line, int col, const char* const message...) {
+void Log::CompilerInfo(const char* const filename, uint64 line, uint64 col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Info, filename, line, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerDebug(const char* const filename, int line, int col, const char* const message...) {
+void Log::CompilerDebug(const char* const filename, uint64 line, uint64 col, const char* const message...) {
 	if (!CompilerOptions::DebugMessages()) return;
 
 	va_list list;
@@ -136,7 +136,7 @@ void Log::CompilerDebug(const char* const filename, int line, int col, const cha
 	va_end(list);
 }
 
-void Log::CompilerWarning(const char* const filename, int line, int col, const char* const message...) {
+void Log::CompilerWarning(const char* const filename, uint64 line, uint64 col, const char* const message...) {
 	if (!CompilerOptions::WarningMessages()) return;
 	
 	va_list list;
@@ -145,7 +145,7 @@ void Log::CompilerWarning(const char* const filename, int line, int col, const c
 	va_end(list);
 }
 
-void Log::CompilerError(const char* const filename, int line, int col, const char* const message...) {
+void Log::CompilerError(const char* const filename, uint64 line, uint64 col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Error, filename, line, col, message, list);
@@ -156,14 +156,14 @@ void Log::CompilerError(const char* const filename, int line, int col, const cha
 	}
 }
 
-void Log::CompilerInfo(const Line& line, int col, const char* const message...) {
+void Log::CompilerInfo(const Line& line, uint64 col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Info, line.sourceFile.str, line.lineNumber, col, message, list);
 	va_end(list);
 }
 
-void Log::CompilerDebug(const Line& line, int col, const char* const message...) {
+void Log::CompilerDebug(const Line& line, uint64 col, const char* const message...) {
 	if (!CompilerOptions::DebugMessages()) return;
 
 	va_list list;
@@ -172,7 +172,7 @@ void Log::CompilerDebug(const Line& line, int col, const char* const message...)
 	va_end(list);
 }
 
-void Log::CompilerWarning(const Line& line, int col, const char* const message...) {
+void Log::CompilerWarning(const Line& line, uint64 col, const char* const message...) {
 	if (!CompilerOptions::WarningMessages()) return;
 
 	va_list list;
@@ -181,7 +181,7 @@ void Log::CompilerWarning(const Line& line, int col, const char* const message..
 	va_end(list);
 }
 
-void Log::CompilerError(const Line& line, int col, const char* const message...) {
+void Log::CompilerError(const Line& line, uint64 col, const char* const message...) {
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Error, line.sourceFile.str, line.lineNumber, col, message, list);
