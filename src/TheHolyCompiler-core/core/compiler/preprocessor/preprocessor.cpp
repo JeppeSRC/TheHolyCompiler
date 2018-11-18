@@ -115,7 +115,6 @@ void PreProcessor::ProcessDefine(uint64& index) {
 	Utils::RemoveWhiteSpace(name);
 
 	String value = line.SubString(nameEnd, line.length-1);
-	Utils::RemoveWhiteSpace(value);
 
 	uint64 defIndex = IsDefined(name);
 
