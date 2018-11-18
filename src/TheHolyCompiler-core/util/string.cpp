@@ -292,7 +292,7 @@ String String::SubString(const char* const start, const char* const end) const {
 	return SubString(Find(start), Find(end));
 }
 
-List<String> String::Split(const String& delimiters) const {
+List<String> String::Split(const String& delimiters, bool includeEmtyLines) const {
 	return Split(delimiters.str);
 }
 
@@ -320,7 +320,7 @@ void String::Insert(uint64 start, uint64 end, const char* const string) {
 	delete[] tmp;
 }
 
-List<String> String::Split(const char* const delimiters) const {
+List<String> String::Split(const char* const delimiters, bool includeEmtyLines) const {
 	List<String> list;
 
 	uint64 numDelimiters = strlen(delimiters);
@@ -331,7 +331,12 @@ List<String> String::Split(const char* const delimiters) const {
 		for (uint64 j = 0; j < numDelimiters; j++) {
 			if (str[i] == delimiters[j]) {
 				if (lastIndex == i-1 || lastIndex == i) {
-					lastIndex++;
+					if (includeEmtyLines) {
+						list.Add(String(""));
+						lastIndex++;
+					} else {
+						lastIndex++;
+					}
 				} else {
 					list.Add(SubString(lastIndex, i-1));
 					lastIndex = i+1;
