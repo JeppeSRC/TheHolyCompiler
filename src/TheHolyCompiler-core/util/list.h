@@ -51,14 +51,20 @@ public:
 		count = other.count;
 		allocated = other.allocated;
 		items = new T[allocated];
-		memcpy(items, other.items, other.GetSize());
+
+		for (uint64 i = 0; i < count; i++) {
+			new (items+i) T(other.items[i]);
+		}
 	}
 
 	List(const List* other) {
 		count = other->count;
 		allocated = other->allocated;
 		items = new T[allocated];
-		memcpy(items, other->items, other->GetAllocatedSize());
+
+		for (uint64 i = 0; i < count; i++) {
+			new (items+i) T(other->items[i]);
+		}
 	}
 
 	List(List&& other) {
@@ -83,7 +89,7 @@ public:
 			items = new T[allocated];
 			
 			for (uint64 i = 0; i < count; i++) {
-				new (&items[i]) T(std::move(other.items[i]));
+				new (items+i) T(other.items[i]);
 			}
 		}
 
