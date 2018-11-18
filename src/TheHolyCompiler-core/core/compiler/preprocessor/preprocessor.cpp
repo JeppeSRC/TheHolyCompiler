@@ -26,6 +26,7 @@ SOFTWARE.
 #include <core/compiler/parsing/line.h>
 #include <util/utils.h>
 #include <util/log.h>
+#include <chrono>
 
 namespace thc {
 namespace core {
@@ -902,11 +903,18 @@ PreProcessor::PreProcessor(String code, const String& fileName, const utils::Lis
 }
 
 String PreProcessor::Run(const String& code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
+	auto start = std::chrono::high_resolution_clock::now();
 	PreProcessor pp(code, fileName, defines, includeDirs);
 	
 	pp.Process();
 
-	return Line::ToString(pp.lines);
+	String res = Line::ToString(pp.lines);
+
+	auto time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count();
+
+	Log::Debug("PreProcessing took %lld microseconds", time);
+
+	return res;
 }
 
 String PreProcessor::Run(const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) {
