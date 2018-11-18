@@ -68,7 +68,7 @@ Line& Line::operator=(Line&& other) {
 }
 
 List<Line> Line::GetLinesFromString(const String& string, const String& file) {
-	List<String> lines = string.Split("\n");
+	List<String> lines = string.Split("\n", true);
 	List<Line> res(lines.GetCount());
 
 	for (uint64 i = 0; i < lines.GetCount(); i++) {
