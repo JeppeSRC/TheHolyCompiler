@@ -338,7 +338,7 @@ public:
 	template<typename K>
 	inline uint64 Find(const K& item, bool(*CmpFunc)(const T&, const K&), uint64 offset = 0) const {
 		THC_ASSERT(offset <= count);
-		for (uint64 i = count; i < count; i++) {
+		for (uint64 i = offset; i < count; i++) {
 			if (CmpFunc(items[i], item)) return i;
 		}
 
