@@ -234,7 +234,28 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 }
 
 void PreProcessor::ProcessMessage(uint64& index) {
+	const Line& l = lines[index];
+	String& line = lines[index].string;
 
+	uint64 messageStart = line.Find("\"")+1;
+
+	if (messageStart == ~0) {
+		Log::CompilerWarning(l, 1, "Invalid syntax, proper syntax: '#message \"some message\"");
+		lines.RemoveAt(index--);
+		return;
+	}
+
+	uint64 messageEnd = line.Find("\"", messageStart)-1;
+
+	if (messageEnd == ~0) {
+		Log::CompilerWarning(l, messageStart-1, "Invalid syntax, message has no end '\"'");
+		lines.RemoveAt(index--);
+		return;
+	}
+
+	String message = line.SubString(messageStart, messageEnd);
+
+	Log::CompilerInfo(l, 1, "Message: %s", message.str);
 }
 
 void PreProcessor::ProcessError(uint64& index) {
@@ -257,6 +278,8 @@ void PreProcessor::Process() {
 			ProcessIf(i, false);
 		} else if (line.Find("#ifdef ") != ~0) {
 			ProcessIf(i, true);
+		} else if (line.Find("#message ") != ~0) {
+			ProcessMessage(i);
 		}
 	}
 }
