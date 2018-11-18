@@ -271,7 +271,7 @@ public:
 		uint64 itemsToMove = count - index;
 
 		for (uint64 i = index+itemsToMove; i > index; i--) {
-			new (items+i) T(items[i-1]);
+			new (items+i+other.count-1) T(items[i-1]);
 		}
 
 		for (uint64 i = 0; i < other.count; i++) {
@@ -294,7 +294,7 @@ public:
 		uint64 itemsToMove = count - index;
 
 		for (uint64 i = index+itemsToMove; i > index; i--) {
-			new (items+i) T(std::move(items[i-1]));
+			new (items+i+other.count-1) T(std::move(items[i-1]));
 		}
 
 		for (uint64 i = 0; i < other.count; i++) {
