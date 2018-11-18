@@ -108,7 +108,7 @@ String& String::Append(const char* const string) {
 	delete[] str;
 
 	str = newStr;
-	length = len;
+	length += len;
 
 	return *this;
 }
