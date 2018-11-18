@@ -34,11 +34,11 @@ class Line {
 public:
 	utils::String string;
 	utils::String sourceFile;
-	uint32 lineNumber;
+	uint64 lineNumber;
 
 public:
 	Line();
-	Line(const utils::String& string, const utils::String& file, uint32 line);
+	Line(const utils::String& string, const utils::String& file, uint64 line);
 	Line(const Line& other);
 	Line(Line&& other);
 

@@ -33,7 +33,7 @@ using namespace utils;
 
 Line::Line() : string(""), sourceFile(""), lineNumber(0) { }
 
-Line::Line(const String& string, const String& file, uint32 line) : string(string), sourceFile(file), lineNumber(line) { }
+Line::Line(const String& string, const String& file, uint64 line) : string(string), sourceFile(file), lineNumber(line) { }
 
 Line::Line(const Line& other) {
 	string = other.string;
