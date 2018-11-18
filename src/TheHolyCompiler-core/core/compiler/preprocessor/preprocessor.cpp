@@ -112,7 +112,7 @@ void PreProcessor::ProcessDefine(uint64& index) {
 	uint64 nameEnd = line.Find(" ", nameStart+1);
 
 	String name = line.SubString(nameStart, nameEnd);
-	Utils::RemoveWhiteSpace(name);
+	Utils::RemoveWhitespace(name);
 
 	String value = line.SubString(nameEnd, line.length-1);
 
@@ -136,7 +136,7 @@ void PreProcessor::ProcessUndef(uint64& index) {
 	uint64 nameStart = line.Find("#undef")+6;
 
 	String name = line.SubString(nameStart, line.length-1);
-	Utils::RemoveWhiteSpace(name);
+	Utils::RemoveWhitespace(name);
 
 	uint64 defIndex = IsDefined(name);
 
@@ -172,7 +172,7 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 		uint64 nameStart = line.Find("#ifdef ")+7;
 		
 		String name = line.SubString(nameStart, line.length-1);
-		Utils::RemoveWhiteSpace(name);
+		Utils::RemoveWhitespace(name);
 
 		res = IsDefined(name) != ~0 ? true : false;
 	} else {
