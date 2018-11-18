@@ -286,6 +286,11 @@ void PreProcessor::Process() {
 			ProcessMessage(i, true);
 		}
 	}
+
+	for (uint64 i = 0; i < lines.GetCount(); i++) {
+		ReplaceMacrosWithValue(lines[i].string);
+	}
+	
 }
 
 bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<PreProcessor::Token>& tokens, const Line& line) {
