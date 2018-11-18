@@ -120,7 +120,6 @@ private:
 	void ProcessDefine(uint64& index);
 	void ProcessUndef(uint64& index);
 	void ProcessIf(uint64& index);
-	void ProcessDefined(uint64& index);
 	void ProcessIfdef(uint64& index);
 	void ProcessMessage(uint64& index);
 	void ProcessError(uint64& index);

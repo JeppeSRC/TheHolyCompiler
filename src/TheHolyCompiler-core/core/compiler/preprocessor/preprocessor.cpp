@@ -220,10 +220,6 @@ void PreProcessor::ProcessIf(uint64& index) {
 	index--;
 }
 
-void PreProcessor::ProcessDefined(uint64& index) {
-
-}
-
 void PreProcessor::ProcessIfdef(uint64& index) {
 
 }
