@@ -191,7 +191,7 @@ uint64 Utils::StringToUint64(const char* string, uint64* length) {
 		} else if (string[1] == 'b' || string[1] == 'B') {
 			base = 2;
 			string += 2;
-		} else {
+		} else if (string[1] >= '0' && string[1] <= '9'){
 			base = 8;
 			string++;
 		}
