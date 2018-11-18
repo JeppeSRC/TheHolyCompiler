@@ -262,13 +262,15 @@ void PreProcessor::ProcessMessage(uint64& index, bool error) {
 	} else {
 		Log::CompilerInfo(l, 1, message.str);
 	}
+
+	lines.RemoveAt(index--);
 }
 
 void PreProcessor::Process() {
 
 	for (uint64 i = 0; i < lines.GetCount(); i++) {
-		const Line& l = lines[i];
-		const String& line = l.string;
+		Line& l = lines[i];
+		String& line = l.string;
 		
 		if (line.Find("#include ") != ~0) {
 			ProcessInclude(i);
@@ -285,12 +287,9 @@ void PreProcessor::Process() {
 		} else if (line.Find("#error ") != ~0) {
 			ProcessMessage(i, true);
 		}
-	}
 
-	for (uint64 i = 0; i < lines.GetCount(); i++) {
-		ReplaceMacrosWithValue(lines[i].string);
+		ReplaceMacrosWithValue(line);
 	}
-	
 }
 
 bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<PreProcessor::Token>& tokens, const Line& line) {
