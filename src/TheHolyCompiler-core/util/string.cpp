@@ -166,7 +166,7 @@ uint64 String::Find(const char* const string, uint64 offset) const {
 	THC_ASSERT(string != nullptr);
 	uint64 len = strlen(string);
 
-	for (uint64 i = offset; i < length - (len-1); i++) {
+	for (int64 i = offset; i < int64(length - (len-1)); i++) {
 		bool match = true;
 		for (uint64 j = 0; j < len; j++) {
 			if (str[i + j] != string[j]) {
