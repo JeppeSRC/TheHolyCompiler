@@ -106,6 +106,7 @@ void PreProcessor::ProcessDefine(uint64& index) {
 	const Line& l = lines[index];
 	String& line = lines[index].string;
 
+	line.Append(" ");
 
 	uint64 nameStart = line.Find("#define")+7;
 	uint64 nameEnd = line.Find(" ", nameStart+1);
