@@ -23,24 +23,19 @@ SOFTWARE.
 */
 
 #pragma once
-
-#include <util/string.h>
-#include <util/utils.h>
-#include <util/list.h>
-#include <core/compiler/parsing/line.h>
-#include "options.h"
-#include "idmanager.h"
+#include <core/thctypes.h>
 
 namespace thc {
 namespace core {
 namespace compiler {
 
-class Compiler {
+class IDManager {
 private:
+	static uint32 count;
 
 public:
-
-
+	static uint32 GetNewId();
+	static uint32 GetCount();
 };
 
 }

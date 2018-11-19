@@ -23,24 +23,30 @@ SOFTWARE.
 */
 
 #pragma once
-
 #include <util/string.h>
-#include <util/utils.h>
-#include <util/list.h>
-#include <core/compiler/parsing/line.h>
-#include "options.h"
-#include "idmanager.h"
 
 namespace thc {
 namespace core {
 namespace compiler {
 
-class Compiler {
+class CompilerOptions {
 private:
+	static bool warningsMessages;
+	static bool debugMessages;
+	static bool stopOnError;
+
+	static utils::List<utils::String> includeDirectories;
+	static utils::List<utils::String> defines;
 
 public:
+	static void ParseOptions(const utils::String& args);
 
+	inline static bool WarningMessages() { return warningsMessages; }
+	inline static bool DebugMessages() { return debugMessages; }
+	inline static bool StopOnError() { return stopOnError; }
 
+	inline static const utils::List<utils::String>& IncludeDirectories() { return includeDirectories; }
+	inline static const utils::List<utils::String>& PredefinedDefines() { return defines; }
 };
 
 }
