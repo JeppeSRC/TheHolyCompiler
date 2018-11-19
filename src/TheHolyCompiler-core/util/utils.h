@@ -35,7 +35,7 @@ class Utils {
 public:
 	static void CopyString(char*& dst, const char* const src);
 	static String GetPathFromFile(const String& filepath);
-	static uint32 FindLine(const String& string, uint64 index, uint64* col = nullptr);
+	static uint64 FindLine(const String& string, uint64 index, uint64* col = nullptr);
 	static void RemoveWhitespace(String& string);
 	static uint64 FindMatchingSymbol(const String& code, const char start, const char end);
 	static uint64 StringToUint64(const char* string, uint64* length = nullptr);
