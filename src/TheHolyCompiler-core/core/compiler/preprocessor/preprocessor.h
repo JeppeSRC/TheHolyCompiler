@@ -136,8 +136,8 @@ private:
 	PreProcessor(utils::String code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
 
 public:
-	static utils::String Run(const utils::String& code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
-	static utils::String Run(const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
+	static utils::List<parsing::Line> Run(const utils::String& code, const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
+	static utils::List<parsing::Line> Run(const utils::String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs);
 };
 
 }

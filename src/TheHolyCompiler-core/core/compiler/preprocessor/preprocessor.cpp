@@ -906,22 +906,20 @@ PreProcessor::PreProcessor(String code, const String& fileName, const utils::Lis
 	lines = Line::GetLinesFromString(code, fileName);
 }
 
-String PreProcessor::Run(const String& code, const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
+List<Line> PreProcessor::Run(const String& code, const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
 	auto start = std::chrono::high_resolution_clock::now();
 	PreProcessor pp(code, fileName, defines, includeDirs);
 	
 	pp.Process();
 
-	String res = Line::ToString(pp.lines);
-
 	auto time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count();
 
 	Log::Debug("PreProcessing took %lld microseconds", time);
 
-	return res;
+	return pp.lines;
 }
 
-String PreProcessor::Run(const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
+List<Line> PreProcessor::Run(const String& fileName, const List<String>& defines, const List<String>& includeDirs) {
 	return Run(Utils::ReadFile(fileName), fileName, defines, includeDirs);
 }
 
