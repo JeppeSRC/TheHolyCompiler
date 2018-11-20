@@ -37,9 +37,18 @@ namespace compiler {
 
 class Compiler {
 private:
+	utils::String code;
+	utils::String filename;
+	utils::List<parsing::Line> lines;
+	utils::List<utils::String> defines;
+	utils::List<utils::String> includes;
 
+	bool Process();
+
+	Compiler(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
 public:
-
+	static bool Run(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
+	static bool Run(const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
 
 };
 

@@ -24,11 +24,37 @@ SOFTWARE.
 
 
 #include "compiler.h"
+#include <util/utils.h>
+#include <core/compiler/preprocessor/preprocessor.h>
 
 namespace thc {
 namespace core {
 namespace compiler {
 
+using namespace utils;
+using namespace parsing;
+
+bool Compiler::Process() {
+	lines = preprocessor::PreProcessor::Run(code, filename, defines, includes);
+
+
+}
+
+Compiler::Compiler(const String& code, const String& filename, const List<String>& defines, const List<String>& includes) : code(code), filename(filename), defines(defines), includes(includes) {
+
+}
+
+bool Compiler::Run(const String& code, const String& filename, const List<String>& defines, const List<String>& includes) {
+	Compiler c(code, filename, defines, includes);
+
+	bool res = c.Process();
+
+	return res;
+}
+
+bool Compiler::Run(const String& filename, const List<String>& defines, const List<String>& includes) {
+	return Run(Utils::ReadFile(filename), filename, defines, includes);
+}
 
 }
 }
