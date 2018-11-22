@@ -86,7 +86,7 @@ private:
 
 		union {
 			uint64 value;
-			TokenValue valueType;
+			TokenValue tValue;
 		};
 
 		uint64 column;

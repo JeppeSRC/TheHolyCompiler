@@ -57,7 +57,7 @@ PreProcessor::Define& PreProcessor::Define::operator=(PreProcessor::Define&& oth
 }
 
 PreProcessor::Token::Token(PreProcessor::TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), column(column), string(string) { }
-PreProcessor::Token::Token(PreProcessor::TokenType type, TokenValue value, const String& string, uint64 column) : type(type), valueType(value), column(column), string(string) {}
+PreProcessor::Token::Token(PreProcessor::TokenType type, TokenValue value, const String& string, uint64 column) : type(type), tValue(value), column(column), string(string) {}
 PreProcessor::Token::Token(const Token& other) : type(other.type), value(other.value), string(other.string) {}
 PreProcessor::Token::Token(const Token* other) : type(other->type), value(other->value), string(other->string) {}
 PreProcessor::Token::Token(Token&& other) {
