@@ -1,0 +1,18 @@
+//#define DANK "Bruh"
+
+#ifdef DANK
+#message "Dank Works"
+#elif defined(DADDY)
+#message "Daddy Works, defining DANK to Bruh"
+#define DANK "Bruh"
+#else
+#error "Y'all suck"
+#endif
+
+
+int main() {
+
+    const char* bruh = DANK;
+
+    return 0;
+}
