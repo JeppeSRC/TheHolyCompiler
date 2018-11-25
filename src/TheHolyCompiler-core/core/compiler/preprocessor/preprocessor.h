@@ -49,14 +49,12 @@ private:
 
 	};
 
-	enum class TokenType {
-		Value,
-		Parenthesis,
-		Operator,
-	};
-
-	enum class TokenValue : uint64 {
+	
+	enum class TokenType : uint64 {
 		None,
+
+		Value,
+
 		OperatorLogicalAnd,
 		OperatorLogicalOr,
 		OperatorLogicalNot,
@@ -84,17 +82,14 @@ private:
 	struct Token {
 		TokenType type;
 
-		union {
-			uint64 value;
-			TokenValue tValue;
-		};
+		uint64 value;
 
 		uint64 column;
 		utils::String string;
 
 		Token() {}
+		Token(TokenType type, const utils::String& string, uint64 column);
 		Token(TokenType type, uint64 value, const utils::String& string, uint64 column);
-		Token(TokenType type, TokenValue value, const utils::String& string, uint64 column);
 		Token(const Token& other);
 		Token(const Token* other);
 		Token(Token&& other);
