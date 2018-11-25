@@ -37,11 +37,123 @@ namespace compiler {
 
 class Compiler {
 private:
+	enum class TokenType: uint64 {
+		None,
+
+		ParenthesisOpen,
+		ParenthesisClose,
+		BracketOpen,
+		BracketClose,
+		CurlyBracketOpen,
+		CurlyBracketClose,
+
+		SemiColon,
+		Name,
+		Value,
+
+		TypeVoid,
+		TypeBool,
+		TypeByte,
+		TypeUint,
+		TypeInt,
+		TypeFloat,
+		TypeVec,
+		TypeMat,
+
+		OperatorIncrement,
+		OperatorDecrement,
+		OperatorNegate,
+		OperatorSelector,
+		OperatorTernary1,
+		OperatorTernary2,
+		OperatorBitwiseAnd,
+		OperatorBitwiseOr,
+		OperatorBitwiseXor,
+		OperatorBitwiseNot,
+		OperatorLeftShift,
+		OperatorRightShift,
+		OperatorLogicalAnd,
+		OperatorLogicalOr,
+		OperatorLogicalNot,
+		OperatorLogicalEqual,
+		OperatorLogicalNotEqual,
+		OperatorGreater,
+		OperatorLess,
+		OperatorGreaterEqual,
+		OperatorLessEqual,
+		OperatorAdd,
+		OperatorSub,
+		OperatorMul,
+		OperatorDiv,
+		OperatorCompoundAdd,
+		OperatorCompoundSub,
+		OperatorCompoundMul,
+		OperatorCompoundDiv,
+
+		ModifierConst,
+		ModifierReference,
+
+		ControlFlowIf,
+		ControlFlowSwitch,
+		ControlFlowElse,
+		ControlFlowFor,
+		ControlFlowWhile,
+		ControlFlowBreak,
+		ControlFlowContinue,
+		ControlFlowReturn,
+
+		DataStruct,
+		DataLayout,
+		DataIn,
+		DataOut,
+		DataUniform,
+				
+	};
+
+	struct Token {
+		TokenType type;
+
+		union {
+			float64 fValue;
+			uint64 value;
+
+			struct {
+				uint8 bits;
+				uint8 rows;
+				uint8 columns;
+				TokenType compType : 40;
+			};
+		};
+
+		utils::String string;
+		parsing::Line line;
+		uint64 column;
+
+		
+		Token(TokenType type, const utils::String& string, const parsing::Line& line, uint64 column); Token() {}
+		Token(TokenType type, uint64 value, const utils::String& string, const parsing::Line& line, uint64 column);
+		Token(const Token& other);
+		Token(const Token* other);
+		Token(Token&& other);
+
+		Token& operator=(const Token& other);
+		Token& operator=(Token&& other);
+
+	};
+
+private:
+	bool IsCharAllowedInName(const char c, bool first = true) const;
+	bool IsCharWhitespace(const char c) const;
+	void ProcessName(Token& t) const;
+
+private:
 	utils::String code;
 	utils::String filename;
 	utils::List<parsing::Line> lines;
 	utils::List<utils::String> defines;
 	utils::List<utils::String> includes;
+
+	utils::List<Token> Tokenize();
 
 	bool Process();
 
