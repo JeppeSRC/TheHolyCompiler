@@ -33,17 +33,17 @@ namespace thc {
 namespace core {
 namespace type {
 
-enum Type {
-	THC_TYPE_VOID,
-	THC_TYPE_BOOL,
-	THC_TYPE_INT,
-	THC_TYPE_FLOAT,
-	THC_TYPE_VECTOR,
-	THC_TYPE_MATRIX,
-	THC_TYPE_ARRAY,
-	THC_TYPE_STRUCT,
-	THC_TYPE_FUNCTION,
-	THC_TYPE_POINTER
+enum class Type {
+	Void,
+	Bool,
+	Int,
+	Float,
+	Vector,
+	Matrix,
+	Array,
+	Struct,
+	Function,
+	Pointer
 };
 
 
