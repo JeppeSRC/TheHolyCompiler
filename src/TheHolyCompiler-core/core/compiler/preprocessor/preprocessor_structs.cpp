@@ -55,40 +55,6 @@ PreProcessor::Define& PreProcessor::Define::operator=(PreProcessor::Define&& oth
 
 	return *this;
 }
-
-PreProcessor::Token::Token(PreProcessor::TokenType type, const String& string, uint64 column) : type(type), string(string), column(column) { }
-PreProcessor::Token::Token(PreProcessor::TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), string(string), column(column) { }
-PreProcessor::Token::Token(const Token& other) : type(other.type), value(other.value), string(other.string), column(other.column) {}
-PreProcessor::Token::Token(const Token* other) : type(other->type), value(other->value), string(other->string), column(other->column) {}
-PreProcessor::Token::Token(Token&& other) {
-	type = other.type;
-	value = other.value;
-	column = other.column;
-	string = std::move(other.string);
-}
-
-PreProcessor::Token& PreProcessor::Token::operator=(const PreProcessor::Token& other) {
-	if (this != &other) {
-		type = other.type;
-		value = other.value;
-		column = other.column;
-		string = other.string;
-	}
-
-	return *this;
-}
-
-PreProcessor::Token& PreProcessor::Token::operator=(PreProcessor::Token&& other) {
-	if (this != &other) {
-		type = other.type;
-		value = other.value;
-		column = other.column;
-		string = std::move(other.string);
-	}
-
-	return *this;
-}
-
 }
 }
 }

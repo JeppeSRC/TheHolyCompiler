@@ -25,7 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <core/compiler/parsing/line.h>
+#include <core/compiler/parsing/token.h>
 #include <core/thctypes.h>
 
 namespace thc {
@@ -49,7 +49,7 @@ private:
 
 	};
 
-	
+	/*
 	enum class TokenType : uint64 {
 		None,
 
@@ -97,7 +97,7 @@ private:
 		Token& operator=(const Token& other);
 		Token& operator=(Token&& other);
 
-	};
+	};*/
 
 private:
 	utils::String fileName;
@@ -119,12 +119,12 @@ private:
 	void Process();
 
 private:
-	bool ProcessStatement(uint64 start, uint64 end, utils::List<Token>& tokens, const parsing::Line& line);
+	bool ProcessStatement(uint64 start, uint64 end, utils::List<parsing::Token>& tokens, const parsing::Line& line);
 
 private:
-	utils::List<Token> TokenizeStatement(const utils::String& code, const parsing::Line& line);
+	utils::List<parsing::Token> TokenizeStatement(const utils::String& code, const parsing::Line& line);
 	void ReplaceMacrosWithValue(utils::String& code);
-	uint64 FindMatchingParenthesis(const utils::List<Token>& tokens, uint64 start, const parsing::Line& line);
+	uint64 FindMatchingParenthesis(const utils::List<parsing::Token>& tokens, uint64 start, const parsing::Line& line);
 	uint64 FindLineWith(const utils::String& string, uint64 offset);
 
 private:
