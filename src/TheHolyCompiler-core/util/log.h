@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <Windows.h>
 #include <core/compiler/parsing/line.h>
+#include <core/compiler/parsing/token.h>
 #include "string.h"
 
 namespace thc {
@@ -64,6 +65,11 @@ public:
 	static void CompilerDebug(const core::parsing::Line& line, uint64 col, const char* const message...);
 	static void CompilerWarning(const core::parsing::Line& line, uint64 col, const char* const message...);
 	static void CompilerError(const core::parsing::Line& line, uint64 col, const char* const message...);
+
+	static void CompilerInfo(const core::parsing::Token& token, const char* const message...);
+	static void CompilerDebug(const core::parsing::Token& token, const char* const message...);
+	static void CompilerWarning(const core::parsing::Token& token, const char* const message...);
+	static void CompilerError(const core::parsing::Token& token, const char* const message...);
 
 	static void SetOutputHandle(HANDLE logHandle);
 	static void SetLogCallback(LogCallback logCallback);

@@ -192,6 +192,43 @@ void Log::CompilerError(const Line& line, uint64 col, const char* const message.
 	}
 }
 
+
+void Log::CompilerInfo(const Token& token, const char* const message...) {
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Info, token.line.sourceFile.str, token.line.lineNumber, token.column, message, list);
+	va_end(list);
+}
+
+void Log::CompilerDebug(const Token& token, const char* const message...) {
+	if (!CompilerOptions::DebugMessages()) return;
+
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Debug, token.line.sourceFile.str, token.line.lineNumber, token.column, message, list);
+	va_end(list);
+}
+
+void Log::CompilerWarning(const Token& token, const char* const message...) {
+	if (!CompilerOptions::WarningMessages()) return;
+
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Warning, token.line.sourceFile.str, token.line.lineNumber, token.column, message, list);
+	va_end(list);
+}
+
+void Log::CompilerError(const Token& token, const char* const message...) {
+	va_list list;
+	va_start(list, message);
+	CompilerLog(LogLevel::Error, token.line.sourceFile.str, token.line.lineNumber, token.column, message, list);
+	va_end(list);
+
+	if (CompilerOptions::StopOnError()) {
+		exit(1);
+	}
+}
+
 void Log::SetOutputHandle(HANDLE logHandle) {
 	Log::logHandle = logHandle;
 	SetStdHandle(STD_OUTPUT_HANDLE, logHandle);
