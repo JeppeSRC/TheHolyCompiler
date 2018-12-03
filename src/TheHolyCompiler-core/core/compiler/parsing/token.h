@@ -50,7 +50,6 @@ enum class TokenType {
 
 	TypeVoid,
 	TypeBool,
-	TypeByte,
 	TypeUint,
 	TypeInt,
 	TypeFloat,
@@ -82,6 +81,7 @@ enum class TokenType {
 	OperatorSub,
 	OperatorMul,
 	OperatorDiv,
+	OperatorAssign,
 	OperatorCompoundAdd,
 	OperatorCompoundSub,
 	OperatorCompoundMul,
@@ -141,6 +141,9 @@ public:
 	Token& operator=(const Token& other);
 	Token& operator=(Token&& other);
 
+public:
+	static bool ValidReturnType(TokenType type);
+	static bool ValidInOutType(TokenType type);
 };
 
 }

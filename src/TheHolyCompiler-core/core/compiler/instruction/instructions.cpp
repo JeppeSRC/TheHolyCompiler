@@ -34,7 +34,7 @@ namespace instruction {
 using namespace utils;
 using namespace compiler;
 
-InstBase::InstBase(uint32 opCode, uint32 wordCount, const char* const literalName, bool resultId) : opCode(opCode), wordCount(wordCount) {
+InstBase::InstBase(uint32 opCode, uint32 wordCount, const char* const literalName, bool resultId, InstType type) : opCode(opCode), wordCount(wordCount), type(type) {
 	uint64 len = strlen(literalName) + 1;
 	this->literalName = new char[len];
 	memcpy(this->literalName, literalName, len);

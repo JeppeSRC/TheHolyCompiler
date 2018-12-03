@@ -35,14 +35,21 @@ namespace thc {
 namespace core {
 namespace instruction {
 
+enum class InstType {
+	None,
+	Instruction,
+	Type
+};
+
 class InstBase {
 public:
+	InstType type;
 	uint32 id;
 	uint32 opCode;
 	mutable uint32 wordCount;
 	char* literalName;
 
-	InstBase(uint32 opCode, uint32 wordCount, const char* const literalName, bool resultId = false);
+	InstBase(uint32 opCode, uint32 wordCount, const char* const literalName, bool resultId = false, InstType type = InstType::Instruction);
 	virtual ~InstBase();
 
 	virtual void GetInstWords(uint32* words) const;

@@ -29,6 +29,48 @@ namespace core {
 namespace compiler {
 
 using namespace utils;
+using namespace parsing;
+using namespace instruction;
+using namespace type;
+
+InstBase* Compiler::GetInstFromID(uint32 id)  {
+	auto cmp = [](InstBase* const& curr, const uint32& id) -> bool {
+		return curr->id == id;
+	};
+
+	uint64 index = instructions.Find<uint32>(id, cmp);
+
+	if (index != ~0) {
+		return instructions[index];
+	}
+	
+	return nullptr;
+}
+void Compiler::CheckTypeExists(TypeBase** type) {
+	auto cmp = [](InstBase* const& curr, TypeBase* const& type) -> bool {
+		if (curr->type != InstType::Type) return false;
+
+		TypeBase* t = (TypeBase*)curr;
+
+		if (t->type == type->type) {
+			return *t == type;
+		}
+		
+		return false;
+	};
+
+	uint64 index = types.Find<TypeBase*>(*type, cmp);
+
+	if (index == ~0) {
+		types.Add(*type);
+	} else {
+		delete *type;
+
+		*type = (TypeBase*)types[index];
+	}
+}
+
+
 
 bool Compiler::IsCharAllowedInName(const char c, bool first) const {
 	if (c >= 'A' && c <= 'Z') return true;
@@ -43,7 +85,7 @@ bool Compiler::IsCharWhitespace(const char c) const {
 }
 
 
-void Compiler::ProcessName(Compiler::Token& t) const {
+void Compiler::ProcessName(Token& t) const {
 	struct TokenProperties {
 		String name;
 		TokenType type;
@@ -70,7 +112,7 @@ void Compiler::ProcessName(Compiler::Token& t) const {
 
 		{"void", TokenType::TypeVoid, 0, 0, 0},
 		{"bool", TokenType::TypeBool, 8, 0, 0},
-		{"byte", TokenType::TypeByte, 8, 0, 0},
+		{"byte", TokenType::TypeUint, 8, 0, 0},
 
 		{"uint8",  TokenType::TypeUint, 8,  0, 0},
 		{"uint16", TokenType::TypeUint, 16, 0, 0},

@@ -25,9 +25,8 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <util/utils.h>
-#include <util/list.h>
-#include <core/compiler/parsing/line.h>
+#include <core/compiler/parsing/token.h>
+#include <core/compiler/type/types.h>
 #include "options.h"
 #include "idmanager.h"
 
@@ -37,115 +36,62 @@ namespace compiler {
 
 class Compiler {
 private:
-	enum class TokenType: uint64 {
-		None,
 
-		ParenthesisOpen,
-		ParenthesisClose,
-		BracketOpen,
-		BracketClose,
-		CurlyBracketOpen,
-		CurlyBracketClose,
-
-		SemiColon,
-		Name,
-		Value,
-
-		TypeVoid,
-		TypeBool,
-		TypeByte,
-		TypeUint,
-		TypeInt,
-		TypeFloat,
-		TypeVec,
-		TypeMat,
-
-		OperatorIncrement,
-		OperatorDecrement,
-		OperatorNegate,
-		OperatorSelector,
-		OperatorTernary1,
-		OperatorTernary2,
-		OperatorBitwiseAnd,
-		OperatorBitwiseOr,
-		OperatorBitwiseXor,
-		OperatorBitwiseNot,
-		OperatorLeftShift,
-		OperatorRightShift,
-		OperatorLogicalAnd,
-		OperatorLogicalOr,
-		OperatorLogicalNot,
-		OperatorLogicalEqual,
-		OperatorLogicalNotEqual,
-		OperatorGreater,
-		OperatorLess,
-		OperatorGreaterEqual,
-		OperatorLessEqual,
-		OperatorAdd,
-		OperatorSub,
-		OperatorMul,
-		OperatorDiv,
-		OperatorCompoundAdd,
-		OperatorCompoundSub,
-		OperatorCompoundMul,
-		OperatorCompoundDiv,
-
-		ModifierConst,
-		ModifierReference,
-
-		ControlFlowIf,
-		ControlFlowSwitch,
-		ControlFlowElse,
-		ControlFlowFor,
-		ControlFlowWhile,
-		ControlFlowBreak,
-		ControlFlowContinue,
-		ControlFlowReturn,
-
-		DataStruct,
-		DataLayout,
-		DataIn,
-		DataOut,
-		DataUniform,
-				
+	enum class VariableScope {
+		Unknown,
+		Uniform, 
+		In,
+		Out,
+		Global
 	};
 
-	struct Token {
-		TokenType type;
-
-		union {
-			float64 fValue;
-			uint64 value;
-
-			struct {
-				uint8 bits;
-				uint8 rows;
-				uint8 columns;
-				TokenType compType : 40;
-			};
-		};
-
-		utils::String string;
-		parsing::Line line;
-		uint64 column;
-
-		
-		Token(TokenType type, const utils::String& string, const parsing::Line& line, uint64 column); Token() {}
-		Token(TokenType type, uint64 value, const utils::String& string, const parsing::Line& line, uint64 column);
-		Token(const Token& other);
-		Token(const Token* other);
-		Token(Token&& other);
-
-		Token& operator=(const Token& other);
-		Token& operator=(Token&& other);
-
+	enum class VariableType {
+		Unknown,
+		Primitive,
+		Struct,
+		Array
 	};
+
+	struct Variable {
+		VariableScope scope;
+		VariableType type;
+		utils::String name;
+
+		uint32 id; // in VariableStruct id = the location in the struct. In all other cases it's the id of the OpVariable
+	};
+
+	struct VariablePrimitive : public Variable {
+		parsing::TokenType dataType;
+		parsing::TokenType componentType;
+
+		uint32 bits;
+		uint32 rows;
+		uint32 columns;
+	};
+
+	struct VariableStruct : public Variable {
+		utils::List<Variable*> members;
+	};
+
+	struct VariableArray : public Variable {
+		uint32 elementCount;
+		Variable elementType;
+	};
+
+	
+	utils::List<instruction::InstBase*> debugInstructions;
+	utils::List<instruction::InstBase*> annotationIstructions;
+	utils::List<instruction::InstBase*> types;
+	utils::List<instruction::InstBase*> instructions;
+
+	instruction::InstBase* GetInstFromID(uint32 id);
+	void CheckTypeExists(type::TypeBase** type); //Returns true if it existed
 
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
-	void ProcessName(Token& t) const;
-
+	void ProcessName(parsing::Token& t) const;
+	
 private:
 	utils::String code;
 	utils::String filename;
@@ -153,7 +99,9 @@ private:
 	utils::List<utils::String> defines;
 	utils::List<utils::String> includes;
 
-	utils::List<Token> Tokenize();
+	utils::List<parsing::Token> Tokenize();
+	void ParseTokens(utils::List<parsing::Token>& tokens);
+	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
 

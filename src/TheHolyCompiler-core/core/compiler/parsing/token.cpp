@@ -69,6 +69,36 @@ Token& Token::operator=(Token&& other) {
 	return *this;
 }
 
+bool Token::ValidReturnType(TokenType type) {
+	switch (type) {
+		case TokenType::TypeVoid:
+		case TokenType::TypeBool:
+		case TokenType::TypeByte:
+		case TokenType::TypeUint:
+		case TokenType::TypeInt:
+		case TokenType::TypeFloat:
+		case TokenType::TypeVec:
+		case TokenType::TypeMat:
+			return true;
+	}
+
+	return false;
+}
+
+bool Token::ValidInOutType(TokenType type) {
+	switch (type) {
+		case TokenType::TypeByte:
+		case TokenType::TypeUint:
+		case TokenType::TypeInt:
+		case TokenType::TypeFloat:
+		case TokenType::TypeVec:
+		case TokenType::TypeMat:
+			return true;
+	}
+
+	return false;
+}
+
 }
 }
 }

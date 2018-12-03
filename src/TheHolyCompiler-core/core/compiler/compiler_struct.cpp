@@ -33,41 +33,6 @@ namespace compiler {
 using namespace utils;
 using namespace parsing;
 
-Compiler::Token::Token(Compiler::TokenType type, const String& string, const Line& line, uint64 column) : type(type), string(string), line(line), column(column) { }
-Compiler::Token::Token(Compiler::TokenType type, uint64 value, const String& string, const Line& line, uint64 column) : type(type), value(value), string(string), line(line), column(column) { }
-Compiler::Token::Token(const Token& other) : type(other.type), value(other.value), string(other.string), line(other.line), column(other.column) { }
-Compiler::Token::Token(const Token* other) : type(other->type), value(other->value), string(other->string), line(other->line), column(other->column) { }
-Compiler::Token::Token(Token&& other) {
-	type = other.type;
-	value = other.value;
-	column = other.column;
-	string = std::move(other.string);
-	line = std::move(other.line);
-}
-
-Compiler::Token& Compiler::Token::operator=(const Compiler::Token& other) {
-	if (this != &other) {
-		type = other.type;
-		value = other.value;
-		column = other.column;
-		string = other.string;
-		line = other.line;
-	}
-
-	return *this;
-}
-
-Compiler::Token& Compiler::Token::operator=(Compiler::Token&& other) {
-	if (this != &other) {
-		type = other.type;
-		value = other.value;
-		column = other.column;
-		string = std::move(other.string);
-		line = std::move(other.line);
-	}
-
-	return *this;
-}
 
 }
 }

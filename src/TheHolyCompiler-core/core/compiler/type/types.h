@@ -55,6 +55,8 @@ public:
 	virtual ~TypeBase();
 
 	virtual void GetInstWords(uint32* words) const = 0;
+
+	virtual bool operator==(const TypeBase* other) const = 0;
 };
 
 class TypeVoid : public TypeBase {
@@ -62,6 +64,8 @@ public:
 	TypeVoid();
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeInt : public TypeBase {
@@ -72,6 +76,8 @@ public:
 	TypeInt(uint32 bits, uint32 sign);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeFloat : public TypeBase {
@@ -81,6 +87,8 @@ public:
 	TypeFloat(uint32 bits);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeVector : public TypeBase {
@@ -91,6 +99,8 @@ public:
 	TypeVector(uint32 compCount, uint32 compTypeId);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeMatrix : public TypeBase {
@@ -101,6 +111,8 @@ public:
 	TypeMatrix(uint32 columnCount, uint32 columnTypeId);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeArray : public TypeBase {
@@ -111,6 +123,8 @@ public:
 	TypeArray(uint32 elementCount, uint32 elementTypeId);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeStruct : public TypeBase {
@@ -121,6 +135,8 @@ public:
 	TypeStruct(uint32 memberCount, uint32* memberTypeIds);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypePointer : public TypeBase {
@@ -131,6 +147,8 @@ public:
 	TypePointer(uint32 storageClass, uint32 typeId);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 class TypeFunction : public TypeBase {
@@ -142,6 +160,8 @@ public:
 	TypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const TypeBase* type) const override;
 };
 
 }

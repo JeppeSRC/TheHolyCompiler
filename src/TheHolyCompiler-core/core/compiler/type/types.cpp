@@ -23,13 +23,14 @@ SOFTWARE.
 */
 
 #include "types.h"
+#include <util/thc_assert.h>
 
 namespace thc {
 namespace core {
 namespace type {
 
 
-TypeBase::TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName), type(type) { }
+TypeBase::TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName, false, instruction::InstType::Type), type(type) { }
 
 TypeBase::~TypeBase() { }
 
@@ -50,6 +51,83 @@ TypeStruct::TypeStruct(uint32 memberCount, uint32* memberTypeIds) : TypeBase(Typ
 TypePointer::TypePointer(uint32 storageClass, uint32 typeId) : TypeBase(Type::Pointer, THC_SPIRV_OPCODE_OpTypePointer, 4, "OpTypePointer"), storageClass(storageClass), typeId(typeId) {}
 
 TypeFunction::TypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds) : TypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount << 2); }
+
+bool TypeVoid::operator==(const TypeBase* type) const {
+	return true;
+}
+
+bool TypeInt::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeInt* t = (TypeInt*)type;
+
+	return bits == t->bits && sign == t->sign;
+}
+
+bool TypeFloat::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeFloat* t = (TypeFloat*)type;
+
+	return bits == t->bits;
+}
+
+bool TypeVector::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeVector* t = (TypeVector*)type;
+
+	return componentCount == t->componentCount && componentTypeId == t->componentTypeId;
+}
+
+bool TypeMatrix::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeMatrix* t = (TypeMatrix*)type;
+
+	return columnCount == t->columnCount && columnTypeId == t->columnTypeId;
+}
+
+bool TypeArray::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeArray* t = (TypeArray*)type;
+
+	return elementCount == t->elementCount && elementTypeId == t->elementTypeId;
+}
+
+bool TypeStruct::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeStruct* t = (TypeStruct*)type;
+
+	if (memberCount == t->memberCount) {
+		for (uint32 i = 0; i < memberCount; i++) {
+			if (memberTypeId[i] != t->memberTypeId[i]) return false;
+		}
+		
+		return true;
+	}
+
+	return false;
+}
+
+bool TypePointer::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypePointer* t = (TypePointer*)type;
+
+	return typeId == t->typeId && storageClass == t->storageClass;
+}
+
+bool TypeFunction::operator==(const TypeBase* type) const {
+	THC_ASSERT(this->type != type->type);
+	TypeFunction* t = (TypeFunction*)type;
+
+	if (returnTypeId == t->returnTypeId && parameterCount == t->parameterCount) {
+		for (uint32 i = 0; i < parameterCount; i++) {
+			if (parameterId[i] != t->parameterId[i]) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 
 }
 }
