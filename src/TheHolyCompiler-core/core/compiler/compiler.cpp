@@ -364,6 +364,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				InstVariable* variable = new InstVariable(pointer->id, ((TypePointer*)pointer)->storageClass, 0);
 
 				types.Add(variable);
+				variables.Add(var);
 
 				var->id = variable->id;
 

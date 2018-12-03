@@ -78,6 +78,8 @@ private:
 		Variable elementType;
 	};
 
+	utils::List<Variable*> variables;
+
 	
 	utils::List<instruction::InstBase*> debugInstructions;
 	utils::List<instruction::InstBase*> annotationIstructions;
