@@ -9,6 +9,13 @@
 #error "Y'all suck"
 #endif
 
+layout (location = 0) in vec3 position;
+
+layout (binding = 0, set = 0) uniform {
+    vec4 thing;
+};
+
+out vec4 position = THSL_Position;
 
 int main() {
 
