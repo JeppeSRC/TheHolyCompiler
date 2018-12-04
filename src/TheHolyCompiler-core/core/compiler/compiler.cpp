@@ -124,6 +124,8 @@ List<Token> Compiler::Tokenize() {
 				tokens.Emplace(TokenType::OperatorTernary2, ":", l, j);
 			} else if (c0 == '.') {
 				tokens.Emplace(TokenType::OperatorSelector, ".", l, j);
+			} else if (c0 == ',') {
+				tokens.Emplace(TokenType::Comma, ",", l, j);
 			} else if (c0 == '=') {
 				tokens.Emplace(TokenType::OperatorAssign, "=", l, j);
 			} else if (c0 >= '0' && c0 <= '9') {
@@ -379,7 +381,86 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				i--;
 			} else if (specifier.string == "binding" || specifier.string == "set") {
 			//Uniform
-				
+
+				auto GetValue = [&tokens](uint64 start) -> uint32 {
+					const Token& equal = tokens[start];
+
+					if (equal.type != TokenType::OperatorAssign) {
+						Log::CompilerError(equal, "Unexpected symbol \"%s\" expected \"=\"", equal.string.str);
+						return;
+					}
+
+					const Token& value = tokens[start+1];
+
+					if (value.type != TokenType::Value) {
+						Log::CompilerError(value, "Unexpected symbol \"%s\" expected a valid value", value.string.str);
+						return;
+					}
+
+					return (uint32)value.value;
+				};
+
+				uint32 binding = ~0;
+				uint32 set = ~0;
+
+				if (specifier.string == "binding") {
+					binding = GetValue(i + offset);
+					offset += 2;
+				} else {
+					set = GetValue(i + offset);
+					offset += 2;
+				}
+
+				const Token& comma = tokens[i + offset++];
+
+				if (comma.type != TokenType::Comma) {
+					Log::CompilerError(comma, "Unexpected symbol \"%s\" expected \",\"", comma.string.str);
+					return;
+				}
+
+				const Token& specifier2 = tokens[i + offset++];
+
+				if (specifier2.type != TokenType::Name || !(specifier.string == "set" || specifier.string == "binding")) {
+					Log::CompilerError(specifier2, "Unexpected symbol \"%s\" expected \"set or binding\"", specifier.string.str);
+				}
+
+				if (specifier2.string == "binding") {
+					if (binding != ~0) {
+						Log::CompilerError(specifier2, "\"binding\" already set");
+						return;
+					}
+					binding = GetValue(i + offset);
+					offset += 2;
+				} else {
+					if (set != ~0) {
+						Log::CompilerError(specifier2, "\"set\" already set");
+						return;
+					}
+					set = GetValue(i + offset);
+					offset += 2;
+				}
+
+				const Token& parenthesisClose = tokens[i + offset++];
+
+				if (parenthesisClose.type != TokenType::ParenthesisClose) {
+					Log::CompilerError(parenthesisClose, "Unexpected symbol \"%s\" expected \")\"", parenthesisClose.string.str);
+					return;
+				}
+
+				const Token& uniform = tokens[i + offset++];
+
+				if (uniform.type != TokenType::DataUniform) {
+					Log::CompilerError(uniform, "Unexpected symbol \"%s\" expected \"uniform\"", uniform.string.str);
+					return;
+				}
+
+				const Token& openBracket = tokens[i + offset++];
+
+				if (openBracket.type != TokenType::CurlyBracketOpen) {
+					Log::CompilerError(openBracket, "Unexpected symbol \"%s\" expected \"{\"", openBracket.string.str);
+					return;
+				}
+
 
 			}
 		}

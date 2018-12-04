@@ -45,6 +45,7 @@ enum class TokenType {
 	CurlyBracketClose,
 
 	SemiColon,
+	Comma,
 	Name,
 	Value,
 
