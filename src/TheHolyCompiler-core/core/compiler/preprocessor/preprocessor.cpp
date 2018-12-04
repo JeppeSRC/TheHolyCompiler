@@ -327,7 +327,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (int64 i = end; i >= (int64)start; i--) {
 		Token& token = tokens[i];
 		
-		if (token.type == TokenType::OperatorBitwiseNot || token.type == TokenType::OperatorLogicalNot) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or,TokenType::OperatorBitwiseNot, TokenType::OperatorLogicalNot)) {
 			if (i == end) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires a right-hand operand", token.string.str);
 				break;
@@ -361,7 +361,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (token.type == TokenType::OperatorMul|| token.type == TokenType::OperatorDiv) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorMul, TokenType::OperatorDiv)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 				break;
@@ -402,7 +402,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (token.type == TokenType::OperatorAdd || token.type == TokenType::OperatorSub) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorAdd, TokenType::OperatorSub)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 				break;
@@ -443,7 +443,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (token.type == TokenType::OperatorLeftShift || token.type == TokenType::OperatorRightShift) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLeftShift, TokenType::OperatorRightShift)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 				break;
@@ -484,7 +484,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (token.type == TokenType::OperatorLess || token.type == TokenType::OperatorLessEqual || token.type == TokenType::OperatorGreater|| token.type == TokenType::OperatorGreaterEqual) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLess, TokenType::OperatorLessEqual, TokenType::OperatorGreater, TokenType::OperatorGreaterEqual)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 				break;
@@ -531,7 +531,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (token.type == TokenType::OperatorLogicalEqual || token.type == TokenType::OperatorLogicalNotEqual) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLogicalEqual, TokenType::OperatorLogicalNotEqual)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 				break;
