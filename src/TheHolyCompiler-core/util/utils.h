@@ -42,6 +42,18 @@ public:
 	
 	static String ReadFile(const String& filename);
 
+	template<typename First, typename ...T>
+	static bool CompareEnums(First first, T... args) {
+		constexpr uint64 num = sizeof...(args);
+
+		First arr[] = {args...};
+
+		for (uint64 i = 0; i < num; i++) {
+			if (first != arr[i]) return false;
+		}
+
+		return true;
+	}
 };
 
 }
