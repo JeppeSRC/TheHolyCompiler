@@ -1,4 +1,5 @@
 #include <core/compiler/preprocessor/preprocessor.h>
+#include <core/compiler/compiler.h>
 #include <core/compiler/parsing/line.h>
 #include <util/log.h>
 #include <Windows.h>
@@ -8,7 +9,7 @@ using namespace core;
 using namespace utils;
 using namespace parsing;
 using namespace preprocessor;
-
+using namespace compiler;
 
 
 int main() {
@@ -27,9 +28,11 @@ int main() {
 
 	includes.Add(path);
 
-	String s = Line::ToString(PreProcessor::Run(path+"/test.thsl", defines, includes));
+	Compiler::Run(path + "/test.thsl", defines, includes);
 
-	printf("%s\n", s.str);
+	/*String s = Line::ToString(PreProcessor::Run(path+"/test.thsl", defines, includes));
+
+	printf("%s\n", s.str);*/
 
 	return 0;
 }
