@@ -31,6 +31,12 @@ SOFTWARE.
 namespace thc {
 namespace utils {
 
+enum CompareOperation {
+	Equal,
+	NotEqual,
+	Or,
+};
+
 class Utils {
 public:
 	static void CopyString(char*& dst, const char* const src);
@@ -42,17 +48,36 @@ public:
 	
 	static String ReadFile(const String& filename);
 
+	
+
 	template<typename First, typename ...T>
-	static bool CompareEnums(First first, T... args) {
+	static bool CompareEnums(First first, CompareOperation op, T... args) {
 		constexpr uint64 num = sizeof...(args);
 
 		First arr[] = {args...};
 
-		for (uint64 i = 0; i < num; i++) {
-			if (first != arr[i]) return false;
-		}
+		if (op == CompareOperation::Equal) {
+			for (uint64 i = 0; i < num; i++) {
+				if (first != arr[i]) return false;
+			}
 
-		return true;
+			return true;
+		} else if (op == CompareOperation::NotEqual) {
+			for (uint64 i = 0; i < num; i++) {
+				if (first == arr[i]) return false;
+			}
+
+			return true;
+		} else if (op == CompareOperation::Or) {
+			for (uint64 i = 0; i < num; i++) {
+				if (first == arr[i]) return true;
+			}
+
+			return false;
+		}
+		
+
+		return false;
 	}
 };
 
