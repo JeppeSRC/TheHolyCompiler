@@ -89,11 +89,13 @@ private:
 	instruction::InstBase* GetInstFromID(uint32 id);
 	void CheckTypeExists(type::TypeBase** type); //Returns true if it existed
 
+	VariablePrimitive* CreateVariablePrimitive(const utils::String& name, const utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
+
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
-	
+
 private:
 	utils::String code;
 	utils::String filename;

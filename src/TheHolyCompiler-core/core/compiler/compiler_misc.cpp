@@ -23,6 +23,8 @@ SOFTWARE.
 */
 
 #include "compiler.h"
+#include <util/log.h>
+#include <util/utils.h>
 
 namespace thc {
 namespace core {
@@ -70,7 +72,122 @@ void Compiler::CheckTypeExists(TypeBase** type) {
 	}
 }
 
+Compiler::VariablePrimitive* Compiler::CreateVariablePrimitive(const String& name, const List<Token>& tokens, uint64 start, VariableScope scope) {
+	VariablePrimitive* var = new VariablePrimitive;
 
+	const Token& token = tokens[start];
+
+	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeUint, TokenType::TypeVec, TokenType::TypeMat)) {
+		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
+		return nullptr;
+	}
+
+	const Token& open = tokens[start + 1];
+
+	if (open.type == TokenType::OperatorLess) {
+		const Token& type = tokens[start + 2];
+
+		if (!Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeUint)) {
+			Log::CompilerError(type, "Unexpected symbol \"%s\" expected a valid type", type.string.str);
+			return nullptr;
+		}
+
+		var->componentType = type.type;
+		var->bits = type.bits;
+	} else {
+		var->componentType = TokenType::TypeFloat;
+		var->bits = 32;
+	}
+
+	var->scope = scope;
+	var->type = VariableType::Primitive;
+	var->name = name;
+	var->dataType = token.type;
+	var->rows = token.rows;
+	var->columns = token.columns;
+
+	TypeBase* t = nullptr;
+
+	switch (token.type) {
+		case TokenType::TypeUint:
+			t = new TypeInt(var->bits, 0);
+			break;
+		case TokenType::TypeInt:
+			t = new TypeInt(var->bits, 1);
+			break;
+		case TokenType::TypeFloat:
+			t = new TypeFloat(var->bits);
+			break;
+		case TokenType::TypeVec:
+		{
+			TypeBase* tt = nullptr;
+
+			switch (var->componentType) {
+				case TokenType::TypeFloat:
+					tt = new TypeFloat(var->bits);
+					break;
+				case TokenType::TypeUint:
+					tt = new TypeInt(var->bits, 0);
+					break;
+				case TokenType::TypeInt:
+					tt = new TypeInt(var->bits, 1);
+					break;
+			}
+
+			CheckTypeExists(&tt);
+
+			t = new TypeVector(var->columns, tt->id);
+
+		}
+		break;
+		case TokenType::TypeMat:
+		{
+			TypeBase* tt = nullptr;
+
+			switch (var->componentType) {
+				case TokenType::TypeFloat:
+					tt = new TypeFloat(var->bits);
+					break;
+				case TokenType::TypeUint:
+					tt = new TypeInt(var->bits, 0);
+					break;
+				case TokenType::TypeInt:
+					tt = new TypeInt(var->bits, 1);
+					break;
+			}
+
+			CheckTypeExists(&tt);
+
+			uint32 compId = tt->id;
+
+			tt = new TypeVector(var->rows, compId);
+
+			CheckTypeExists(&tt);
+
+			compId = tt->id;
+
+			t = new TypeMatrix(var->columns, compId);
+		}
+
+	}
+
+	CheckTypeExists(&t);
+
+	TypeBase* pointer = new TypePointer(var->scope == VariableScope::In ? THC_SPIRV_STORAGE_CLASS_INPUT : var->scope == VariableScope::Uniform ? THC_SPIRV_STORAGE_CLASS_UNIFORM : THC_SPIRV_STORAGE_CLASS_OUTPUT, t->id);
+
+	CheckTypeExists(&pointer);
+
+	InstVariable* variable = new InstVariable(pointer->id, ((TypePointer*)pointer)->storageClass, 0);
+
+	types.Add(variable);
+	variables.Add(var);
+
+	var->id = variable->id;
+
+	debugInstructions.Add(new InstName(variable->id, name.str));
+
+	return var;
+}
 
 bool Compiler::IsCharAllowedInName(const char c, bool first) const {
 	if (c >= 'A' && c <= 'Z') return true;
@@ -141,7 +258,7 @@ void Compiler::ProcessName(Token& t) const {
 			t.type = tmp.type;
 			t.bits = tmp.bits;
 			t.rows = tmp.rows;
-			t.column = tmp.columns;
+			t.columns = tmp.columns;
 
 			break;
 		}
