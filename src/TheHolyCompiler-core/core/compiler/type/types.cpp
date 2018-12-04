@@ -30,7 +30,7 @@ namespace core {
 namespace type {
 
 
-TypeBase::TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName, false, instruction::InstType::Type), type(type) { }
+TypeBase::TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName, true, instruction::InstType::Type), type(type) { }
 
 TypeBase::~TypeBase() { }
 
