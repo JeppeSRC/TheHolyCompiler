@@ -73,7 +73,6 @@ bool Token::ValidReturnType(TokenType type) {
 	switch (type) {
 		case TokenType::TypeVoid:
 		case TokenType::TypeBool:
-		case TokenType::TypeByte:
 		case TokenType::TypeUint:
 		case TokenType::TypeInt:
 		case TokenType::TypeFloat:
@@ -87,7 +86,6 @@ bool Token::ValidReturnType(TokenType type) {
 
 bool Token::ValidInOutType(TokenType type) {
 	switch (type) {
-		case TokenType::TypeByte:
 		case TokenType::TypeUint:
 		case TokenType::TypeInt:
 		case TokenType::TypeFloat:
