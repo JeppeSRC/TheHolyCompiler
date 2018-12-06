@@ -51,7 +51,6 @@ enum class TokenType {
 
 	TypeVoid,
 	TypeBool,
-	TypeUint,
 	TypeInt,
 	TypeFloat,
 	TypeVec,
@@ -117,6 +116,7 @@ public:
 	};
 
 	uint8 bits;
+	uint8 sign;
 	uint8 rows;
 	uint8 columns;
 
