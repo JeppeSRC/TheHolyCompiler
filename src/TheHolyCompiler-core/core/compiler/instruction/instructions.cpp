@@ -94,7 +94,7 @@ InstConstant::InstConstant(uint32 resultTypeId, uint32 valueCount, void* values)
 
 InstConstant::InstConstant(uint32 resultTypeId, uint32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), u32(value) { }
 
-InstConstant::InstConstant(uint32 resultTypeId, float value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), f32(value) {}
+InstConstant::InstConstant(uint32 resultTypeId, float32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), f32(value) {}
 
 InstConstantComposite::InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(this->constituent, constituents, constituentCount << 2); }
 

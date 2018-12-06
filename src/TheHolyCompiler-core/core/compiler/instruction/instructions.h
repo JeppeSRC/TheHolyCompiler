@@ -310,12 +310,12 @@ public:
 
 	union {
 		uint32 u32;
-		float f32;
+		float32 f32;
 	};
 
 	InstConstant(uint32 resultTypeId, uint32 valueCount, void* values);
 	InstConstant(uint32 resultTypeId, uint32 value);
-	InstConstant(uint32 resultTypeId, float value);
+	InstConstant(uint32 resultTypeId, float32 value);
 
 	void GetInstWords(uint32* words) const override;
 };
