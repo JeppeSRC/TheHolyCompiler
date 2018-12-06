@@ -36,49 +36,33 @@ namespace compiler {
 
 class Compiler {
 private:
-
-	enum class VariableScope {
-		Unknown,
-		Uniform, 
-		In,
-		Out,
-		Global
-	};
-
-	enum class VariableType {
-		Unknown,
-		Primitive,
-		Struct,
-		Array
-	};
-
-	struct Variable {
-		VariableScope scope;
-		VariableType type;
+	struct Type {
+		type::Type type;
 		utils::String name;
 
-		uint32 id; // in VariableStruct id = the location in the struct. In all other cases it's the id of the OpVariable
+		uint32 typeId; //OpType id
 	};
 
-	struct VariablePrimitive : public Variable {
-		parsing::TokenType dataType;
-		parsing::TokenType componentType;
+	struct TypePrimitive : public Type {
+		type::Type dataType;
+		type::Type componentType;
 
-		uint32 bits;
-		uint32 rows;
-		uint32 columns;
+		uint8 bits;
+		uint8 sign;
+		uint8 rows;
+		uint8 columns;
 	};
 
-	struct VariableStruct : public Variable {
-		utils::List<Variable*> members;
+	struct TypeStruct : public Type {
+		utils::List<Type*> members;
 	};
 
-	struct VariableArray : public Variable {
+	struct TypeArray : public Type {
 		uint32 elementCount;
-		Variable elementType;
+		Type elementType;
 	};
 
-	utils::List<Variable*> variables;
+	utils::List<Type*> typeDefinitions;
 
 	
 	utils::List<instruction::InstBase*> debugInstructions;
@@ -87,9 +71,14 @@ private:
 	utils::List<instruction::InstBase*> instructions;
 
 	instruction::InstBase* GetInstFromID(uint32 id);
-	void CheckTypeExists(type::TypeBase** type); //Returns true if it existed
+	void CheckTypeExists(type::InstTypeBase** type); //Returns true if it existed
 
-	VariablePrimitive* CreateVariablePrimitive(const utils::String& name, const utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
+	//start is the index of the type
+	TypePrimitive* CreateTypePrimitive(const utils::List<parsing::Token>& tokens, uint64 start);
+	//start is the index of the name of the struct
+	TypeStruct* CreateTypeStruct(const utils::List<parsing::Token>& tokens, uint64 start);
+
+	utils::String GetTypeString(const Type* type) const;
 
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;
