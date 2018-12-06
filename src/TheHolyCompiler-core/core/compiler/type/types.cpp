@@ -29,71 +29,94 @@ namespace thc {
 namespace core {
 namespace type {
 
+using namespace parsing;
 
-TypeBase::TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName, true, instruction::InstType::Type), type(type) { }
+Type ConvertToType(TokenType type) {
+	switch (type) {
+		case TokenType::TypeVoid:
+			return Type::Void;
+		case TokenType::TypeBool:
+			return Type::Bool;
+		case TokenType::TypeInt:
+			return Type::Int;
+		case TokenType::TypeFloat:
+			return Type::Float;
+		case TokenType::TypeVec:
+			return Type::Vector;
+		case TokenType::TypeMat:
+			return Type::Matrix;
+	}
 
-TypeBase::~TypeBase() { }
+	THC_ASSERT(type != type);
 
-TypeVoid::TypeVoid() : TypeBase(Type::Void, THC_SPIRV_OPCODE_OpTypeVoid, 2, "OpTypeVoid") {  }
+	return Type::Fail;
+}
 
-TypeInt::TypeInt(uint32 bits, uint32 sign) : TypeBase(Type::Int, THC_SPIRV_OPCODE_OpTypeInt, 4, "OpTypeInt"), bits(bits), sign(sign) { }
 
-TypeFloat::TypeFloat(uint32 bits) : TypeBase(Type::Float, THC_SPIRV_OPCODE_OpTypeFloat, 3, "OpTypeFloat"), bits(bits) { }
+InstTypeBase::InstTypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName) : InstBase(opCode, wordCount, literalName, true, instruction::InstType::Type), type(type) { }
 
-TypeVector::TypeVector(uint32 compCount, uint32 compTypeId) : TypeBase(Type::Vector, THC_SPIRV_OPCODE_OpTypeVector, 4, "OpTypeVector"), componentCount(compCount), componentTypeId(compTypeId) {}
+InstTypeBase::~InstTypeBase() { }
 
-TypeMatrix::TypeMatrix(uint32 columnCount, uint32 columnTypeId) : TypeBase(Type::Matrix, THC_SPIRV_OPCODE_OpTypeMatrix, 4, "OpTypeMatrix"), columnCount(columnCount), columnTypeId(columnTypeId) {}
+InstTypeVoid::InstTypeVoid() : InstTypeBase(Type::Void, THC_SPIRV_OPCODE_OpTypeVoid, 2, "OpTypeVoid") {  }
 
-TypeArray::TypeArray(uint32 elementCount, uint32 elementTypeId) : TypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCount(elementCount), elementTypeId(elementTypeId) {}
+InstTypeInt::InstTypeInt(uint32 bits, uint32 sign) : InstTypeBase(Type::Int, THC_SPIRV_OPCODE_OpTypeInt, 4, "OpTypeInt"), bits(bits), sign(sign) { }
 
-TypeStruct::TypeStruct(uint32 memberCount, uint32* memberTypeIds) : TypeBase(Type::Struct, THC_SPIRV_OPCODE_OpTypeStruct, 2, "OpTypeStruct"), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount << 2); }
+InstTypeFloat::InstTypeFloat(uint32 bits) : InstTypeBase(Type::Float, THC_SPIRV_OPCODE_OpTypeFloat, 3, "OpTypeFloat"), bits(bits) { }
 
-TypePointer::TypePointer(uint32 storageClass, uint32 typeId) : TypeBase(Type::Pointer, THC_SPIRV_OPCODE_OpTypePointer, 4, "OpTypePointer"), storageClass(storageClass), typeId(typeId) {}
+InstTypeVector::InstTypeVector(uint32 compCount, uint32 compTypeId) : InstTypeBase(Type::Vector, THC_SPIRV_OPCODE_OpTypeVector, 4, "OpTypeVector"), componentCount(compCount), componentTypeId(compTypeId) {}
 
-TypeFunction::TypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds) : TypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount << 2); }
+InstTypeMatrix::InstTypeMatrix(uint32 columnCount, uint32 columnTypeId) : InstTypeBase(Type::Matrix, THC_SPIRV_OPCODE_OpTypeMatrix, 4, "OpTypeMatrix"), columnCount(columnCount), columnTypeId(columnTypeId) {}
 
-bool TypeVoid::operator==(const TypeBase* type) const {
+InstTypeArray::InstTypeArray(uint32 elementCount, uint32 elementTypeId) : InstTypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCount(elementCount), elementTypeId(elementTypeId) {}
+
+InstTypeStruct::InstTypeStruct(uint32 memberCount, uint32* memberTypeIds) : InstTypeBase(Type::Struct, THC_SPIRV_OPCODE_OpTypeStruct, 2, "OpTypeStruct"), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount << 2); }
+
+InstTypePointer::InstTypePointer(uint32 storageClass, uint32 typeId) : InstTypeBase(Type::Pointer, THC_SPIRV_OPCODE_OpTypePointer, 4, "OpTypePointer"), storageClass(storageClass), typeId(typeId) {}
+
+InstTypeFunction::InstTypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount << 2); }
+
+bool InstTypeVoid::operator==(const InstTypeBase* type) const {
 	return true;
 }
 
-bool TypeInt::operator==(const TypeBase* type) const {
+bool InstTypeInt::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeInt* t = (TypeInt*)type;
+	InstTypeInt* t = (InstTypeInt*)type;
 
 	return bits == t->bits && sign == t->sign;
 }
 
-bool TypeFloat::operator==(const TypeBase* type) const {
+bool InstTypeFloat::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeFloat* t = (TypeFloat*)type;
+	InstTypeFloat* t = (InstTypeFloat*)type;
 
 	return bits == t->bits;
 }
 
-bool TypeVector::operator==(const TypeBase* type) const {
+bool InstTypeVector::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeVector* t = (TypeVector*)type;
+	InstTypeVector* t = (InstTypeVector*)type;
 
 	return componentCount == t->componentCount && componentTypeId == t->componentTypeId;
 }
 
-bool TypeMatrix::operator==(const TypeBase* type) const {
+bool InstTypeMatrix::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeMatrix* t = (TypeMatrix*)type;
+	InstTypeMatrix* t = (InstTypeMatrix*)type;
 
 	return columnCount == t->columnCount && columnTypeId == t->columnTypeId;
 }
 
-bool TypeArray::operator==(const TypeBase* type) const {
+bool InstTypeArray::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeArray* t = (TypeArray*)type;
+	InstTypeArray* t = (InstTypeArray*)type;
 
 	return elementCount == t->elementCount && elementTypeId == t->elementTypeId;
 }
 
-bool TypeStruct::operator==(const TypeBase* type) const {
+bool InstTypeStruct::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeStruct* t = (TypeStruct*)type;
+	InstTypeStruct* t = (InstTypeStruct*)type;
 
 	if (memberCount == t->memberCount) {
 		for (uint32 i = 0; i < memberCount; i++) {
@@ -106,16 +129,16 @@ bool TypeStruct::operator==(const TypeBase* type) const {
 	return false;
 }
 
-bool TypePointer::operator==(const TypeBase* type) const {
+bool InstTypePointer::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypePointer* t = (TypePointer*)type;
+	InstTypePointer* t = (InstTypePointer*)type;
 
 	return typeId == t->typeId && storageClass == t->storageClass;
 }
 
-bool TypeFunction::operator==(const TypeBase* type) const {
+bool InstTypeFunction::operator==(const InstTypeBase* type) const {
 	THC_ASSERT(this->type != type->type);
-	TypeFunction* t = (TypeFunction*)type;
+	InstTypeFunction* t = (InstTypeFunction*)type;
 
 	if (returnTypeId == t->returnTypeId && parameterCount == t->parameterCount) {
 		for (uint32 i = 0; i < parameterCount; i++) {

@@ -28,12 +28,14 @@ SOFTWARE.
 
 #include <core/spirvlimits.h>
 #include <core/compiler/instruction/instructions.h>
+#include <core/compiler/parsing/token.h>
 
 namespace thc {
 namespace core {
 namespace type {
 
 enum class Type {
+	Fail,
 	Void,
 	Bool,
 	Int,
@@ -46,122 +48,123 @@ enum class Type {
 	Pointer
 };
 
+Type ConvertToType(parsing::TokenType t);
 
-class TypeBase : public instruction::InstBase {
+class InstTypeBase : public instruction::InstBase {
 public:
 	Type type;
 
-	TypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName);
-	virtual ~TypeBase();
+	InstTypeBase(Type type, uint32 opCode, uint32 wordCount, const char* const literalName);
+	virtual ~InstTypeBase();
 
 	virtual void GetInstWords(uint32* words) const = 0;
 
-	virtual bool operator==(const TypeBase* other) const = 0;
+	virtual bool operator==(const InstTypeBase* other) const = 0;
 };
 
-class TypeVoid : public TypeBase {
+class InstTypeVoid : public InstTypeBase {
 public:
-	TypeVoid();
+	InstTypeVoid();
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeInt : public TypeBase {
+class InstTypeInt : public InstTypeBase {
 public:
 	uint32 bits;
 	uint32 sign;
 
-	TypeInt(uint32 bits, uint32 sign);
+	InstTypeInt(uint32 bits, uint32 sign);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeFloat : public TypeBase {
+class InstTypeFloat : public InstTypeBase {
 public:
 	uint32 bits;
 
-	TypeFloat(uint32 bits);
+	InstTypeFloat(uint32 bits);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeVector : public TypeBase {
+class InstTypeVector : public InstTypeBase {
 public:
 	uint32 componentCount;
 	uint32 componentTypeId;
 
-	TypeVector(uint32 compCount, uint32 compTypeId);
+	InstTypeVector(uint32 compCount, uint32 compTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeMatrix : public TypeBase {
+class InstTypeMatrix : public InstTypeBase {
 public:
 	uint32 columnCount;
 	uint32 columnTypeId;
 
-	TypeMatrix(uint32 columnCount, uint32 columnTypeId);
+	InstTypeMatrix(uint32 columnCount, uint32 columnTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeArray : public TypeBase {
+class InstTypeArray : public InstTypeBase {
 public:
 	uint32 elementCount;
 	uint32 elementTypeId;
 
-	TypeArray(uint32 elementCount, uint32 elementTypeId);
+	InstTypeArray(uint32 elementCount, uint32 elementTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeStruct : public TypeBase {
+class InstTypeStruct : public InstTypeBase {
 public:
 	uint32 memberCount;
 	uint32 memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
-	TypeStruct(uint32 memberCount, uint32* memberTypeIds);
+	InstTypeStruct(uint32 memberCount, uint32* memberTypeIds);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypePointer : public TypeBase {
+class InstTypePointer : public InstTypeBase {
 public:
 	uint32 storageClass;
 	uint32 typeId;
 
-	TypePointer(uint32 storageClass, uint32 typeId);
+	InstTypePointer(uint32 storageClass, uint32 typeId);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
-class TypeFunction : public TypeBase {
+class InstTypeFunction : public InstTypeBase {
 public:
 	uint32 returnTypeId;
 	uint32 parameterCount;
 	uint32 parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
 
-	TypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds);
+	InstTypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds);
 
 	void GetInstWords(uint32* words) const override;
 
-	bool operator==(const TypeBase* type) const override;
+	bool operator==(const InstTypeBase* type) const override;
 };
 
 }
