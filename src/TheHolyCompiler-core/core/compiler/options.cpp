@@ -32,7 +32,7 @@ using namespace utils;
 
 bool CompilerOptions::warningsMessages = true;
 bool CompilerOptions::debugMessages = false;
-bool CompilerOptions::stopOnError = false;
+bool CompilerOptions::stopOnError = true;
 
 List<String> CompilerOptions::includeDirectories;
 List<String> CompilerOptions::defines;
