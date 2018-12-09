@@ -11,7 +11,7 @@
 
 layout (location = 0) in vec3 position;
 
-layout (binding = 0, set = 0) uniform {
+layout (binding = 0, set = 0) uniform Buffer0 {
     vec4 thing;
 };
 
