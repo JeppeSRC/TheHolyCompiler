@@ -19,6 +19,5 @@ out vec4 position = THSL_Position;
 
 int main() {
 
-    
     return 0;
 }
