@@ -370,6 +370,49 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_LOCATION, &location, 1));
 			}
+		} else if (token.type == TokenType::DataOut || token.type == TokenType::DataIn) {
+			TypePrimitive* type = CreateTypePrimitive(tokens, i + offset++);
+
+			const Token& name = tokens[i + offset++];
+
+			if (name.type != TokenType::Name) {
+				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+				return;
+			}
+
+			const Token& assign = tokens[i + offset++];
+
+			if (assign.type != TokenType::OperatorAssign) {
+				Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \"=\"", assign.string.str);
+				return;
+			}
+
+			const Token& intrin = tokens[i + offset++];
+
+			if (intrin.type != TokenType::Name) {
+				Log::CompilerError(intrin, "Unexpected symbol \"%s\" expected a valid name", intrin.string.str);
+				return;
+			}
+
+			const Token& semi = tokens[i + offset++];
+
+			if (semi.type != TokenType::SemiColon) {
+				Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
+				return;
+			}
+
+			Variable* var = CreateGlobalVariable(type, token.type == TokenType::DataOut ? VariableScope::Out : VariableScope::In, name.string);
+
+			if (intrin.string == "THSL_Position") {
+				uint32 builtin = 0;
+
+				if (var->scope != VariableScope::Out) {
+					Log::CompilerError(intrin, "Builtin THSL_Position must be an output variable");
+					return;
+				}
+
+				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &builtin, 1));
+			}
 		}
 
 		tokens.Remove(i, i + offset-1);
