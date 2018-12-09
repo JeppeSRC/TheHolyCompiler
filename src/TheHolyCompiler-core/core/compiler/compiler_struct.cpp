@@ -32,6 +32,7 @@ namespace compiler {
 
 using namespace utils;
 using namespace parsing;
+using namespace type;
 
 bool Compiler::TypeBase::operator==(const TypeBase* const other) const {
 	return type == other->type && name == other->name;
@@ -69,6 +70,34 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 	}
 	
 	return false;
+}
+
+
+uint32 Compiler::TypePrimitive::GetSize() const {
+	switch (type) {
+		case Type::Int:
+		case Type::Float:
+			return bits >> 2;
+		case Type::Vector:
+			return rows * (bits >> 2);
+		case Type::Matrix:
+			return rows * columns * (bits >> 2);
+	}
+
+	return ~0;
+}
+
+uint32 Compiler::TypeStruct::GetSize() const {
+	uint32 total = 0;
+	for (uint64 i = 0; i < members.GetCount(); i++) {
+		total += members[i]->GetSize();
+	}
+
+	return total;
+}
+
+uint32 Compiler::TypeArray::GetSize() const {
+	return elementCount * elementType->GetSize();
 }
 
 }

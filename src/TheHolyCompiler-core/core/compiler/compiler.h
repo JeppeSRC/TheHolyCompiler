@@ -44,6 +44,8 @@ private:
 		uint32 typeId; //OpType id
 
 		virtual bool operator==(const TypeBase* const other) const;
+
+		virtual uint32 GetSize() const = 0;
 	};
 
 	struct TypePrimitive : public TypeBase {
@@ -56,12 +58,15 @@ private:
 
 		bool operator==(const TypeBase* const other) const override;
 		
+		uint32 GetSize() const override;
 	};
 
 	struct TypeStruct : public TypeBase {
 		utils::List<TypeBase*> members;
 
 		bool operator==(const TypeBase* const other) const override;
+
+		uint32 GetSize() const override;
 	};
 
 	struct TypeArray : public TypeBase {
@@ -69,6 +74,8 @@ private:
 		TypeBase* elementType;
 
 		bool operator==(const TypeBase* const other) const override;
+
+		uint32 GetSize() const override;
 	};
 
 	utils::List<TypeBase*> typeDefinitions;

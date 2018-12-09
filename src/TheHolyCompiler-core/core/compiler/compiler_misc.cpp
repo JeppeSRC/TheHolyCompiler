@@ -337,6 +337,14 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(const List<Token>& tokens, uint
 
 	CheckTypeExist((InstTypeBase**)&st);
 
+	uint32 memberOffset = 0;
+
+	for (uint64 i = 0; i < var->members.GetCount(); i++) {
+		annotationIstructions.Add(new InstMemberDecorate(st->id, i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
+
+		memberOffset += var->members[i]->GetSize();
+	}
+
 	var->typeId = st->id;
 
 	return var;
