@@ -224,7 +224,7 @@ void InstConstantComposite::GetInstWords(uint32* words) const {
 	words[1] = resultTypeId;
 	words[2] = id;
 
-	memcpy(words+3, constituent, constituentCount << 2);
+	memcpy(words+3, constituents, constituentCount << 2);
 }
 
 void InstVariable::GetInstWords(uint32* words) const {

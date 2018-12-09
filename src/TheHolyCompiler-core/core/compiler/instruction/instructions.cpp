@@ -96,7 +96,7 @@ InstConstant::InstConstant(uint32 resultTypeId, uint32 value) : InstBase(THC_SPI
 
 InstConstant::InstConstant(uint32 resultTypeId, float32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), f32(value) {}
 
-InstConstantComposite::InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(this->constituent, constituents, constituentCount << 2); }
+InstConstantComposite::InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { this->constituents = new uint32[constituentCount];  memcpy(this->constituents, constituents, constituentCount << 2); }
 
 InstVariable::InstVariable(uint32 resultTypeId, uint32 storageClass, uint32 initializer) : InstBase(THC_SPIRV_OPCODE_OpVariable, 4, "OpVariable", true), resultTypeId(resultTypeId), storageClass(storageClass), initializer(initializer) { }
 
@@ -336,7 +336,7 @@ bool InstConstantComposite::operator==(const InstBase* const inst) const {
 
 	if (resultTypeId == c->resultTypeId && constituentCount == c->constituentCount) {
 		for (uint32 i = 0; i < constituentCount; i++) {
-			if (constituent[i] != c->constituent[i]) return false;
+			if (constituents[i] != c->constituents[i]) return false;
 		}
 
 		return true;

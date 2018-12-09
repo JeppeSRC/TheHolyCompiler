@@ -328,7 +328,7 @@ class InstConstantComposite : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 constituentCount;
-	uint32 constituent[128];
+	uint32* constituents;
 
 	InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
 
