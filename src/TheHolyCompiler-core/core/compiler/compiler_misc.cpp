@@ -176,7 +176,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 
 				CheckTypeExist(&tt);
 
-				t = new InstTypeVector(var->columns, tt->id);
+				t = new InstTypeVector(var->rows, tt->id);
 
 			}
 			break;
@@ -511,15 +511,7 @@ uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 
 	InstConstant* constant = new InstConstant(type->typeId, value);
 
-	
-
-
-	if (index != ~0) {
-		delete constant;
-		constant = (InstConstant*)types[index];
-	} else {
-		types.Add(constant);
-	}
+	CheckConstantExist((InstBase**)&constant);
 
 	return constant->id;
 }
@@ -574,18 +566,13 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 
 	CheckTypeExist((TypeBase**)&p);
 
-	if (p->typeId == ~0) {
-		Log::Error("Can't create a ConstantComposite(vector) from an undefined type");
-		return ~0;
-	}
-
-	for (uint8 i = 0; i < prim->columns; i++) {
+	for (uint8 i = 0; i < prim->rows; i++) {
 		ids.Add(CreateConstant(p, (*values)[i]));
 	}
 
 	*values += prim->columns;
 
-	InstConstantComposite* composite = new InstConstantComposite(p->typeId, prim->columns, ids.GetData());
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, prim->rows, ids.GetData());
 
 	CheckConstantExist((InstBase**)&composite);
 
@@ -593,7 +580,31 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 }
 
 uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values) {
+	const TypePrimitive* prim = (const TypePrimitive*)type;
 
+	List<uint32> ids;
+
+	TypePrimitive* p = new TypePrimitive;
+
+	p->type = Type::Vector;
+	p->componentType = prim->componentType;
+	p->bits = prim->bits;
+	p->rows = prim->rows;
+	p->columns = prim->columns;
+	p->typeString = GetTypeString(p);
+	p->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&p);
+
+	for (uint8 i = 0; i < p->rows; i++) {
+		ids.Add(CreateConstantCompositeVector(p, values));
+	}
+
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, p->rows, ids.GetData());
+
+	CheckConstantExist((InstBase**)&composite);
+
+	return composite->id;
 }
 
 uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
@@ -660,9 +671,9 @@ void Compiler::ProcessName(Token& t) const {
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 
-		{"vec2", TokenType::TypeVec, 0, 0, 0, 2},
-		{"vec3", TokenType::TypeVec, 0, 0, 0, 3},
-		{"vec4", TokenType::TypeVec, 0, 0, 0, 4},
+		{"vec2", TokenType::TypeVec, 0, 0, 2, 0},
+		{"vec3", TokenType::TypeVec, 0, 0, 3, 0},
+		{"vec4", TokenType::TypeVec, 0, 0, 4, 0},
 
 		{"mat3", TokenType::TypeMat, 0, 0, 3, 3},
 		{"mat4", TokenType::TypeMat, 0, 0, 4, 4},
