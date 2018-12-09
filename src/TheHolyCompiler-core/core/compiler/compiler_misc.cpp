@@ -598,6 +598,45 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 	return name;
 }
 
+uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
+	switch (scope) {
+		case VariableScope::In:
+			return THC_SPIRV_STORAGE_CLASS_INPUT;
+		case VariableScope::Out:
+			return THC_SPIRV_STORAGE_CLASS_OUTPUT;
+		case VariableScope::Private:
+			return THC_SPIRV_STORAGE_CLASS_PRIVATE;
+		case VariableScope::Uniform:
+			return THC_SPIRV_STORAGE_CLASS_UNIFORM;
+	}
+
+	return ~0;
+}
+
+Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const String& name) {
+	Variable* var = new Variable;
+
+	var->scope = scope;
+	var->name = name;
+
+	var->type = type;
+
+	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
+
+	CheckTypeExist((InstTypeBase**)&pointer);
+
+	var->typePointerId = pointer->id;
+
+	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
+
+	var->variableId = opVar->id;
+
+	types.Add(opVar);
+	globalVariables.Add(var);
+
+	return var;
+}
+
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);

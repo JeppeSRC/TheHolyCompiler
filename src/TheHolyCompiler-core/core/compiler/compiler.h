@@ -97,6 +97,29 @@ private:
 	utils::String GetTypeString(const TypeBase* const type) const;
 
 private:
+	enum class VariableScope {
+		In,
+		Out,
+		Private,
+		Uniform
+	};
+
+	static uint32 ScopeToStorageClass(VariableScope scope);
+
+	struct Variable {
+		VariableScope scope;
+		utils::String name;
+
+		const TypeBase* type;
+		uint32 typePointerId;
+		uint32 variableId;
+	};
+
+	utils::List<Variable*> globalVariables;
+
+	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
+
+private:
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
 	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
