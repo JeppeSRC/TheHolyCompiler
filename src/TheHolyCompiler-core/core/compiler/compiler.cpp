@@ -267,6 +267,8 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 			const Token& scope = tokens[i + offset++];
 
+			Variable tmp;
+
 			switch (scope.type) {
 				case TokenType::DataIn:
 					tmp.scope = VariableScope::In;
@@ -318,16 +320,24 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					return;
 			}
 
-			if (tmp.scope == VariableScope::Uniform) {
-				const Token& bracket = tokens[i + offset++];
+			Variable* var;
 
-				if (bracket.type != TokenType::CurlyBracketOpen) {
-					Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
-					return;
+			if (tmp.scope == VariableScope::Uniform) {
+				TypeStruct* str = CreateTypeStruct(tokens, i + offset);
+
+
+				for (uint64 i = 0; i < str->members.GetCount(); i++) {
+					if (!CheckGlobalName(str->members[i]->name)) {
+						const Token& n = tokens[i + offset];
+						Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[i]->name, n.string.str);
+						return;
+					}
 				}
 
+				var = CreateGlobalVariable(str, tmp.scope, "_uniform_buf");
 
-
+				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BINDING, &binding, 1));
+				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 			} else {
 				uint64 typeLocation = i + offset++;
 
@@ -342,6 +352,11 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					return;
 				}
 
+				if (!CheckGlobalName(name.string)) {
+					Log::CompilerError(name, "Redefinition of global variable \"%s\"", name.string.str);
+					return;
+				}
+
 				const Token& semiColon = tokens[i + offset++];
 
 				if (semiColon.type != TokenType::SemiColon) {
@@ -349,7 +364,11 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					return;
 				}
 
-				VariablePrimitive* var = CreateVariablePrimitive(name.string, tokens, typeLocation, tmp.scope, true);
+				TypePrimitive* type = CreateTypePrimitive(tokens, typeLocation);
+
+				var = CreateGlobalVariable(type, tmp.scope, name.string);
+
+				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_LOCATION, &location, 1));
 			}
 		}
 	}

@@ -117,6 +117,8 @@ private:
 
 	utils::List<Variable*> globalVariables;
 
+	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
+
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 
 private:
