@@ -80,7 +80,10 @@ private:
 	utils::List<instruction::InstBase*> instructions;
 
 	instruction::InstBase* GetInstFromID(uint32 id);
-	void CheckTypeExists(type::InstTypeBase** type); 
+	void CheckTypeExist(type::InstTypeBase** type); 
+	void CheckTypeExist(TypeBase** type);
+	void CheckConstantExist(InstBase** constant);
+
 
 
 	//start is the index of the type
@@ -95,6 +98,11 @@ private:
 private:
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
+	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
+	uint32 CreateConstantCompositeVector(const TypeBase* const type, const uint32** values);
+	uint32 CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values);
+	uint32 CreateConstantCompositeArray( const TypeBase* const type, const uint32** values);
+	uint32 CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values);
 
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;

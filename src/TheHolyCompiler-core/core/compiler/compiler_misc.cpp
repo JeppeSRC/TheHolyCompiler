@@ -48,7 +48,7 @@ InstBase* Compiler::GetInstFromID(uint32 id)  {
 	
 	return nullptr;
 }
-void Compiler::CheckTypeExists(InstTypeBase** type) {
+void Compiler::CheckTypeExist(InstTypeBase** type) {
 	auto cmp = [](InstBase* const& curr, InstTypeBase* const& type) -> bool {
 		if (curr->type != InstType::Type) return false;
 
@@ -72,6 +72,36 @@ void Compiler::CheckTypeExists(InstTypeBase** type) {
 	}
 }
 
+void Compiler::CheckTypeExist(TypeBase** type) {
+	auto cmp = [](TypeBase* const& curr, TypeBase* const& type) -> bool {
+		return *curr == type;
+	};
+
+	uint64 index = typeDefinitions.Find<TypeBase*>(*type, cmp);
+
+	if (index == ~0) {
+		typeDefinitions.Add(*type);
+	} else {
+		delete *type;
+
+		*type = (TypeBase*)typeDefinitions[index];
+	}
+}
+
+void Compiler::CheckConstantExist(InstBase** constant) {
+	uint64 index = types.Find<InstBase*>(*constant, [](InstBase* const& curr, InstBase* const& inst) -> bool {
+		return *curr == inst;
+	});
+
+	if (index == ~0) {
+		types.Add(*constant);
+	} else {
+		delete *constant;
+
+		*constant = types[index];
+	}
+}
+
 Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens, uint64 start) {
 	TypePrimitive* var = new TypePrimitive;
 
@@ -84,22 +114,29 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 
 	const Token& open = tokens[start + 1];
 
-	if (open.type == TokenType::OperatorLess) {
-		const Token& type = tokens[start + 2];
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
+		if (open.type == TokenType::OperatorLess) {
+			const Token& type = tokens[start + 2];
 
-		if (!Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt)) {
-			Log::CompilerError(type, "Unexpected symbol \"%s\" expected a valid type", type.string.str);
-			return nullptr;
+			if (!Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt)) {
+				Log::CompilerError(type, "Unexpected symbol \"%s\" expected a valid type", type.string.str);
+				return nullptr;
+			}
+
+			var->componentType = ConvertToType(type.type);
+			var->bits = type.bits;
+			var->sign = type.sign;
+		} else {
+			var->componentType = Type::Float;;
+			var->bits = 32;
+			var->sign = 0;
 		}
-
-		var->componentType = ConvertToType(type.type);
-		var->bits = type.bits;
-		var->sign = type.sign;
 	} else {
-		var->componentType = Type::Float;;
-		var->bits = 32;
-		var->sign = 0;
+		var->componentType = ConvertToType(token.type);
+		var->bits = token.bits;
+		var->sign = token.sign;
 	}
+	
 
 	var->type = ConvertToType(token.type);
 	var->rows = token.rows;
@@ -137,7 +174,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 						break;
 				}
 
-				CheckTypeExists(&tt);
+				CheckTypeExist(&tt);
 
 				t = new InstTypeVector(var->columns, tt->id);
 
@@ -156,13 +193,13 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 						break;
 				}
 
-				CheckTypeExists(&tt);
+				CheckTypeExist(&tt);
 
 				uint32 compId = tt->id;
 
 				tt = new InstTypeVector(var->rows, compId);
 
-				CheckTypeExists(&tt);
+				CheckTypeExist(&tt);
 
 				compId = tt->id;
 
@@ -171,9 +208,11 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 
 		}
 
-		CheckTypeExists(&t);
+		CheckTypeExist(&t);
 
 		var->typeId = t->id;
+
+		typeDefinitions.Add(var);
 	}
 
 	return var;
@@ -466,16 +505,13 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
-		Log::Error("Can't create constant from a composite \"%s\"", type->typeString);
+		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
 		return ~0;
 	}
 
 	InstConstant* constant = new InstConstant(type->typeId, value);
 
-	uint64 index = types.Find<InstConstant*>(constant, [](InstBase* const& curr, InstConstant* const& inst) -> bool {
-		return *curr == inst;
-	});
-
+	
 
 
 	if (index != ~0) {
@@ -490,6 +526,82 @@ uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 
 uint32 Compiler::CreateConstant(const TypeBase* const type, float32 value) {
 	return CreateConstant(type, *(uint32*)&value);
+}
+
+uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const List<uint32>& values) {
+	if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Array, Type::Struct)) {
+		Log::Error("Can't create ConstantComposite from a non composite \"%s\"", type->typeString);
+		return ~0;
+	}
+
+	uint32 id;
+
+	const uint32* v = values.GetData();
+
+	switch (type->type) {
+		case Type::Vector:
+			id = CreateConstantCompositeVector(type, &v);
+			break;
+		case Type::Matrix:
+			id = CreateConstantCompositeMatrix(type, &v);
+			break;
+		case Type::Array:
+			id = CreateConstantCompositeArray(type, &v);
+			break;
+		case Type::Struct:
+			id = CreateConstantCompositeStruct(type, &v);
+			break;
+
+	}
+
+	return id;
+}
+
+uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const uint32** values) {
+	const TypePrimitive* prim = (const TypePrimitive*)type;
+
+	List<uint32> ids;
+
+	TypePrimitive* p = new TypePrimitive;
+	
+	p->type = prim->componentType;
+	p->componentType = prim->componentType;
+	p->bits = prim->bits;
+	p->rows = prim->rows;
+	p->columns = prim->columns;
+	p->typeString = GetTypeString(p);
+	p->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&p);
+
+	if (p->typeId == ~0) {
+		Log::Error("Can't create a ConstantComposite(vector) from an undefined type");
+		return ~0;
+	}
+
+	for (uint8 i = 0; i < prim->columns; i++) {
+		ids.Add(CreateConstant(p, (*values)[i]));
+	}
+
+	*values += prim->columns;
+
+	InstConstantComposite* composite = new InstConstantComposite(p->typeId, prim->columns, ids.GetData());
+
+	CheckConstantExist((InstBase**)&composite);
+
+	return composite->id;
+}
+
+uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values) {
+
+}
+
+uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
+
+}
+
+uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
+
 }
 
 bool Compiler::IsCharAllowedInName(const char c, bool first) const {
