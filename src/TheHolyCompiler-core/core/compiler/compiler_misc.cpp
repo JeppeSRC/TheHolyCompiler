@@ -504,7 +504,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 }
 
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
-	if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
 		return ~0;
 	}
@@ -527,7 +527,7 @@ uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const List<
 }
 
 uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const uint32** values) {
-	if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Array, Type::Struct)) {
+	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create ConstantComposite from a non composite \"%s\"", type->typeString);
 		return ~0;
 	}
@@ -616,7 +616,7 @@ uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const 
 
 	List<uint32> ids;
 
-	if (Utils::CompareEnums(arr->elementType->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Struct)) {
+	if (IsTypeComposite(type)) {
 		for (uint32 i = 0; i < arr->elementCount; i++) {
 			ids.Add(CreateConstantComposite(arr->elementType, values));
 		}
@@ -637,6 +637,10 @@ uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const 
 
 uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
 
+}
+
+bool Compiler::IsTypeComposite(const TypeBase* const type) const {
+	return Utils::CompareEnums(type->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Array, Type::Struct);
 }
 
 bool Compiler::IsCharAllowedInName(const char c, bool first) const {

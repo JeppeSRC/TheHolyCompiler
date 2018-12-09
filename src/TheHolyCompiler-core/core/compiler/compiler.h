@@ -105,6 +105,8 @@ private:
 	uint32 CreateConstantCompositeArray( const TypeBase* const type, const uint32** values);
 	uint32 CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values);
 
+	bool IsTypeComposite(const TypeBase* const type) const;
+
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
