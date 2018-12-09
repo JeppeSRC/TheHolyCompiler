@@ -33,6 +33,43 @@ namespace compiler {
 using namespace utils;
 using namespace parsing;
 
+bool Compiler::TypeBase::operator==(const TypeBase* const other) const {
+	return type == other->type && name == other->name;
+}
+
+bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) const {
+	if (other->type == type) {
+		const TypePrimitive* t = (const TypePrimitive*)other;
+
+		return componentType == t->componentType && bits == t->bits && sign == t->sign && rows == t->rows && columns == t->columns;
+	}
+
+	return false;
+}
+
+bool Compiler::TypeStruct::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypeStruct* t = (const TypeStruct*)other;
+
+		for (uint64 i = 0; i < members.GetCount(); i++) {
+			if (!(*members[i] == t->members[i])) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypeArray* t = (const TypeArray*)other;
+
+		return elementCount == t->elementCount && *elementType == t->elementType;
+	}
+	
+	return false;
+}
 
 }
 }

@@ -53,6 +53,8 @@ public:
 	virtual ~InstBase();
 
 	virtual void GetInstWords(uint32* words) const;
+
+	virtual bool operator==(const InstBase* const inst) const { return false; }
 };
 
 #pragma region misc
@@ -318,6 +320,8 @@ public:
 	InstConstant(uint32 resultTypeId, float32 value);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstBase* const inst) const override;
 };
 
 class InstConstantComposite : public InstBase {
@@ -329,6 +333,8 @@ public:
 	InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
 
 	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstBase* const inst) const override;
 };
 
 //TOOD: OpConstantNull, OpSpec*

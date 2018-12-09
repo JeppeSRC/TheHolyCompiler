@@ -36,33 +36,42 @@ namespace compiler {
 
 class Compiler {
 private:
-	struct Type {
-		type::Type type;
-		utils::String name;
+	struct TypeBase {
+		type::Type type; //Type
+		utils::String typeString; //Type as a string
+		utils::String name; // Only used in TypeStruct as member name
 
 		uint32 typeId; //OpType id
+
+		virtual bool operator==(const TypeBase* const other) const;
 	};
 
-	struct TypePrimitive : public Type {
-		type::Type dataType;
+	struct TypePrimitive : public TypeBase {
 		type::Type componentType;
 
 		uint8 bits;
 		uint8 sign;
 		uint8 rows;
 		uint8 columns;
+
+		bool operator==(const TypeBase* const other) const override;
+		
 	};
 
-	struct TypeStruct : public Type {
-		utils::List<Type*> members;
+	struct TypeStruct : public TypeBase {
+		utils::List<TypeBase*> members;
+
+		bool operator==(const TypeBase* const other) const override;
 	};
 
-	struct TypeArray : public Type {
+	struct TypeArray : public TypeBase {
 		uint32 elementCount;
-		Type elementType;
+		TypeBase* elementType;
+
+		bool operator==(const TypeBase* const other) const override;
 	};
 
-	utils::List<Type*> typeDefinitions;
+	utils::List<TypeBase*> typeDefinitions;
 
 	
 	utils::List<instruction::InstBase*> debugInstructions;
@@ -71,14 +80,21 @@ private:
 	utils::List<instruction::InstBase*> instructions;
 
 	instruction::InstBase* GetInstFromID(uint32 id);
-	void CheckTypeExists(type::InstTypeBase** type); //Returns true if it existed
+	void CheckTypeExists(type::InstTypeBase** type); 
+
 
 	//start is the index of the type
 	TypePrimitive* CreateTypePrimitive(const utils::List<parsing::Token>& tokens, uint64 start);
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(const utils::List<parsing::Token>& tokens, uint64 start);
+	//start is start of type
+	TypeArray* CreateTypeArray(const utils::List<parsing::Token>& tokens, uint64 start, uint64 size);
 
-	utils::String GetTypeString(const Type* type) const;
+	utils::String GetTypeString(const TypeBase* const type) const;
+
+private:
+	uint32 CreateConstant(const TypeBase* const type, uint32 value);
+	uint32 CreateConstant(const TypeBase* const type, float32 value);
 
 private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;

@@ -265,8 +265,6 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				}
 			}
 
-			Variable tmp;
-
 			const Token& scope = tokens[i + offset++];
 
 			switch (scope.type) {
@@ -321,9 +319,21 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			}
 
 			if (tmp.scope == VariableScope::Uniform) {
+				const Token& bracket = tokens[i + offset++];
+
+				if (bracket.type != TokenType::CurlyBracketOpen) {
+					Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
+					return;
+				}
+
+
 
 			} else {
 				uint64 typeLocation = i + offset++;
+
+				if (tokens[i + offset].type == TokenType::OperatorLess) {
+					offset += 3;
+				}
 
 				const Token& name = tokens[i + offset++];
 
@@ -339,7 +349,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					return;
 				}
 
-				VariablePrimitive* var = CreateVariablePrimitive(name.string, tokens, typeLocation, tmp.scope);
+				VariablePrimitive* var = CreateVariablePrimitive(name.string, tokens, typeLocation, tmp.scope, true);
 			}
 		}
 	}

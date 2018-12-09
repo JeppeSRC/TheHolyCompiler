@@ -308,6 +308,43 @@ InstReturn::InstReturn() : InstBase(THC_SPIRV_OPCODE_OpReturn, 1, "OpReturn") {}
 
 InstReturnValue::InstReturnValue(uint32 valueId) : InstBase(THC_SPIRV_OPCODE_OpReturnValue, 2, "OpReturnValue"), valueId(valueId) {}
 
+
+bool InstConstant::operator==(const InstBase* const inst) const {
+	if (inst->opCode != this->opCode) {
+		return false;
+	}
+
+	const InstConstant* c = (const InstConstant*)inst;
+
+	if (resultTypeId == c->resultTypeId && valueCount == c->valueCount) {
+		for (uint32 i = 0; i < valueCount; i++) {
+			if (values[i] != c->values[i]) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool InstConstantComposite::operator==(const InstBase* const inst) const {
+	if (inst->opCode != this->opCode) {
+		return false;
+	}
+
+	const InstConstantComposite* c = (const InstConstantComposite*)inst;
+
+	if (resultTypeId == c->resultTypeId && constituentCount == c->constituentCount) {
+		for (uint32 i = 0; i < constituentCount; i++) {
+			if (constituent[i] != c->constituent[i]) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 }
 }
 }
