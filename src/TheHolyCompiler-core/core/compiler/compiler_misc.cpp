@@ -225,7 +225,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 	return var;
 }
 
-Compiler::TypeStruct* Compiler::CreateTypeStruct(const List<Token>& tokens, uint64 start) {
+Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
 	auto findStructFunc = [](TypeBase* const& curr, const String& name) -> bool {
 		if (curr->type == Type::Struct) {
 			return curr->typeString == name;
@@ -321,6 +321,8 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(const List<Token>& tokens, uint
 			}
 		}
 	}
+
+	tokens.Remove(start, start + offset);
 
 	var->type = Type::Struct;
 	var->typeString = name.string;
@@ -492,7 +494,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 		case Type::Vector:
 			name = "vec";
 
-			switch (prim->columns) {
+			switch (prim->rows) {
 				case 2:
 					name.Append("2");
 					break;

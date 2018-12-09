@@ -225,7 +225,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			while (true) {
 				const Token& specifier = tokens[i + offset++];
 
-				if (specifier.type != TokenType::Name || !(specifier.string == "location" || specifier.string == "set" || specifier.string == "binding")) {
+				if (specifier.type != TokenType::Name && !(specifier.string == "location" || specifier.string == "set" || specifier.string == "binding")) {
 					Log::CompilerError(specifier, "Unexpected symbol \"%s\" expected \"location, set or binding\"", specifier.string.str);
 					return;
 				}
@@ -371,6 +371,9 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_LOCATION, &location, 1));
 			}
 		}
+
+		tokens.Remove(i, i + offset-1);
+		i--;
 	}
 }
 

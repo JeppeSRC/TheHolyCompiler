@@ -97,7 +97,7 @@ private:
 	//start is the index of the type
 	TypePrimitive* CreateTypePrimitive(const utils::List<parsing::Token>& tokens, uint64 start);
 	//start is the index of the name of the struct
-	TypeStruct* CreateTypeStruct(const utils::List<parsing::Token>& tokens, uint64 start);
+	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
 	//start is start of type
 	TypeArray* CreateTypeArray(const utils::List<parsing::Token>& tokens, uint64 start);
 
