@@ -80,42 +80,42 @@ bool InstTypeVoid::operator==(const InstTypeBase* type) const {
 }
 
 bool InstTypeInt::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeInt* t = (InstTypeInt*)type;
 
 	return bits == t->bits && sign == t->sign;
 }
 
 bool InstTypeFloat::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeFloat* t = (InstTypeFloat*)type;
 
 	return bits == t->bits;
 }
 
 bool InstTypeVector::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeVector* t = (InstTypeVector*)type;
 
 	return componentCount == t->componentCount && componentTypeId == t->componentTypeId;
 }
 
 bool InstTypeMatrix::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeMatrix* t = (InstTypeMatrix*)type;
 
 	return columnCount == t->columnCount && columnTypeId == t->columnTypeId;
 }
 
 bool InstTypeArray::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeArray* t = (InstTypeArray*)type;
 
 	return elementCount == t->elementCount && elementTypeId == t->elementTypeId;
 }
 
 bool InstTypeStruct::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypeStruct* t = (InstTypeStruct*)type;
 
 	if (memberCount == t->memberCount) {
@@ -130,14 +130,15 @@ bool InstTypeStruct::operator==(const InstTypeBase* type) const {
 }
 
 bool InstTypePointer::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
 	InstTypePointer* t = (InstTypePointer*)type;
 
 	return typeId == t->typeId && storageClass == t->storageClass;
 }
 
 bool InstTypeFunction::operator==(const InstTypeBase* type) const {
-	THC_ASSERT(this->type != type->type);
+	if (this->type != type->type) return false;
+
 	InstTypeFunction* t = (InstTypeFunction*)type;
 
 	if (returnTypeId == t->returnTypeId && parameterCount == t->parameterCount) {
