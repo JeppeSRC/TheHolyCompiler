@@ -99,6 +99,7 @@ private:
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
 	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
+	uint32 CreateConstantComposite(const TypeBase* const type, const uint32** values);
 	uint32 CreateConstantCompositeVector(const TypeBase* const type, const uint32** values);
 	uint32 CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values);
 	uint32 CreateConstantCompositeArray( const TypeBase* const type, const uint32** values);

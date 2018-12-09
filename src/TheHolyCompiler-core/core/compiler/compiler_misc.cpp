@@ -521,6 +521,12 @@ uint32 Compiler::CreateConstant(const TypeBase* const type, float32 value) {
 }
 
 uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const List<uint32>& values) {
+	const uint32* v = values.GetData();
+
+	return CreateConstantComposite(type, &v);
+}
+
+uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const uint32** values) {
 	if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Array, Type::Struct)) {
 		Log::Error("Can't create ConstantComposite from a non composite \"%s\"", type->typeString);
 		return ~0;
@@ -528,20 +534,18 @@ uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const List<
 
 	uint32 id;
 
-	const uint32* v = values.GetData();
-
 	switch (type->type) {
 		case Type::Vector:
-			id = CreateConstantCompositeVector(type, &v);
+			id = CreateConstantCompositeVector(type, values);
 			break;
 		case Type::Matrix:
-			id = CreateConstantCompositeMatrix(type, &v);
+			id = CreateConstantCompositeMatrix(type, values);
 			break;
 		case Type::Array:
-			id = CreateConstantCompositeArray(type, &v);
+			id = CreateConstantCompositeArray(type, values);
 			break;
 		case Type::Struct:
-			id = CreateConstantCompositeStruct(type, &v);
+			id = CreateConstantCompositeStruct(type, values);
 			break;
 
 	}
@@ -608,7 +612,27 @@ uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const
 }
 
 uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
+	const TypeArray* arr = (const TypeArray*)type;
 
+	List<uint32> ids;
+
+	if (Utils::CompareEnums(arr->elementType->type, CompareOperation::Or, Type::Vector, Type::Matrix, Type::Struct)) {
+		for (uint32 i = 0; i < arr->elementCount; i++) {
+			ids.Add(CreateConstantComposite(arr->elementType, values));
+		}
+	} else {
+		for (uint32 i = 0; i < arr->elementCount; i++) {
+			ids.Add(CreateConstant(arr->elementType, (*values)[i]));
+		}
+
+		*values += arr->elementCount;
+	}
+
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, arr->elementCount, ids.GetData());
+
+	CheckConstantExist((InstBase**)composite);
+
+	return composite->id;
 }
 
 uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
