@@ -651,7 +651,7 @@ uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const
 		}
 	}
 
-	InstConstantComposite* composite = new InstConstantComposite(type->type, ids.GetCount(), ids.GetData());
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, (uint32)ids.GetCount(), ids.GetData());
 
 	CheckConstantExist(&composite);
 

@@ -82,9 +82,9 @@ private:
 	instruction::InstBase* GetInstFromID(uint32 id);
 	void CheckTypeExist(type::InstTypeBase** type); 
 	void CheckTypeExist(TypeBase** type);
-	void CheckConstantExist(InstBase** constant);
-	inline void CheckConstantExist(InstConstant** constant) { CheckConstantExist((InstBase**)constant); }
-	inline void CheckConstantExist(InstConstantComposite** constant) { CheckConstantExist((InstBase**)constant); }
+	void CheckConstantExist(instruction::InstBase** constant);
+	inline void CheckConstantExist(instruction::InstConstant** constant) { CheckConstantExist((instruction::InstBase**)constant); }
+	inline void CheckConstantExist(instruction::InstConstantComposite** constant) { CheckConstantExist((instruction::InstBase**)constant); }
 	
 
 
