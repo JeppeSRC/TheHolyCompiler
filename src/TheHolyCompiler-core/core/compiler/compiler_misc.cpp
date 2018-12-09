@@ -123,6 +123,13 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 				return nullptr;
 			}
 
+			const Token& close = tokens[start + 3];
+
+			if (close.type != TokenType::OperatorGreater) {
+				Log::CompilerError(close, "Unexpected symbol \"%s\" expected a \">\"", close.string.str);
+				return nullptr;
+			}
+
 			var->componentType = ConvertToType(type.type);
 			var->bits = type.bits;
 			var->sign = type.sign;
@@ -315,11 +322,9 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(const List<Token>& tokens, uint
 		}
 	}
 
-	InstTypeStruct* st = new InstTypeStruct((uint32)ids.GetCount(), ids.GetData());
-
 	var->type = Type::Struct;
 	var->typeString = name.string;
-	
+
 	if (typeDefinitions.Find<String>(var->name, findStructFunc) == ~0) {
 		typeDefinitions.Add(var);
 	} else {
@@ -328,11 +333,101 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(const List<Token>& tokens, uint
 		return nullptr;
 	}
 
+	InstTypeStruct* st = new InstTypeStruct((uint32)ids.GetCount(), ids.GetData());
+
+	CheckTypeExist((InstTypeBase**)&st);
+
+	var->typeId = st->id;
+
 	return var;
 }
 
-Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64 start, uint64 size) {
+Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64 start) {
+	auto findStructFunc = [](TypeBase* const& curr, const String& name) -> bool {
+		if (curr->type == Type::Struct) {
+			return curr->typeString == name;
+		}
 
+		return false;
+	};
+
+	TypeArray* var = new TypeArray;
+
+	uint64 offset = 0;
+
+	const Token& token = tokens[start + offset++];
+
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVec, TokenType::TypeMat)) {
+		var->elementType = CreateTypePrimitive(tokens, start);
+	} else if (token.type == TokenType::Name) {
+		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
+
+		if (index != ~0) {
+			var->elementType = typeDefinitions[index];
+		} else {
+			Log::CompilerError(token, "Unexpected symbol \"%s\" expected valid type", token.string.str);
+			return nullptr;
+		}
+
+	} else {
+		Log::CompilerError(token, "Unexpected symbol \"%s\" expected valid type", token.string.str);
+		return nullptr;
+	}
+
+	const Token& open = tokens[start + offset++];
+
+	if (open.type != TokenType::BracketOpen) {
+		Log::CompilerError(open, "Unexpected symbol \"%s\" expected \"[\"", open.string.str);
+		return nullptr;
+	}
+
+	const Token& count = tokens[start + offset++];
+
+	if (count.type != TokenType::Value) {
+		Log::CompilerError(count, "Unexpected symbol \"%s\" expected a valid integer value", count.string.str);
+		return nullptr;
+	}
+
+	const Token& close = tokens[start + offset++];
+
+	if (close.type != TokenType::BracketClose) {
+		Log::CompilerError(close, "Unexpected symbol \"%s\" expected \"]\"", close.string.str);
+		return nullptr;
+	}
+
+	const Token& name = tokens[start + offset++];
+
+	if (name.type != TokenType::Name) {
+		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+		return nullptr;
+	}
+
+	const Token& end = tokens[start + offset++];
+
+	if (end.type != TokenType::SemiColon) {
+		Log::CompilerError(end, "Unexpected symbol \"%s\" expected \";\"", end.string.str);
+		return nullptr;
+	}
+
+	var->type = Type::Array;
+	var->typeString = GetTypeString(var->elementType) + "[" + count.string + "]";
+	var->elementCount = (uint32)count.value;
+	var->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	if (var->typeId != ~0) {
+		return var;
+	}
+
+	InstTypeArray* array = new InstTypeArray(var->elementCount, var->elementType->typeId);
+
+	var->typeId = array->id;
+
+	types.Add(array);
+	typeDefinitions.Add(var);
+
+	return var;
 }
 
 String Compiler::GetTypeString(const TypeBase* const type) const {
