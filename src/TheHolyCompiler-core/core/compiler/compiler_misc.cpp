@@ -511,7 +511,7 @@ uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 
 	InstConstant* constant = new InstConstant(type->typeId, value);
 
-	CheckConstantExist((InstBase**)&constant);
+	CheckConstantExist(&constant);
 
 	return constant->id;
 }
@@ -578,7 +578,7 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 
 	InstConstantComposite* composite = new InstConstantComposite(type->typeId, prim->rows, ids.GetData());
 
-	CheckConstantExist((InstBase**)&composite);
+	CheckConstantExist(&composite);
 
 	return composite->id;
 }
@@ -606,7 +606,7 @@ uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const
 
 	InstConstantComposite* composite = new InstConstantComposite(type->typeId, p->rows, ids.GetData());
 
-	CheckConstantExist((InstBase**)&composite);
+	CheckConstantExist(&composite);
 
 	return composite->id;
 }
@@ -630,7 +630,7 @@ uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const 
 
 	InstConstantComposite* composite = new InstConstantComposite(type->typeId, arr->elementCount, ids.GetData());
 
-	CheckConstantExist((InstBase**)composite);
+	CheckConstantExist(&composite);
 
 	return composite->id;
 }
@@ -653,7 +653,7 @@ uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const
 
 	InstConstantComposite* composite = new InstConstantComposite(type->type, ids.GetCount(), ids.GetData());
 
-	CheckConstantExist((InstBase**)&composite);
+	CheckConstantExist(&composite);
 
 	return composite->id;
 }

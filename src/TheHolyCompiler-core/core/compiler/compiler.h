@@ -83,6 +83,9 @@ private:
 	void CheckTypeExist(type::InstTypeBase** type); 
 	void CheckTypeExist(TypeBase** type);
 	void CheckConstantExist(InstBase** constant);
+	inline void CheckConstantExist(InstConstant** constant) { CheckConstantExist((InstBase**)constant); }
+	inline void CheckConstantExist(InstConstantComposite** constant) { CheckConstantExist((InstBase**)constant); }
+	
 
 
 
