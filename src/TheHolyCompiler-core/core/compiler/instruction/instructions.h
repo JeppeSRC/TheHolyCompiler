@@ -188,11 +188,12 @@ public:
 class InstMemberDecorate : public InstBase {
 public:
 	uint32 structId;
+	uint32 member;
 	uint32 decoration;
 	uint32 numDecorationLiterals;
 	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstMemberDecorate(uint32 structId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
+	InstMemberDecorate(uint32 structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
 
 	void GetInstWords(uint32* words) const override;
 };

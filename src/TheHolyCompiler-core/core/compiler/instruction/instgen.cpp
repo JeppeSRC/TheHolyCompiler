@@ -129,8 +129,9 @@ void InstMemberDecorate::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = structId;
-	words[2] = decoration;
-	memcpy(words+3, literals, numDecorationLiterals << 2);
+	words[2] = member;
+	words[3] = decoration;
+	memcpy(words+4, literals, numDecorationLiterals << 2);
 }
 
 void InstDecorationGroup::GetInstWords(uint32* words) const {
