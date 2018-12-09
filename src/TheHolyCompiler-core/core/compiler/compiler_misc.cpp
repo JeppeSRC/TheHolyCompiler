@@ -109,7 +109,6 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 
 	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
-		return nullptr;
 	}
 
 	const Token& open = tokens[start + 1];
@@ -120,14 +119,12 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 
 			if (!Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt)) {
 				Log::CompilerError(type, "Unexpected symbol \"%s\" expected a valid type", type.string.str);
-				return nullptr;
 			}
 
 			const Token& close = tokens[start + 3];
 
 			if (close.type != TokenType::OperatorGreater) {
 				Log::CompilerError(close, "Unexpected symbol \"%s\" expected a \">\"", close.string.str);
-				return nullptr;
 			}
 
 			var->componentType = ConvertToType(type.type);
@@ -249,7 +246,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 	if (bracket.type != TokenType::CurlyBracketOpen) {
 		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
-		return nullptr;
 	}
 
 	List<uint32> ids;
@@ -272,7 +268,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 			if (index == ~0) {
 				Log::CompilerError(type, "Unexpected symbol \"%s\" expected valid type", type.string.str);
-				return nullptr;
 			}
 
 			tmp = typeDefinitions[index];
@@ -282,7 +277,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 		if (tokenName.type != TokenType::Name) {
 			Log::CompilerError(tokenName, "Unexpected symbol \"%s\" expected valid name", tokenName.string.str);
-			return nullptr;
 		}
 
 		uint64 index = var->members.Find<String>(tokenName.string, [](TypeBase* const& curr, const String& name) -> bool {
@@ -295,14 +289,12 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 		if (index != ~0) {
 			Log::CompilerError(tokenName, "There is already a member callad \"%s\" in \"%s\"", tokenName.string.str, name.string.str);
-			return nullptr;
 		}
 
 		const Token& semi = tokens[start + offset++];
 
 		if (semi.type != TokenType::SemiColon) {
 			Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
-			return nullptr;
 		}
 
 		tmp->name = tokenName.string;
@@ -332,7 +324,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	} else {
 		delete var;
 		Log::CompilerError(name, "Struct redefinition");
-		return nullptr;
 	}
 
 	InstTypeStruct* st = new InstTypeStruct((uint32)ids.GetCount(), ids.GetData());
@@ -376,47 +367,40 @@ Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64
 			var->elementType = typeDefinitions[index];
 		} else {
 			Log::CompilerError(token, "Unexpected symbol \"%s\" expected valid type", token.string.str);
-			return nullptr;
 		}
 
 	} else {
 		Log::CompilerError(token, "Unexpected symbol \"%s\" expected valid type", token.string.str);
-		return nullptr;
 	}
 
 	const Token& open = tokens[start + offset++];
 
 	if (open.type != TokenType::BracketOpen) {
 		Log::CompilerError(open, "Unexpected symbol \"%s\" expected \"[\"", open.string.str);
-		return nullptr;
 	}
 
 	const Token& count = tokens[start + offset++];
 
 	if (count.type != TokenType::Value) {
 		Log::CompilerError(count, "Unexpected symbol \"%s\" expected a valid integer value", count.string.str);
-		return nullptr;
 	}
 
 	const Token& close = tokens[start + offset++];
 
 	if (close.type != TokenType::BracketClose) {
 		Log::CompilerError(close, "Unexpected symbol \"%s\" expected \"]\"", close.string.str);
-		return nullptr;
 	}
 
 	const Token& name = tokens[start + offset++];
 
 	if (name.type != TokenType::Name) {
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
-		return nullptr;
 	}
 
 	const Token& end = tokens[start + offset++];
 
 	if (end.type != TokenType::SemiColon) {
 		Log::CompilerError(end, "Unexpected symbol \"%s\" expected \";\"", end.string.str);
-		return nullptr;
 	}
 
 	var->type = Type::Array;

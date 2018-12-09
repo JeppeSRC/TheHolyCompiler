@@ -60,7 +60,6 @@ void PreProcessor::RemoveComments(String& code) {
 			uint64 col = 0;
 			uint64 line = Utils::FindLine(code, index, &col);
 			Log::CompilerError(fileName.str, line, col, "Multiline comment is missing end");
-			break;
 		}
 	}
 
@@ -157,7 +156,6 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 
 	if (endifIndex == ~0) {
 		Log::CompilerError(l, 1, "Missing #endif directive");
-		return;
 	}
 
 	uint64 elifIndex = FindLineWith("#elif", index+1);
@@ -337,7 +335,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -364,7 +361,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorMul, TokenType::OperatorDiv)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -372,12 +368,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -413,12 +407,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -446,7 +438,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLeftShift, TokenType::OperatorRightShift)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -454,12 +445,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -487,7 +476,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLess, TokenType::OperatorLessEqual, TokenType::OperatorGreater, TokenType::OperatorGreaterEqual)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -495,12 +483,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -534,7 +520,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLogicalEqual, TokenType::OperatorLogicalNotEqual)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -542,12 +527,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			switch (token.type) {
@@ -575,7 +558,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (token.type == TokenType::OperatorBitwiseAnd) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -583,12 +565,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			leftOperand.value &= rightOperand.value;
@@ -609,7 +589,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (token.type == TokenType::OperatorBitwiseXor) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -617,12 +596,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			leftOperand.value ^= rightOperand.value;
@@ -643,7 +620,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (token.type == TokenType::OperatorBitwiseOr) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -651,12 +627,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			leftOperand.value |= rightOperand.value;
@@ -677,7 +651,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (token.type == TokenType::OperatorLogicalAnd) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -685,12 +658,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			leftOperand.value = ((leftOperand.value > 0 ? true : false) && (rightOperand.value > 0 ? true : false)) ? 1 : 0;
@@ -711,7 +682,6 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 		if (token.type == TokenType::OperatorLogicalOr) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
-				break;
 			}
 
 			Token& rightOperand = tokens[i+1];
@@ -719,12 +689,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 
 			if (rightOperand.type != TokenType::Value) {
 				Log::CompilerError(line, rightOperand.column, "Operator \"%s\": Right-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			if (leftOperand.type != TokenType::Value) {
 				Log::CompilerError(line, leftOperand.column, "Operator \"%s\": Left-hand operand must be a value", token.string.str);
-				break;
 			}
 
 			leftOperand.value = ((leftOperand.value > 0 ? true : false) || (rightOperand.value > 0 ? true : false)) ? 1 : 0;
@@ -824,7 +792,6 @@ List<Token> PreProcessor::TokenizeStatement(const String& code, const Line& line
 
 					if (value == ~0) {
 						Log::CompilerError(line, i, "Macro \"%s\"(%s) doesn't define a numeric value", macroName.str, svalue.str);
-						break;
 					}
 
 					tokens.Emplace(TokenType::Value, value, svalue, i+1);
@@ -873,7 +840,6 @@ uint64 PreProcessor::FindMatchingParenthesis(const List<Token>& tokens, uint64 s
 			if (count == 1) return i;
 			else if (count == 0) {
 				Log::CompilerError(line, t.column, "One lonley ')' found without a matching '('");
-				break;
 			}
 			count--;
 		}

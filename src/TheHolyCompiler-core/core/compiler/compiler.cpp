@@ -147,7 +147,6 @@ List<Token> Compiler::Tokenize() {
 
 				if (end == j) {
 					Log::CompilerError(l, j, "Unexpect symbol \"%c\"", c0);
-					break;
 				}
 
 				tokens.Emplace(TokenType::Name, 0, line.SubString(j, end-1), l, j);
@@ -188,14 +187,12 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 		if (token.type == TokenType::DataLayout) {
 			if (i >= tokens.GetCount() - 9) {
 				Log::CompilerError(token, "Undefined symbol \"%s\"", token.string.str);
-				return;
 			}
 
 			const Token& parenthesisOpen = tokens[i + offset++];
 
 			if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 				Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
-				return;
 			}
 
 			
@@ -209,14 +206,12 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 				if (equal.type != TokenType::OperatorAssign) {
 					Log::CompilerError(equal, "Unexpected symbol \"%s\" expected \"=\"", equal.string.str);
-					return ~0;
 				}
 
 				const Token& value = tokens[i+offset++];
 
 				if (value.type != TokenType::Value) {
 					Log::CompilerError(value, "Unexpected symbol \"%s\" expected a valid value", value.string.str);
-					return ~0;
 				}
 
 				return (uint32)value.value;
@@ -227,27 +222,23 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 				if (specifier.type != TokenType::Name && !(specifier.string == "location" || specifier.string == "set" || specifier.string == "binding")) {
 					Log::CompilerError(specifier, "Unexpected symbol \"%s\" expected \"location, set or binding\"", specifier.string.str);
-					return;
 				}
 
 				if (specifier.string == "location") {
 					if (location != ~0) {
 						Log::CompilerError(specifier, "Specifier \"location\" already specified once");
-						return;
 					}
 
 					location = GetValue();
 				} else if (specifier.string == "binding") {
 					if (binding != ~0) {
 						Log::CompilerError(specifier, "Specifier \"binding\" already specified once");
-						return;
 					}
 
 					binding = GetValue();
 				} else if (specifier.string == "set") {
 					if (set != ~0) {
 						Log::CompilerError(specifier, "Specifier \"set\" already specified once");
-						return;
 					}
 
 					set = GetValue();
@@ -261,7 +252,6 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					break;
 				} else {
 					Log::CompilerError(next, "Unexpected symbol \"%s\" expected \")\"", next.string.str);
-					return;
 				}
 			}
 
@@ -275,13 +265,10 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 					if (binding != ~0) {
 						Log::CompilerError(scope, "Specifier \"binding\" cannot be used on \"in\"");
-						return;
 					} else if (set != ~0) {
 						Log::CompilerError(scope, "Specifier \"set\" cannot be used on \"in\"");
-						return;
 					} else if (location == ~0) {
 						Log::CompilerError(scope, "Specifier \"location\" must be set");
-						return;
 					}
 
 					break;
@@ -290,13 +277,10 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 					if (binding != ~0) {
 						Log::CompilerError(scope, "Specifier \"binding\" cannot be used on \"out\"");
-						return;
 					} else if (set != ~0) {
 						Log::CompilerError(scope, "Specifier \"set\" cannot be used on \"out\"");
-						return;
 					} else if (location == ~0) {
 						Log::CompilerError(scope, "Specifier \"location\" must be set");
-						return;
 					}
 
 					break;
@@ -305,19 +289,15 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 					if (binding == ~0) {
 						Log::CompilerError(scope, "Specifier \"binding\" must be set");
-						return;
 					} else if (set == ~0) {
 						Log::CompilerError(scope, "Specifier \"set\" must be set");
-						return;
 					} else if (location != ~0) {
 						Log::CompilerError(scope, "Specifier \"location\" cannot be used on \"uniform\"");
-						return;
 					}
 
 					break;
 				default:
 					Log::CompilerError(scope, "Unexpected symbol \"%s\" expected \"in, out or uniform\"", scope.string.str);
-					return;
 			}
 
 			Variable* var;
@@ -330,7 +310,6 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 					if (!CheckGlobalName(str->members[i]->name)) {
 						const Token& n = tokens[i + offset];
 						Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[i]->name, n.string.str);
-						return;
 					}
 				}
 
@@ -349,19 +328,16 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 				if (name.type != TokenType::Name) {
 					Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
-					return;
 				}
 
 				if (!CheckGlobalName(name.string)) {
 					Log::CompilerError(name, "Redefinition of global variable \"%s\"", name.string.str);
-					return;
 				}
 
 				const Token& semiColon = tokens[i + offset++];
 
 				if (semiColon.type != TokenType::SemiColon) {
 					Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
-					return;
 				}
 
 				TypePrimitive* type = CreateTypePrimitive(tokens, typeLocation);
@@ -377,28 +353,24 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 			if (name.type != TokenType::Name) {
 				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
-				return;
 			}
 
 			const Token& assign = tokens[i + offset++];
 
 			if (assign.type != TokenType::OperatorAssign) {
 				Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \"=\"", assign.string.str);
-				return;
 			}
 
 			const Token& intrin = tokens[i + offset++];
 
 			if (intrin.type != TokenType::Name) {
 				Log::CompilerError(intrin, "Unexpected symbol \"%s\" expected a valid name", intrin.string.str);
-				return;
 			}
 
 			const Token& semi = tokens[i + offset++];
 
 			if (semi.type != TokenType::SemiColon) {
 				Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
-				return;
 			}
 
 			Variable* var = CreateGlobalVariable(type, token.type == TokenType::DataOut ? VariableScope::Out : VariableScope::In, name.string);
@@ -408,7 +380,6 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 
 				if (var->scope != VariableScope::Out) {
 					Log::CompilerError(intrin, "Builtin THSL_Position must be an output variable");
-					return;
 				}
 
 				annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &builtin, 1));
@@ -428,7 +399,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 	if (paramEnd == ~0) {
 		Log::CompilerError(tokens[start + 2], "Missing closing parenthesis");
-		return;
 	}
 
 	for (uint64 i = start + 3; i < paramEnd; i++) {
