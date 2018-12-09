@@ -12,10 +12,10 @@
 layout (location = 0) in vec3 position;
 
 layout (binding = 0, set = 0) uniform Buffer0 {
-    vec4 thing;
+    vec3 thing;
 };
 
-out vec4 position = THSL_Position;
+out vec4 pos = THSL_Position;
 
 int main() {
 
