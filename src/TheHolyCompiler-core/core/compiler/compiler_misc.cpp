@@ -636,7 +636,26 @@ uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const 
 }
 
 uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
+	const TypeStruct* str = (const TypeStruct*)type;
 
+	List<uint32> ids;
+
+	for (uint64 i = 0; i < str->members.GetCount(); i++) {
+		const TypeBase* member = str->members[i];
+
+		if (IsTypeComposite(member)) {
+			ids.Add(CreateConstantComposite(member, values));
+		} else {
+			ids.Add(CreateConstant(member, **values));
+			*values += 1;
+		}
+	}
+
+	InstConstantComposite* composite = new InstConstantComposite(type->type, ids.GetCount(), ids.GetData());
+
+	CheckConstantExist((InstBase**)&composite);
+
+	return composite->id;
 }
 
 bool Compiler::IsTypeComposite(const TypeBase* const type) const {
