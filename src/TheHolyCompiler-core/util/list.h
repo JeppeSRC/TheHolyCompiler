@@ -331,6 +331,16 @@ public:
 		return RemoveAt(Find(item));
 	}
 
+	/*Removes a range of items*/
+	inline void Remove(uint64 start, uint64 end) {
+		THC_ASSERT(start >= 0 && end < count);
+		uint64 count = end - start + 1;
+
+		for (uint64 i = 0; i < count; i++) {
+			RemoveAt(start);
+		}
+	}
+
 	/*Finds the item*/
 	inline uint64 Find(const T& item, uint64 offset = 0) const {
 		THC_ASSERT(offset <= count);
