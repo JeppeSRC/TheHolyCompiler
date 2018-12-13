@@ -72,7 +72,7 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
+/*bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeFunction* t = (const TypeFunction*)other;
 
@@ -80,6 +80,22 @@ bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
 
 		for (uint64 i = 0; i < parameters.GetCount(); i++) {
 			if (!(*parameters[i] == t->parameters[i])) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}*/
+
+bool Compiler::FunctionParameter::operator==(const FunctionParameter* const other) const {
+	return name == other->name && *type == other->type && constant == other->constant && reference == other->reference;
+}
+
+bool Compiler::FunctionDeclaration::operator==(const FunctionDeclaration* const other) const {
+	if (name == other->name && *returnType == other->returnType && parameters.GetCount() == other->parameters.GetCount()) {
+		for (uint64 i = 0; i < parameters.GetCount(); i++) {
+			if (!(*parameters[i] == other->parameters[i])) return false;
 		}
 
 		return true;

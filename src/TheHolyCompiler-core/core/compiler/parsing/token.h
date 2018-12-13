@@ -87,9 +87,6 @@ enum class TokenType {
 	OperatorCompoundMul,
 	OperatorCompoundDiv,
 
-	ModifierConst,
-	ModifierReference,
-
 	ControlFlowIf,
 	ControlFlowSwitch,
 	ControlFlowElse,
@@ -104,6 +101,9 @@ enum class TokenType {
 	DataIn,
 	DataOut,
 	DataUniform,
+
+	ModifierConst,
+	ModifierReference = OperatorBitwiseAnd,
 };
 
 class Token {

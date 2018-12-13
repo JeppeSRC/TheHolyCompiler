@@ -78,13 +78,15 @@ private:
 		uint32 GetSize() const override;
 	};
 
-	struct TypeFunction : public TypeBase {
+	/*struct TypeFunction : public TypeBase {
 		TypeBase* returnType;
 
 		utils::List<TypeBase*> parameters;
 
 		bool operator==(const TypeBase* const other) const override;
-	};
+
+		uint32 GetSize() const override { return ~0; }
+	};*/
 
 	utils::List<TypeBase*> typeDefinitions;
 
@@ -117,6 +119,7 @@ private:
 	static bool findStructFunc(TypeBase* const& curr, const utils::String& name);
 private:
 	enum class VariableScope {
+		None,
 		In,
 		Out,
 		Private,
@@ -139,6 +142,40 @@ private:
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
+	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
+
+	struct FunctionParameter;
+	Variable* CreateParameterVariable(const FunctionParameter* const param, InstFunctionParameter** opParam);
+
+private:
+	struct FunctionParameter {
+		utils::String name;
+
+		TypeBase* type;
+
+		bool constant;
+		bool reference;
+
+		bool operator==(const FunctionParameter* const other) const;
+	};
+
+	struct FunctionDeclaration {
+		utils::String name;
+
+		TypeBase* returnType;
+		utils::List<FunctionParameter*> parameters;
+
+		bool defined;
+
+		uint32 typeId;
+		uint32 id;
+
+		bool operator==(const FunctionDeclaration* const other) const;
+	};
+
+	utils::List<FunctionDeclaration*> functionDeclarations;
+
+	static bool CheckParameterName(const utils::List<FunctionParameter*>& params, const utils::String& name); //return true if name is available
 
 private:
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
@@ -168,8 +205,8 @@ private:
 	void ParseTokens(utils::List<parsing::Token>& tokens);
 	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
-	void ParseFunctionDeclaration(utils::List<parsing::Token>& tokens, uint64 start);
-	void ParseFunctionDefinition(utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
 

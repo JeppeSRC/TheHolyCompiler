@@ -400,22 +400,161 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 	tokens.Remove(start, start + offset);
 }
 
-void Compiler::ParseFunctionDeclaration(List<Token>& tokens, uint64 start) {
+void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
+
+	TypeBase* retType = CreateType(tokens, start);
 
 	const Token& returnType = tokens[start + offset++ ];
+
+	if (retType == nullptr) {
+		Log::CompilerError(returnType, "Unexpected symbol \"%s\" expected a valid return type");
+	}
+
 	const Token& name = tokens[start + offset++];
 
+	if (name.type != TokenType::Name) {
+		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+	}
 
+	FunctionDeclaration* decl = new FunctionDeclaration;
+
+	decl->name = name.string;
+	decl->returnType = retType;
+
+	const Token& open = tokens[start + offset++];
+
+	if (open.type != TokenType::ParenthesisOpen) {
+		Log::CompilerError(open, "Unexpected symbol \"%s\" expected \"(\"", open.string.str);
+	}
+
+
+	while (true) {
+		FunctionParameter* param = new FunctionParameter;
+		const Token& token = tokens[start + offset++];
+
+		param->constant = token.type == TokenType::ModifierConst;
+
+		if (!param->constant) {
+			offset--;
+		}
+
+		TypeBase* type = CreateType(tokens, start + offset++);
+
+		if (type == nullptr) {
+			const Token& tmp = tokens[start + offset];
+			Log::CompilerError(tmp, "Unexpected symbol \"%s\" expected ", tmp.string.str);
+		}
+
+		const Token& name = tokens[start + offset++];
+
+		if (name.type != TokenType::Name) {
+			Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+		}
+
+		const Token& ref = tokens[start + offset++];
+
+		param->reference = ref.type == TokenType::ModifierReference;
+
+		if (!param->reference) {
+			offset--;
+		}
+
+		param->name = name.string;
+		param->type = type;
+
+		decl->parameters.Add(param);
+
+		const Token& delim = tokens[start + offset++];
+
+		if (delim.type == TokenType::ParenthesisClose) {
+			break;
+		} else if (delim.type == TokenType::Comma) {
+			continue;
+		} else {
+			Log::CompilerError(delim, "Unexpected symbol \"%s\" expected \")\" or \",\"", delim.string.str);
+		}
+	}
+
+	auto cmp = [](FunctionDeclaration* const& curr, FunctionDeclaration* const& other) {
+		return *curr == other;
+	};
+
+	auto CreateDeclarationType = [this](FunctionDeclaration* d) {
+		List<uint32> ids;
+		for (uint64 i = 0; i < d->parameters.GetCount(); i++) {
+			ids.Add(d->parameters[i]->type->typeId);
+		}
+
+		InstTypeFunction* f = new InstTypeFunction(d->returnType->typeId, (uint32)ids.GetCount(), ids.GetData());
+
+		CheckTypeExist((InstTypeBase**)&f);
+
+		d->typeId = f->id;
+	};
+
+	const Token& bracket = tokens[start + offset++];
+
+	uint64 index = functionDeclarations.Find<FunctionDeclaration*>(decl, cmp);
+
+	if (bracket.type == TokenType::SemiColon) {
+		decl->defined = false;
+		decl->id = ~0;
+		
+		if (index == ~0) {
+			CreateDeclarationType(decl);
+			functionDeclarations.Add(decl);
+		} else {
+			Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
+		}
+
+		return;
+	} else if (bracket.type == TokenType::CurlyBracketOpen) {
+
+		if (index == ~0) {
+			CreateDeclarationType(decl);
+			functionDeclarations.Add(decl);
+		} else {
+			delete decl;
+			decl = functionDeclarations[index];
+			CreateDeclarationType(decl);
+		}
+
+		ParseFunctionBody(decl, tokens, start + offset);
+	} else {
+		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \";\" or \"{\"", bracket.string.str);
+	}
+
+	tokens.Remove(start, start + offset - 1);
 }
 
-void Compiler::ParseFunctionDefinition(List<Token>& tokens, uint64 start) {
-	uint64 offset = 0;
+void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start) {
+	utils::List<Variable*> localVariables;
 
-	const Token& returnType = tokens[start + offset++];
-	const Token& name = tokens[start + offset++];
+	InstFunction* func = new InstFunction(declaration->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, declaration->typeId);
+	instructions.Add(func);
+
+	declaration->id = func->id;
+
+	for (uint64 i = 0; i < declaration->parameters.GetCount(); i++) {
+		const FunctionParameter* p = declaration->parameters[i];
+
+		InstFunctionParameter* pa = nullptr;
+
+		Variable* var = CreateParameterVariable(p, &pa);
+		localVariables.Add(var);
+
+		instructions.Add(pa);
+	}
+
+	InstLabel* firstBlock = new InstLabel();
+	instructions.Add(firstBlock);
 
 
+	for (uint64 i = start; i < tokens.GetCount(); i++) {
+		const Token& token = tokens[i];
+
+	}
 }
 
 bool Compiler::Process() {

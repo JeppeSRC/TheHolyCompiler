@@ -659,6 +659,54 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 	return var;
 }
 
+Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, const String& name) {
+	Variable* var = new Variable;
+
+	var->scope = VariableScope::None;
+	var->name = name;
+	var->type = type;
+	
+	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, type->typeId);
+
+	CheckTypeExist((InstTypeBase**)&pointer);
+
+	var->typePointerId = pointer->id;
+
+	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
+
+	var->variableId = opVar->id;
+
+	return var;
+}
+
+Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* const param, InstFunctionParameter** opParam) {
+	Variable* var = new Variable;
+
+	var->scope = VariableScope::None;
+	var->name = param->name;
+	var->type = param->type;
+
+	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, var->type->typeId);
+
+	CheckTypeExist((InstTypeBase**)&pointer);
+
+	var->typePointerId = pointer->id;
+
+	*opParam = new InstFunctionParameter(var->typePointerId);
+
+	var->variableId = (*opParam)->id;
+
+	return var;
+}
+
+bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const String& name) {
+	auto cmp = [](FunctionParameter* const& curr, const String& name) -> bool {
+		return curr->name == name;
+	};
+
+	return params.Find<String>(name, cmp) == ~0;
+}
+
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
