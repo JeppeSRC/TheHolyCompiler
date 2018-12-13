@@ -194,10 +194,10 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 	}
 }
 
-void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
+void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
 
-	const Token& parenthesisOpen = tokens[i + offset++];
+	const Token& parenthesisOpen = tokens[start + offset++];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
@@ -207,14 +207,14 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 	uint32 binding = ~0;
 	uint32 set = ~0;
 
-	auto GetValue = [&tokens, &offset, i]() -> uint32 {
-		const Token& equal = tokens[i + offset++];
+	auto GetValue = [&tokens, &offset, start]() -> uint32 {
+		const Token& equal = tokens[start + offset++];
 
 		if (equal.type != TokenType::OperatorAssign) {
 			Log::CompilerError(equal, "Unexpected symbol \"%s\" expected \"=\"", equal.string.str);
 		}
 
-		const Token& value = tokens[i + offset++];
+		const Token& value = tokens[start + offset++];
 
 		if (value.type != TokenType::Value) {
 			Log::CompilerError(value, "Unexpected symbol \"%s\" expected a valid value", value.string.str);
@@ -224,7 +224,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 	};
 
 	while (true) {
-		const Token& specifier = tokens[i + offset++];
+		const Token& specifier = tokens[start + offset++];
 
 		if (specifier.type != TokenType::Name && !(specifier.string == "location" || specifier.string == "set" || specifier.string == "binding")) {
 			Log::CompilerError(specifier, "Unexpected symbol \"%s\" expected \"location, set or binding\"", specifier.string.str);
@@ -250,7 +250,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 			set = GetValue();
 		}
 
-		const Token& next = tokens[i + offset++];
+		const Token& next = tokens[start + offset++];
 
 		if (next.type == TokenType::Comma) {
 			continue;
@@ -261,7 +261,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 		}
 	}
 
-	const Token& scope = tokens[i + offset++];
+	const Token& scope = tokens[start + offset++];
 
 	Variable tmp;
 
@@ -309,13 +309,13 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 	Variable* var;
 
 	if (tmp.scope == VariableScope::Uniform) {
-		TypeStruct* str = CreateTypeStruct(tokens, i + offset);
+		TypeStruct* str = CreateTypeStruct(tokens, start + offset);
 
 
-		for (uint64 i = 0; i < str->members.GetCount(); i++) {
-			if (!CheckGlobalName(str->members[i]->name)) {
-				const Token& n = tokens[i + offset];
-				Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[i]->name, n.string.str);
+		for (uint64 start = 0; start < str->members.GetCount(); start++) {
+			if (!CheckGlobalName(str->members[start]->name)) {
+				const Token& n = tokens[start + offset];
+				Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[start]->name, n.string.str);
 			}
 		}
 
@@ -324,13 +324,13 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BINDING, &binding, 1));
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 	} else {
-		uint64 typeLocation = i + offset++;
+		uint64 typeLocation = start + offset++;
 
-		if (tokens[i + offset].type == TokenType::OperatorLess) {
+		if (tokens[start + offset].type == TokenType::OperatorLess) {
 			offset += 3;
 		}
 
-		const Token& name = tokens[i + offset++];
+		const Token& name = tokens[start + offset++];
 
 		if (name.type != TokenType::Name) {
 			Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
@@ -340,7 +340,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 			Log::CompilerError(name, "Redefinition of global variable \"%s\"", name.string.str);
 		}
 
-		const Token& semiColon = tokens[i + offset++];
+		const Token& semiColon = tokens[start + offset++];
 
 		if (semiColon.type != TokenType::SemiColon) {
 			Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
@@ -354,33 +354,33 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 i) {
 	}
 	
 
-	tokens.Remove(i, i + offset - 1);
+	tokens.Remove(start, start + offset - 1);
 }
 
-void Compiler::ParseInOut(List<Token>& tokens, uint64 i, VariableScope scope) {
+void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope) {
 	uint64 offset = 0;
 
-	TypePrimitive* type = CreateTypePrimitive(tokens, i + offset++);
+	TypePrimitive* type = CreateTypePrimitive(tokens, start + offset++);
 
-	const Token& name = tokens[i + offset++];
+	const Token& name = tokens[start + offset++];
 
 	if (name.type != TokenType::Name) {
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 	}
 
-	const Token& assign = tokens[i + offset++];
+	const Token& assign = tokens[start + offset++];
 
 	if (assign.type != TokenType::OperatorAssign) {
 		Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \"=\"", assign.string.str);
 	}
 
-	const Token& intrin = tokens[i + offset++];
+	const Token& intrin = tokens[start + offset++];
 
 	if (intrin.type != TokenType::Name) {
 		Log::CompilerError(intrin, "Unexpected symbol \"%s\" expected a valid name", intrin.string.str);
 	}
 
-	const Token& semi = tokens[i + offset++];
+	const Token& semi = tokens[start + offset++];
 
 	if (semi.type != TokenType::SemiColon) {
 		Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
@@ -398,7 +398,7 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 i, VariableScope scope) {
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &builtin, 1));
 	}
 
-	tokens.Remove(i, i + offset - 1);
+	tokens.Remove(start, start + offset - 1);
 }
 
 void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {

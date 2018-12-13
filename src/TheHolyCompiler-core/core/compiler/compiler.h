@@ -155,8 +155,8 @@ private:
 
 	utils::List<parsing::Token> Tokenize();
 	void ParseTokens(utils::List<parsing::Token>& tokens);
-	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 i);
-	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 i, VariableScope scope);
+	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
