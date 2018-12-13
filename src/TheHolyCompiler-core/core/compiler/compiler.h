@@ -39,7 +39,7 @@ private:
 	struct TypeBase {
 		type::Type type; //Type
 		utils::String typeString; //Type as a string
-		utils::String name; // Only used in TypeStruct as member name
+		utils::String name; // Only used in TypeStruct as member
 
 		uint32 typeId; //OpType id
 
@@ -76,6 +76,14 @@ private:
 		bool operator==(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
+	};
+
+	struct TypeFunction : public TypeBase {
+		TypeBase* returnType;
+
+		utils::List<TypeBase*> parameters;
+
+		bool operator==(const TypeBase* const other) const override;
 	};
 
 	utils::List<TypeBase*> typeDefinitions;

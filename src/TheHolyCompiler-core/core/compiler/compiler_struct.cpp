@@ -72,6 +72,21 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 	return false;
 }
 
+bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypeFunction* t = (const TypeFunction*)other;
+
+		if (!(parameters.GetCount() == t->parameters.GetCount() && *returnType == t->returnType)) return false;
+
+		for (uint64 i = 0; i < parameters.GetCount(); i++) {
+			if (!(*parameters[i] == t->parameters[i])) return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
 
 uint32 Compiler::TypePrimitive::GetSize() const {
 	switch (type) {
