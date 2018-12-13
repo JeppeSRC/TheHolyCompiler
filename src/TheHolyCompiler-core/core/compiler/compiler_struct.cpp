@@ -89,7 +89,7 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 }*/
 
 bool Compiler::FunctionParameter::operator==(const FunctionParameter* const other) const {
-	return name == other->name && *type == other->type && constant == other->constant && reference == other->reference;
+	return *type == other->type && constant == other->constant && reference == other->reference;
 }
 
 bool Compiler::FunctionDeclaration::operator==(const FunctionDeclaration* const other) const {

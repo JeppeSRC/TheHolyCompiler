@@ -448,8 +448,11 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		const Token& name = tokens[start + offset++];
 
-		if (name.type != TokenType::Name) {
-			Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+		if (name.type == TokenType::Name) {
+			param->name = name.string;
+			//Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+		} else {
+			offset--;
 		}
 
 		const Token& ref = tokens[start + offset++];
@@ -460,7 +463,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			offset--;
 		}
 
-		param->name = name.string;
 		param->type = type;
 
 		decl->parameters.Add(param);
@@ -515,8 +517,13 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			CreateDeclarationType(decl);
 			functionDeclarations.Add(decl);
 		} else {
-			delete decl;
+			FunctionDeclaration* old = decl;
 			decl = functionDeclarations[index];
+
+			for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
+				decl->parameters[i]->name = old->parameters[i]->name;
+			}
+
 			CreateDeclarationType(decl);
 		}
 
@@ -529,8 +536,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 }
 
 void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start) {
-	utils::List<Variable*> localVariables;
-
 	InstFunction* func = new InstFunction(declaration->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, declaration->typeId);
 	instructions.Add(func);
 
@@ -542,7 +547,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		InstFunctionParameter* pa = nullptr;
 
 		Variable* var = CreateParameterVariable(p, &pa);
-		localVariables.Add(var);
 
 		instructions.Add(pa);
 	}
@@ -554,7 +558,32 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
 		const Token& token = tokens[i];
 
+		if (token.type == TokenType::Name) {
+			const Token& next = tokens[i+1];
+
+			if (ParseFunctionCall(tokens, i)) {
+
+			} else if (ParseAssignment(tokens, i)) {
+
+			}
+		}
 	}
+}
+
+bool Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start) {
+	uint64 offset = 0;
+
+	const Token& name = tokens[start + offset++];
+	const Token& open = tokens[start + offset++];
+
+	if (!(name.type == TokenType::Name && open.type == TokenType::ParenthesisOpen)) return false;
+
+
+
+}
+
+bool Compiler::ParseAssignment(List<Token>& tokens, uint64 start) {
+
 }
 
 bool Compiler::Process() {
