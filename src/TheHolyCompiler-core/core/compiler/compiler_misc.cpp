@@ -617,6 +617,14 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 	return ~0;
 }
 
+bool Compiler::CheckLocalName(const String& name) const {
+	uint64 index = localVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
+		if (curr->name == name) return true;
+	});
+
+	return index == ~0;
+}
+
 bool Compiler::CheckGlobalName(const String& name) const {
 	uint64 index = globalVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
 		if (curr->name == name) return true;
@@ -676,6 +684,8 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	var->variableId = opVar->id;
 
+	localVariables.Add(var);
+
 	return var;
 }
 
@@ -695,6 +705,8 @@ Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* c
 	*opParam = new InstFunctionParameter(var->typePointerId);
 
 	var->variableId = (*opParam)->id;
+
+	localVariables.Add(var);
 
 	return var;
 }

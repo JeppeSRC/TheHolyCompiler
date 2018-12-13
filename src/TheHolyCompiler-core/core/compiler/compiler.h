@@ -138,14 +138,16 @@ private:
 	};
 
 	utils::List<Variable*> globalVariables;
+	utils::List<Variable*> localVariables;
 
+	bool CheckLocalName(const utils::String& name) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
 
 	struct FunctionParameter;
-	Variable* CreateParameterVariable(const FunctionParameter* const param, InstFunctionParameter** opParam);
+	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
 private:
 	struct FunctionParameter {
@@ -207,6 +209,9 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
+
+	bool ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start);
+	bool ParseAssignment(utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
 
