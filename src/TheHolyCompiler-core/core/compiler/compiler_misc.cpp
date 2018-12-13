@@ -265,10 +265,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 		if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
 			uint64 typeLocation = start + offset - 1;
 
-			if (tokens[start + offset].type == TokenType::OperatorLess) {
-				offset += 3;
-			}
-
 			tmp = CreateTypePrimitive(tokens, typeLocation);
 		} else {
 			uint64 index = typeDefinitions.Find<String>(type.string, findStructFunc);

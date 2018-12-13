@@ -183,11 +183,11 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 		const Token& token = tokens[i];
 
 		if (token.type == TokenType::DataLayout) {
-			ParseLayout(tokens, i + 1);
+			ParseLayout(tokens, i);
 		} else if (token.type == TokenType::DataIn) {
-			ParseInOut(tokens, i + 1, VariableScope::In);
+			ParseInOut(tokens, i, VariableScope::In);
 		} else if (token.type == TokenType::DataOut) {
-			ParseInOut(tokens, i + 1, VariableScope::Out);
+			ParseInOut(tokens, i, VariableScope::Out);
 		}
 
 		i--;
@@ -197,7 +197,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
 
-	const Token& parenthesisOpen = tokens[start + offset++];
+	const Token& parenthesisOpen = tokens[++start + offset++];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
@@ -309,7 +309,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	Variable* var;
 
 	if (tmp.scope == VariableScope::Uniform) {
-		TypeStruct* str = CreateTypeStruct(tokens, start + offset);
+		TypeStruct* str = CreateTypeStruct(tokens, start + offset++);
 
 
 		for (uint64 start = 0; start < str->members.GetCount(); start++) {
@@ -325,10 +325,6 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 	} else {
 		uint64 typeLocation = start + offset++;
-
-		if (tokens[start + offset].type == TokenType::OperatorLess) {
-			offset += 3;
-		}
 
 		const Token& name = tokens[start + offset++];
 
@@ -353,14 +349,15 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_LOCATION, &location, 1));
 	}
 	
+	start--;
 
-	tokens.Remove(start, start + offset - 1);
+	tokens.Remove(start, start + offset-1);
 }
 
 void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope) {
 	uint64 offset = 0;
 
-	TypePrimitive* type = CreateTypePrimitive(tokens, start + offset++);
+	TypePrimitive* type = CreateTypePrimitive(tokens, ++start + offset);
 
 	const Token& name = tokens[start + offset++];
 
@@ -398,7 +395,9 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &builtin, 1));
 	}
 
-	tokens.Remove(start, start + offset - 1);
+	start--;
+
+	tokens.Remove(start, start + offset);
 }
 
 void Compiler::ParseFunctionDeclaration(List<Token>& tokens, uint64 start) {
