@@ -110,26 +110,29 @@ void Compiler::CheckConstantExist(InstBase** constant) {
 	}
 }
 
-Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens, uint64 start) {
+Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start) {
 	TypePrimitive* var = new TypePrimitive;
 
-	const Token& token = tokens[start];
+	uint64 offset = 0;
+
+	const Token& token = tokens[start + offset++];
 
 	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
 	}
 
-	const Token& open = tokens[start + 1];
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
+		const Token& open = tokens[start + offset++];
+
 		if (open.type == TokenType::OperatorLess) {
-			const Token& type = tokens[start + 2];
+			const Token& type = tokens[start + offset++];
 
 			if (!Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt)) {
 				Log::CompilerError(type, "Unexpected symbol \"%s\" expected a valid type", type.string.str);
 			}
 
-			const Token& close = tokens[start + 3];
+			const Token& close = tokens[start + offset++];
 
 			if (close.type != TokenType::OperatorGreater) {
 				Log::CompilerError(close, "Unexpected symbol \"%s\" expected a \">\"", close.string.str);
@@ -142,6 +145,8 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 			var->componentType = Type::Float;;
 			var->bits = 32;
 			var->sign = 0;
+
+			offset--;
 		}
 	} else {
 		var->componentType = ConvertToType(token.type);
@@ -225,6 +230,8 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 		var->typeId = t->id;
 
 		typeDefinitions.Add(var);
+
+		tokens.Remove(start, start + offset-1);
 	}
 
 	return var;
@@ -314,8 +321,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 		}
 	}
 
-	tokens.Remove(start, start + offset);
-
 	var->type = Type::Struct;
 	var->typeString = name.string;
 
@@ -330,6 +335,8 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 	CheckTypeExist((InstTypeBase**)&st);
 
+	tokens.Remove(start, start + offset);
+
 	uint32 memberOffset = 0;
 
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
@@ -343,7 +350,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	return var;
 }
 
-Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64 start) {
+Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start) {
 	TypeArray* var = new TypeArray;
 
 	uint64 offset = 0;
@@ -352,6 +359,7 @@ Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVec, TokenType::TypeMat)) {
 		var->elementType = CreateTypePrimitive(tokens, start);
+		offset--;
 	} else if (token.type == TokenType::Name) {
 		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
 
@@ -383,24 +391,14 @@ Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64
 		Log::CompilerError(close, "Unexpected symbol \"%s\" expected \"]\"", close.string.str);
 	}
 
-	const Token& name = tokens[start + offset++];
-
-	if (name.type != TokenType::Name) {
-		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
-	}
-
-	const Token& end = tokens[start + offset++];
-
-	if (end.type != TokenType::SemiColon) {
-		Log::CompilerError(end, "Unexpected symbol \"%s\" expected \";\"", end.string.str);
-	}
-
 	var->type = Type::Array;
 	var->typeString = GetTypeString(var->elementType) + "[" + count.string + "]";
 	var->elementCount = (uint32)count.value;
 	var->typeId = ~0;
 
 	CheckTypeExist((TypeBase**)&var);
+
+	tokens.Remove(start, start + offset-1);
 
 	if (var->typeId != ~0) {
 		return var;
