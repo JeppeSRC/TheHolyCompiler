@@ -450,6 +450,10 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (name.type == TokenType::Name) {
 			param->name = name.string;
+			
+			if (!CheckGlobalName(name.string)) {
+				Log::CompilerWarning(name, "Local parameter \"%s\" overriding global variable", name.string.str);
+			}
 			//Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 		} else {
 			offset--;
