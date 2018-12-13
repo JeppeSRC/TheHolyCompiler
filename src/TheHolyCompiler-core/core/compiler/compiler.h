@@ -101,6 +101,7 @@ private:
 	//start is start of type
 	TypeArray* CreateTypeArray(const utils::List<parsing::Token>& tokens, uint64 start);
 
+
 	utils::String GetTypeString(const TypeBase* const type) const;
 
 private:
@@ -154,6 +155,8 @@ private:
 
 	utils::List<parsing::Token> Tokenize();
 	void ParseTokens(utils::List<parsing::Token>& tokens);
+	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 i);
+	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 i, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
