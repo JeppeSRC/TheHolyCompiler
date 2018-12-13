@@ -101,9 +101,12 @@ private:
 	//start is start of type
 	TypeArray* CreateTypeArray(const utils::List<parsing::Token>& tokens, uint64 start);
 
+	TypeBase* CreateType(utils::List<parsing::Token>& tokens, uint64 start);
 
 	utils::String GetTypeString(const TypeBase* const type) const;
 
+private:
+	static bool findStructFunc(TypeBase* const& curr, const utils::String& name);
 private:
 	enum class VariableScope {
 		In,
@@ -157,7 +160,8 @@ private:
 	void ParseTokens(utils::List<parsing::Token>& tokens);
 	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
-	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseFunctionDeclaration(utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseFunctionDefinition(utils::List<parsing::Token>& tokens, uint64 start);
 
 	bool Process();
 

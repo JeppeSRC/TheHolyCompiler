@@ -35,6 +35,14 @@ using namespace parsing;
 using namespace instruction;
 using namespace type;
 
+bool Compiler::findStructFunc(TypeBase* const& curr, const String& name) {
+	if (curr->type == Type::Struct) {
+		return curr->typeString == name;
+	}
+
+	return false;
+};
+
 InstBase* Compiler::GetInstFromID(uint32 id)  {
 	auto cmp = [](InstBase* const& curr, const uint32& id) -> bool {
 		return curr->id == id;
@@ -223,14 +231,6 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const List<Token>& tokens
 }
 
 Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
-	auto findStructFunc = [](TypeBase* const& curr, const String& name) -> bool {
-		if (curr->type == Type::Struct) {
-			return curr->typeString == name;
-		}
-
-		return false;
-	};
-
 	TypeStruct* var = new TypeStruct;
 
 	uint64 offset = 0;
@@ -344,14 +344,6 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 }
 
 Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64 start) {
-	auto findStructFunc = [](TypeBase* const& curr, const String& name) -> bool {
-		if (curr->type == Type::Struct) {
-			return curr->typeString == name;
-		}
-
-		return false;
-	};
-
 	TypeArray* var = new TypeArray;
 
 	uint64 offset = 0;
@@ -422,6 +414,30 @@ Compiler::TypeArray* Compiler::CreateTypeArray(const List<Token>& tokens, uint64
 	typeDefinitions.Add(var);
 
 	return var;
+}
+
+Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
+	const Token& token = tokens[start];
+
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
+		const Token& arr = tokens[start + 1];
+
+		if (arr.type == TokenType::BracketOpen) {
+			return CreateTypeArray(tokens, start);
+		} else {
+			return CreateTypePrimitive(tokens, start);
+		}
+	}
+
+	if (token.type == TokenType::Name) {
+		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
+
+		if (index != ~0) {
+			return typeDefinitions[index];
+		}
+	}
+
+	return nullptr;
 }
 
 String Compiler::GetTypeString(const TypeBase* const type) const {

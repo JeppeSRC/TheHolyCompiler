@@ -401,19 +401,22 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 	tokens.Remove(start, start + offset - 1);
 }
 
-void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
-	const Token& returnType = tokens[start];
-	const Token& name = tokens[start + 1];
+void Compiler::ParseFunctionDeclaration(List<Token>& tokens, uint64 start) {
+	uint64 offset = 0;
 
-	uint64 paramEnd = tokens.Find<TokenType>(TokenType::ParenthesisClose, TokenTypeCmpFunc, start + 2);
+	const Token& returnType = tokens[start + offset++ ];
+	const Token& name = tokens[start + offset++];
 
-	if (paramEnd == ~0) {
-		Log::CompilerError(tokens[start + 2], "Missing closing parenthesis");
-	}
 
-	for (uint64 i = start + 3; i < paramEnd; i++) {
+}
 
-	}
+void Compiler::ParseFunctionDefinition(List<Token>& tokens, uint64 start) {
+	uint64 offset = 0;
+
+	const Token& returnType = tokens[start + offset++];
+	const Token& name = tokens[start + offset++];
+
+
 }
 
 bool Compiler::Process() {
