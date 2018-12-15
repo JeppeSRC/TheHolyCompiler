@@ -514,7 +514,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
 		}
 
-		return;
 	} else if (bracket.type == TokenType::CurlyBracketOpen) {
 
 		if (index == ~0) {
@@ -562,31 +561,67 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
 		const Token& token = tokens[i];
 
-		if (token.type == TokenType::Name) {
-			const Token& next = tokens[i+1];
+		if (token.type == TokenType::CurlyBracketClose) {
+			//end of function
+			instructions.Add(new InstFunctionEnd);
+			return;
+		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
+			//variable declaration
+			TypeBase* t = CreateType(tokens, i);
+			tokens.RemoveAt(i);
 
-			if (ParseFunctionCall(tokens, i)) {
+			const Token& name = tokens[i];
 
-			} else if (ParseAssignment(tokens, i)) {
-
+			if (name.type != TokenType::Name) {
+				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 			}
+
+			Variable* var = CreateLocalVariable(t, name.string);
+			tokens.RemoveAt(i);
+
+			const Token& op = tokens[i];
+
+			if (op.type == TokenType::SemiColon) {
+				tokens.RemoveAt(i);
+				i--;
+				continue;
+			}
+
+			if (op.type == TokenType::OperatorAssign) {
+				ParseAssignment(var, tokens, i);
+				i--;
+				continue;
+			}
+		} 
+		else {
+			Log::CompilerError(token, "Unexpected symbol \"%s\" expected \"}\"", token.string.str);
 		}
 	}
 }
 
-bool Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start) {
-	uint64 offset = 0;
+auto  CmpFunc = [](const Token& curr, const TokenType& c) -> bool {
+	return curr.type == c;
+};
 
-	const Token& name = tokens[start + offset++];
-	const Token& open = tokens[start + offset++];
+//start = '='
+void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 start) {
+	uint64 end = tokens.Find<TokenType>(TokenType::ParenthesisClose, CmpFunc, start);
+	ResultVariable res = ParseExpression(tokens, start+1, end);
 
-	if (!(name.type == TokenType::Name && open.type == TokenType::ParenthesisOpen)) return false;
+	if (*variable->type != res.type) {
+		const Token& tmp = tokens[start];
+		Log::CompilerError(tmp, "Right hand type \"%s\" cannot be assigned to left hand type \"%s\"", res.type->typeString.str, variable->type->typeString.str);
+	}
 
+	InstStore* store = new InstStore(variable->typePointerId, res.id, 0);
+	instructions.Add(store);
+	if (res.postInstruction) instructions.Add(res.postInstruction);
 
-
+	tokens.Remove(start, end);
 }
 
-bool Compiler::ParseAssignment(List<Token>& tokens, uint64 start) {
+Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end) {
+	const Token& t = tokens[start];
 
 }
 

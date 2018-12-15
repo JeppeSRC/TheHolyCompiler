@@ -954,7 +954,23 @@ void Compiler::ProcessName(Token& t) const {
 			break;
 		}
 	}
+}
 
+uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, TokenType open, TokenType close) const {
+	uint64 count = 0;
+
+	for (uint64 i = start; i < tokens.GetCount(); i++) {
+		const Token& t = tokens[i];
+
+		if (t.type == open) {
+			count++;
+		} else if (t.type == close) {
+			if (count == 1) return i;
+			count--;
+		}
+	}
+
+	return ~0;
 }
 
 }

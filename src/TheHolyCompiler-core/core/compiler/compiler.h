@@ -44,6 +44,7 @@ private:
 		uint32 typeId; //OpType id
 
 		virtual bool operator==(const TypeBase* const other) const;
+		virtual bool operator!=(const TypeBase* const other) const;
 
 		virtual uint32 GetSize() const = 0;
 	};
@@ -57,6 +58,7 @@ private:
 		uint8 columns;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 		
 		uint32 GetSize() const override;
 	};
@@ -65,6 +67,7 @@ private:
 		utils::List<TypeBase*> members;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
 	};
@@ -74,6 +77,7 @@ private:
 		TypeBase* elementType;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
 	};
@@ -137,6 +141,13 @@ private:
 		uint32 variableId;
 	};
 
+	struct ResultVariable {
+		TypeBase* type;
+		uint32 id;
+
+		instruction::InstBase* postInstruction;
+	};
+
 	utils::List<Variable*> globalVariables;
 	utils::List<Variable*> localVariables;
 
@@ -195,6 +206,7 @@ private:
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
+	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 
 private:
 	utils::String code;
@@ -209,9 +221,9 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseAssignment(Variable* variable, utils::List<parsing::Token>& tokens, uint64 start);
 
-	bool ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start);
-	bool ParseAssignment(utils::List<parsing::Token>& tokens, uint64 start);
+	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
 
 	bool Process();
 
