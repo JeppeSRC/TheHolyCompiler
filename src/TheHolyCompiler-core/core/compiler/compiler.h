@@ -35,7 +35,7 @@ namespace core {
 namespace compiler {
 
 class Compiler {
-private:
+private: //Type stuff
 	struct TypeBase {
 		type::Type type; //Type
 		utils::String typeString; //Type as a string
@@ -121,7 +121,8 @@ private:
 
 private:
 	static bool findStructFunc(TypeBase* const& curr, const utils::String& name);
-private:
+
+private: //Variable stuff
 	enum class VariableScope {
 		None,
 		In,
@@ -144,12 +145,12 @@ private:
 	struct ResultVariable {
 		TypeBase* type;
 		uint32 id;
-
-		instruction::InstBase* postInstruction;
 	};
 
 	utils::List<Variable*> globalVariables;
 	utils::List<Variable*> localVariables;
+
+	Variable* GetVariable(const utils::String& name) const;
 
 	bool CheckLocalName(const utils::String& name) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
@@ -160,7 +161,7 @@ private:
 	struct FunctionParameter;
 	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
-private:
+private: //Function stuff
 	struct FunctionParameter {
 		utils::String name;
 
@@ -190,7 +191,7 @@ private:
 
 	static bool CheckParameterName(const utils::List<FunctionParameter*>& params, const utils::String& name); //return true if name is available
 
-private:
+private: //Constants
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
 	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
@@ -202,11 +203,42 @@ private:
 
 	bool IsTypeComposite(const TypeBase* const type) const;
 
-private:
+private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
+
+private: //Expression parsing
+	enum class ExpressionType {
+		Variable,
+		Constant,
+		Result,
+		FunctionCall,
+		Operator
+	};
+
+	struct Expression {
+		ExpressionType type;
+
+		//type = Variable
+		Variable* variable;
+
+		union {
+			//type = Constant
+			ResultVariable constant;
+
+			//Result
+			ResultVariable result;
+		};
+
+		//FunctionCall
+		FunctionDeclaration* functionDecl;
+
+		//Operator
+		parsing::TokenType operatorType;
+
+	};
 
 private:
 	utils::String code;

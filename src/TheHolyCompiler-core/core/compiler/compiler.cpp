@@ -615,14 +615,43 @@ void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 s
 
 	InstStore* store = new InstStore(variable->typePointerId, res.id, 0);
 	instructions.Add(store);
-	if (res.postInstruction) instructions.Add(res.postInstruction);
-
 	tokens.Remove(start, end);
 }
 
 Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end) {
-	const Token& t = tokens[start];
+	List<Expression> expressions;
 
+	for (uint64 i = start; i <= end; i++) {
+		const Token& t = tokens[i];
+		Expression e;
+
+		if (t.type == TokenType::Name) { //TODO: handle struct members and functions
+			e.type == ExpressionType::Variable;
+			e.variable = GetVariable(t.string);
+
+			if (e.variable == nullptr) {
+				Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
+			}
+		} else if (t.type == TokenType::Value) {
+			//TODO: later
+		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
+			e.type = ExpressionType::Operator;
+			e.operatorType = t.type;
+		} else if (t.type == TokenType::ParenthesisOpen) {
+			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+			if (parenthesisClose > end) {
+				Log::CompilerError(t, "\"(\" needs a closing \")\"");
+			}
+
+			e.type = ExpressionType::Result;
+			e.result = ParseExpression(tokens, i + 1, parenthesisClose - 1);
+		}
+
+		expressions.Add(e);
+	}
+
+	
 }
 
 bool Compiler::Process() {
