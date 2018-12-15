@@ -56,10 +56,10 @@ enum class TokenType {
 	TypeVec,
 	TypeMat,
 
+	OperatorSelector,
 	OperatorIncrement,
 	OperatorDecrement,
 	OperatorNegate,
-	OperatorSelector,
 	OperatorTernary1,
 	OperatorTernary2,
 	OperatorBitwiseAnd,
