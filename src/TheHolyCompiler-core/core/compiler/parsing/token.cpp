@@ -31,6 +31,23 @@ namespace parsing {
 
 using namespace utils;
 
+bool operator>(TokenType left, TokenType right) {
+	return int(left) > int(right);
+}
+
+bool operator<(TokenType left, TokenType right) {
+	return int(left) < int(right);
+}
+
+bool operator>=(TokenType left, TokenType right) {
+	return int(left) >= int(right);
+}
+
+bool operator<=(TokenType left, TokenType right) {
+	return int(left) <= int(right);
+}
+
+
 Token::Token(TokenType type, const String& string, uint64 column) : type(type), string(string), column(column) { }
 Token::Token(TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), string(string), column(column) { }
 Token::Token(TokenType type, const String& string, const Line& line, uint64 column) : type(type), string(string), line(line), column(column) { }

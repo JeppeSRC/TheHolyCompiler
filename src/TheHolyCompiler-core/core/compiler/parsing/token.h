@@ -106,6 +106,12 @@ enum class TokenType {
 	ModifierReference = OperatorBitwiseAnd,
 };
 
+
+bool operator>(TokenType left, TokenType right);
+bool operator<(TokenType left, TokenType right);
+bool operator>=(TokenType left, TokenType right);
+bool operator<=(TokenType left, TokenType right);
+
 class Token {
 public:
 	TokenType type;
