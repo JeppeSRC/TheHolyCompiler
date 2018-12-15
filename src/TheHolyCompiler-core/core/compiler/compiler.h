@@ -232,9 +232,6 @@ private: //Expression parsing
 			ResultVariable result;
 		};
 
-		//FunctionCall
-		FunctionDeclaration* functionDecl;
-
 		//Operator
 		parsing::TokenType operatorType;
 
@@ -256,6 +253,7 @@ private:
 	void ParseAssignment(Variable* variable, utils::List<parsing::Token>& tokens, uint64 start);
 
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
+	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
 	bool Process();
 

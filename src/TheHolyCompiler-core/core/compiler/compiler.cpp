@@ -625,12 +625,24 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		const Token& t = tokens[i];
 		Expression e;
 
-		if (t.type == TokenType::Name) { //TODO: handle struct members and functions
-			e.type == ExpressionType::Variable;
-			e.variable = GetVariable(t.string);
+		if (t.type == TokenType::Name) { 
+			const Token& next = tokens[i + 1];
 
-			if (e.variable == nullptr) {
-				Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
+			if (next.type == TokenType::OperatorSelector) { //Member selection in a struct
+
+			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
+				uint64 removed = 0;
+				e.type = ExpressionType::Result;
+				e.result = ParseFunctionCall(tokens, i, &removed);
+
+				i += removed;
+			} else { //Normal variable
+				e.type == ExpressionType::Variable;
+				e.variable = GetVariable(t.string);
+
+				if (e.variable == nullptr) {
+					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
+				}
 			}
 		} else if (t.type == TokenType::Value) {
 			//TODO: later
@@ -652,6 +664,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 	}
 
 	
+}
+
+Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len) {
+
 }
 
 bool Compiler::Process() {
