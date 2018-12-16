@@ -481,6 +481,8 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (!param->reference) {
 			offset--;
+		} else {
+			param->type = CreateTypePointer(type, VariableScope::Function);
 		}
 
 		param->type = type;
