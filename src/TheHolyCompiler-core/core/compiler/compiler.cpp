@@ -703,6 +703,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				e.variable->variableId = access->id;
 
 				instructions.Add(access);
+				i += offset-1;
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;
