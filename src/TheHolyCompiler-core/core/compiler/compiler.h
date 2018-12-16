@@ -145,7 +145,7 @@ private:
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
 
 	struct FunctionParameter;
-	Variable* CreateParameterVariable(const FunctionParameter* const param, InstFunctionParameter** opParam);
+	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
 private:
 	struct FunctionParameter {
