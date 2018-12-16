@@ -699,7 +699,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				}
 
 				
-				e.variable->typePointerId = CreateTypePointer(e.variable->type, e.variable->scope);
+				e.variable->typePointerId = CreateTypePointer(e.variable->type, e.variable->scope)->typeId;
 
 				InstAccessChain* access = new InstAccessChain(e.variable->typePointerId, str->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
 				e.variable->variableId = access->id;
