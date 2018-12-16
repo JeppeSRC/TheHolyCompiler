@@ -110,6 +110,43 @@ void Compiler::CheckConstantExist(InstBase** constant) {
 	}
 }
 
+Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const Token& token) {
+	THC_ASSERT(token.type == TokenType::Value);
+	TypePrimitive* type = new TypePrimitive;
+
+	type->type = ConvertToType(token.valueType);
+	type->componentType = type->type;
+	type->bits = 32;
+	type->sign = token.sign;
+	type->rows = 0;
+	type->columns = 0;
+	type->typeString = GetTypeString(type);
+	type->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&type);
+
+	if (type->typeId != ~0) {
+		return type;
+	}
+
+	InstTypeBase* t = nullptr;
+
+	switch (type->type) {
+		case Type::Int:
+			t = new InstTypeInt(type->bits, type->sign);
+			break;
+		case Type::Float:
+			t = new InstTypeFloat(type->bits);
+			break;
+	}
+
+	CheckTypeExist((InstTypeBase**)&t);
+
+	type->typeId = t->id;
+
+	return type;
+}
+
 Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start) {
 	TypePrimitive* var = new TypePrimitive;
 

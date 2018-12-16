@@ -718,7 +718,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				}
 			}
 		} else if (t.type == TokenType::Value) {
-			//TODO: later
+			e.constant.type = CreateTypePrimitive(t);
+			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
