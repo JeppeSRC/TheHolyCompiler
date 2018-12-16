@@ -131,7 +131,8 @@ private: //Variable stuff
 		In,
 		Out,
 		Private,
-		Uniform
+		Uniform,
+		Function
 	};
 
 	static uint32 ScopeToStorageClass(VariableScope scope);
