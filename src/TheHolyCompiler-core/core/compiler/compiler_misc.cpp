@@ -56,6 +56,7 @@ InstBase* Compiler::GetInstFromID(uint32 id)  {
 	
 	return nullptr;
 }
+
 void Compiler::CheckTypeExist(InstTypeBase** type) {
 	auto cmp = [](InstBase* const& curr, InstTypeBase* const& type) -> bool {
 		if (curr->type != InstType::Type) return false;
