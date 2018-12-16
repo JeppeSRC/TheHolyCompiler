@@ -19,5 +19,7 @@ out vec4 pos = THSL_Position;
 
 int main() {
 
+    float a = 123.123;
+
     return 0;
 }
