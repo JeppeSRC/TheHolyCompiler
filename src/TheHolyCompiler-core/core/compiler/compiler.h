@@ -159,6 +159,8 @@ private: //Variable stuff
 	struct ResultVariable {
 		TypeBase* type;
 		uint32 id;
+
+		bool isVariable;
 	};
 
 	utils::List<Variable*> globalVariables;
@@ -203,6 +205,8 @@ private: //Function stuff
 	};
 
 	utils::List<FunctionDeclaration*> functionDeclarations;
+
+	utils::List<FunctionDeclaration*> GetFunctionDeclarations(const utils::String& name); 
 
 	static bool CheckParameterName(const utils::List<FunctionParameter*>& params, const utils::String& name); //return true if name is available
 

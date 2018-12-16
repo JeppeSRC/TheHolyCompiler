@@ -746,6 +746,93 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len) {
 	const Token& functionName = tokens[start];
 
+	List<ResultVariable> parameterResults;
+
+	uint64 offset = 1;
+
+	const Token& parenthesisOpen = tokens[start + offset++];
+
+	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
+		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
+	}
+
+	uint64 parenthesisClose = FindMatchingToken(tokens, start + offset - 1, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+	if (parenthesisClose == ~0) {
+		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
+	}
+
+	bool moreParams = true;
+
+	do {
+		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, start + offset);
+
+		if (end > parenthesisClose) {
+			end = parenthesisClose-1;
+			moreParams = false;
+		}
+
+		offset = end + 1;
+
+		ResultVariable res = ParseExpression(tokens, start + offset, end);
+		
+		parameterResults.Add(res);
+	} while (moreParams);
+
+	*len = offset;
+
+	uint64 fOffset = 0;
+	
+	List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
+
+	if (!decls.GetCount()) {
+		Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
+	}
+	
+
+	for (uint64 i = 0; i < decls.GetCount(); i++) {
+		if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
+			decls.RemoveAt(i--);
+		}
+	}
+
+	if (decls.GetCount() == 0) {
+		Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
+	}
+
+	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+		ResultVariable& res = parameterResults[i];
+
+		for (uint64 j = 0; j < decls.GetCount(); j++) {
+			FunctionDeclaration* d = decls[j];
+
+			FunctionParameter* param = d->parameters[i];
+			TypeBase* dt = param->type;
+
+			if (param->reference) {
+				//pass by reference but argument is rvalue
+				if (!res.isVariable && !param->constant) {
+					if (decls.GetCount() == 1) {
+						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
+					} else {
+						decls.RemoveAt(j--);
+						continue;
+					}
+				}
+			} else if (*dt != res.type) {
+				if (decls.GetCount() == 1) {
+					Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
+				} else {
+					decls.RemoveAt(j--);
+					continue;
+				}
+			}
+		}
+	}
+
+	FunctionDeclaration* decl = decls[0];
+
+
 }
 
 bool Compiler::Process() {
