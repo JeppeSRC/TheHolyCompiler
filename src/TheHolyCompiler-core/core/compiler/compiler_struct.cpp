@@ -88,6 +88,19 @@ bool Compiler::TypeArray::operator!=(const Compiler::TypeBase* const other) cons
 	return !operator==(other);
 }
 
+bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypePointer* t = (const TypePointer*)other;
+
+		return *pointerType == t->pointerType && storageClass == t->storageClass;
+	}
+
+	return false;
+}
+
+bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) const {
+	return !operator==(other);
+}
 /*bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeFunction* t = (const TypeFunction*)other;

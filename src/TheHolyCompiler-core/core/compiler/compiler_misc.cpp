@@ -476,6 +476,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 
 	const TypeArray* arr = (const TypeArray*)type;
 	const TypePrimitive* prim = (const TypePrimitive*)type;
+	const TypePointer* p = (const TypePointer*)type;
 
 	switch (type->type) {
 		case Type::Void:
@@ -634,6 +635,29 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			}
 
 			break;
+
+		case Type::Pointer:
+			name = GetTypeString(p->pointerType).Append("* ");
+
+			switch (p->storageClass) {
+				case THC_SPIRV_STORAGE_CLASS_INPUT:
+					name.Append("INPUT");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_OUTPUT:
+					name.Append("OUTPUT");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_PRIVATE:
+					name.Append("PRIVATE");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_UNIFORM:
+					name.Append("UNIFORM");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_FUNCTION:
+					name.Append("FUNCTION");
+					break;
+			}
+
+			break;
 	}
 
 	return name;
@@ -649,6 +673,8 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 			return THC_SPIRV_STORAGE_CLASS_PRIVATE;
 		case VariableScope::Uniform:
 			return THC_SPIRV_STORAGE_CLASS_UNIFORM;
+		case VariableScope::Function:
+			return THC_SPIRV_STORAGE_CLASS_FUNCTION;
 	}
 
 	return ~0;
@@ -696,12 +722,29 @@ bool Compiler::CheckGlobalName(const String& name) const {
 	return index == ~0;
 }
 
-uint32 Compiler::CreateTypePointer(const TypeBase* const type, VariableScope scope) {
-	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
+Compiler::TypePointer* Compiler::CreateTypePointer(const TypeBase* const type, VariableScope scope) {
+	TypePointer* p = new TypePointer;
+
+	p->type = Type::Pointer;
+	p->pointerType = (TypeBase*)type;
+	p->storageClass = ScopeToStorageClass(scope);
+	p->typeId = ~0;
+	
+	CheckTypeExist((TypeBase**)&p);
+
+	if (p->typeId != ~0) {
+		return p;
+	}
+
+	p->typeString = GetTypeString(p);
+
+	InstTypePointer* pointer = new InstTypePointer(p->storageClass, type->typeId);
 
 	CheckTypeExist((InstTypeBase**)&pointer);
 
-	return pointer->id;
+	p->typeId = pointer->id;
+
+	return p;
 }
 
 Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const String& name) {

@@ -84,6 +84,16 @@ private: //Type stuff
 		uint32 GetSize() const override;
 	};
 
+	struct TypePointer : public TypeBase {
+		TypeBase* pointerType;
+		uint32 storageClass;
+
+		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
+
+		uint32 GetSize() const override { return ~0; }
+	};
+
 	/*struct TypeFunction : public TypeBase {
 		TypeBase* returnType;
 
@@ -159,7 +169,7 @@ private: //Variable stuff
 	bool CheckLocalName(const utils::String& name) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
-	uint32    CreateTypePointer(const TypeBase* const type, VariableScope scope);
+	TypePointer* CreateTypePointer(const TypeBase* const type, VariableScope scope);
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
 
