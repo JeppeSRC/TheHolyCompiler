@@ -27,6 +27,7 @@ SOFTWARE.
 #define CLAMP(x, min, max) (x > max ? max : x < min ? min : x)
 
 #include "string.h"
+#include <core/compiler/parsing/line.h>
 
 namespace thc {
 namespace utils {
@@ -37,7 +38,27 @@ enum CompareOperation {
 	Or,
 };
 
+enum class ValueResultType {
+	Error,
+
+	Float,
+	Int,
+};
+
+struct ValueResult {
+	ValueResultType type;
+
+	uint8 sign;
+
+	union {
+		float32 fvalue;
+		uint32 value;
+	};
+};
+
 class Utils {
+private:
+
 public:
 	static void CopyString(char*& dst, const char* const src);
 	static String GetPathFromFile(const String& filepath);
@@ -45,6 +66,7 @@ public:
 	static void RemoveWhitespace(String& string);
 	static uint64 FindMatchingSymbol(const String& code, const char start, const char end);
 	static uint64 StringToUint64(const char* string, uint64* length = nullptr);
+	static ValueResult StringToValue(const char* string, uint64* length, const core::parsing::Line& line, uint64 column);
 	
 	static String ReadFile(const String& filename);
 
