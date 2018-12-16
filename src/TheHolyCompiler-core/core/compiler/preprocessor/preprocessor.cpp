@@ -812,52 +812,6 @@ List<Token> PreProcessor::TokenizeStatement(const String& code, const Line& line
 	return tokens;
 }
 
-void PreProcessor::ReplaceMacrosWithValue(String& code) {
-	for (uint64 i = 0; i < defines.GetCount(); i++) {
-		const String& name = defines[i].name;
-
-		uint64 num = code.Count(name);
-
-		for (uint64 j = 0; j < num; j++) {
-			uint64 index = code.Find(name);
-
-			code.Insert(index, index+name.length-1, defines[i].value);
-
-			ReplaceMacrosWithValue(code);
-		}
-	}
-}
-
-uint64 PreProcessor::FindMatchingParenthesis(const List<Token>& tokens, uint64 start, const Line& line) {
-	uint64 count = 0;
-
-	for (uint64 i = 0; i < tokens.GetCount(); i++) {
-		const Token& t = tokens[i];
-
-		if (t.type == TokenType::ParenthesisOpen) {
-			count++;
-		} else if (t.type == TokenType::ParenthesisClose) {
-			if (count == 1) return i;
-			else if (count == 0) {
-				Log::CompilerError(line, t.column, "One lonley ')' found without a matching '('");
-			}
-			count--;
-		}
-	}
-
-	return ~0;
-}
-
-uint64 PreProcessor::FindLineWith(const String& string, uint64 offset) {
-	for (uint64 i = offset; i < lines.GetCount(); i++) {
-		if (lines[i].string.Find(string) != ~0) {
-			return i;
-		}
-	}
-
-	return ~0;
-}
-
 PreProcessor::PreProcessor(String code, const String& fileName, const utils::List<utils::String>& defines, const utils::List<utils::String>& includeDirs) : fileName(fileName), includeDirectories(includeDirs) {
 	this->defines.Reserve(defines.GetCount());
 

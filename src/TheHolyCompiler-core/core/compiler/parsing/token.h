@@ -121,6 +121,7 @@ public:
 		uint64 value;
 	};
 
+	TokenType valueType;
 	uint8 bits;
 	uint8 sign;
 	uint8 rows;

@@ -21,4 +21,7 @@ void main() {
 
     pos = MVP * vec4(position, 1);
 
+    float a = 123.123;
+
+    return 0;
 }

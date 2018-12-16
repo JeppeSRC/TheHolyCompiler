@@ -98,8 +98,6 @@ List<Token> Compiler::Tokenize() {
 				tokens.Emplace(TokenType::OperatorLogicalNotEqual, "!=", l, j++);
 			} else if (c0 == '+') {
 				tokens.Emplace(TokenType::OperatorAdd, "+", l, j);
-			} else if (c0 == '-') {
-				tokens.Emplace(TokenType::OperatorSub, "-", l, j);
 			} else if (c0 == '*') {
 				tokens.Emplace(TokenType::OperatorMul, "*", l, j);
 			} else if (c0 == '/') {
@@ -130,11 +128,26 @@ List<Token> Compiler::Tokenize() {
 				tokens.Emplace(TokenType::OperatorAssign, "=", l, j);
 			} else if (c0 >= '0' && c0 <= '9') {
 				uint64 len = 0;
-				uint64 value = 0;
+				
+				ValueResult res = Utils::StringToValue(line.str+j-1, &len, l, j);
 
-				value = Utils::StringToUint64(line.str + j, &len);
+				Token tmp(TokenType::Value, res.value, line.SubString(j - (line[j - 1] == '-' ? 1 : 0), j + len - 1), l, j);
 
-				tokens.Emplace(TokenType::Value, value, line.SubString(j, j + len - 1), l,  j);
+				switch (res.type) {
+					case ValueResultType::Float:
+						tmp.valueType = TokenType::TypeFloat;
+						break;
+					case ValueResultType::Int:
+						tmp.valueType = TokenType::TypeInt;
+						tmp.sign = res.sign;
+				}
+
+				tokens.Emplace(tmp);
+
+				j += len;
+
+			} else if (c0 == '-') {
+				tokens.Emplace(TokenType::OperatorSub, "-", l, j);
 			} else {
 				uint64 end = ~0;
 
@@ -188,6 +201,9 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			ParseInOut(tokens, i, VariableScope::In);
 		} else if (token.type == TokenType::DataOut) {
 			ParseInOut(tokens, i, VariableScope::Out);
+		} else if (token.type == TokenType::DataStruct) {
+			CreateTypeStruct(tokens, i + 1);
+			tokens.RemoveAt(i);
 		}
 
 		i--;
