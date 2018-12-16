@@ -627,9 +627,66 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 		if (t.type == TokenType::Name) { 
 			const Token& next = tokens[i + 1];
-
 			if (next.type == TokenType::OperatorSelector) { //Member selection in a struct
+				Variable* str = GetVariable(t.string);
+				
+				if (str == nullptr) {
+					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
+				} else if (str->type->type != Type::Struct) {
+					Log::CompilerError(next, "Left of operator \".\" must be a struct");
+				}
 
+				List<uint32> accessIds;
+				uint64 offset = 2;
+
+				TypeStruct* currStr = (TypeStruct*)str->type;
+
+				e.type = ExpressionType::Variable;
+				e.variable = new Variable;
+
+				e.variable->scope = str->scope;
+				e.variable->name = str->name;
+
+				while (true) {
+					const Token& member = tokens[i + offset++];
+
+					if (member.type == TokenType::Name) {
+						Log::CompilerError(member, "Right hand of operator \".\" must be a valid name");
+					}
+
+					e.variable->name.Append(".").Append(member.string);
+
+					uint32 memberId = currStr->GetMemberIndex(member.string);
+
+					if (memberId == ~0) {
+						Log::CompilerError(member, "\"%s\" has no member \"%s\"", currStr->typeString.str, member.string.str);
+					}
+
+					accessIds.Add(memberId);
+
+					const Token& selector = tokens[i + offset++];
+
+					if (selector.type == TokenType::OperatorSelector) {
+						currStr = (TypeStruct*)currStr->members[i];
+						if (currStr->type == Type::Struct) {
+							continue;
+						} else {
+							Log::CompilerError(selector, "Left of operator \".\" must be a struct");
+						}
+					}
+
+					e.variable->type = currStr->members[memberId];
+
+					break;
+				}
+
+				
+				e.variable->typePointerId = CreateTypePointer(e.variable->type, e.variable->scope);
+
+				InstAccessChain* access = new InstAccessChain(e.variable->typePointerId, str->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
+				e.variable->variableId = access->id;
+
+				instructions.Add(access);
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;

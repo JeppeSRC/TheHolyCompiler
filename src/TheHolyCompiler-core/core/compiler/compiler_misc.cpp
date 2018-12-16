@@ -659,6 +659,14 @@ bool Compiler::CheckGlobalName(const String& name) const {
 	return index == ~0;
 }
 
+uint32 Compiler::CreateTypePointer(const TypeBase* const type, VariableScope scope) {
+	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
+
+	CheckTypeExist((InstTypeBase**)&pointer);
+
+	return pointer->id;
+}
+
 Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const String& name) {
 	Variable* var = new Variable;
 

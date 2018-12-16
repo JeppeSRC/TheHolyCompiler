@@ -38,6 +38,10 @@ bool Compiler::TypeBase::operator==(const TypeBase* const other) const {
 	return type == other->type && name == other->name;
 }
 
+bool Compiler::TypeBase::operator!=(const TypeBase* const other) const {
+	return !operator==(other);
+}
+
 bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) const {
 	if (other->type == type) {
 		const TypePrimitive* t = (const TypePrimitive*)other;
@@ -137,6 +141,14 @@ uint32 Compiler::TypeStruct::GetSize() const {
 	}
 
 	return total;
+}
+
+uint32 Compiler::TypeStruct::GetMemberIndex(const String& name) {
+	for (uint64 i = 0; i < members.GetCount(); i++) {
+		if (members[i]->name == name) return (uint32)i;
+	}
+
+	return ~0;
 }
 
 uint32 Compiler::TypeArray::GetSize() const {

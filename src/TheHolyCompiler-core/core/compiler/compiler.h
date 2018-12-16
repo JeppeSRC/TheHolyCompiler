@@ -70,6 +70,8 @@ private: //Type stuff
 		bool operator!=(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
+
+		uint32 GetMemberIndex(const utils::String& name);
 	};
 
 	struct TypeArray : public TypeBase {
@@ -155,6 +157,7 @@ private: //Variable stuff
 	bool CheckLocalName(const utils::String& name) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
+	uint32    CreateTypePointer(const TypeBase* const type, VariableScope scope);
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
 
