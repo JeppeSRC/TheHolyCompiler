@@ -747,7 +747,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		expressions.Add(e);
 	}
 
-	
+	ResultVariable r;
+
+	return r;
 }
 
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len) {
@@ -839,7 +841,9 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 	FunctionDeclaration* decl = decls[0];
 
+	ResultVariable r;
 
+	return r;
 }
 
 bool Compiler::Process() {
