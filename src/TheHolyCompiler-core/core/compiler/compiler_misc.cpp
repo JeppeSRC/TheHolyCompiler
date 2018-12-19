@@ -296,12 +296,12 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<uint32> ids;
 
 	while (true) {
-		const Token& type = tokens[start + offset++];
+		const Token& type = tokens[start + offset];
 
 		TypeBase* tmp = nullptr;
 
 		if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
-			uint64 typeLocation = start + offset - 1;
+			uint64 typeLocation = start + offset;
 
 			tmp = CreateTypePrimitive(tokens, typeLocation);
 		} else {
@@ -312,6 +312,8 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 			}
 
 			tmp = typeDefinitions[index];
+
+			offset++;
 		}
 
 		const Token& tokenName = tokens[start + offset++];
