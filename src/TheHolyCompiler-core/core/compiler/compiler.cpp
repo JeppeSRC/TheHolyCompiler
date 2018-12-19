@@ -204,6 +204,13 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 		} else if (token.type == TokenType::DataStruct) {
 			CreateTypeStruct(tokens, i + 1);
 			tokens.RemoveAt(i);
+		} else if (token.type == TokenType::Name) {
+			const Token& t2 = tokens[i + 1];
+			if (t2.type == TokenType::ParenthesisOpen) {
+				ParseFunction(tokens, i - 1);
+			} else {
+				//TODO: implement global variables
+			} 
 		}
 
 		i--;
