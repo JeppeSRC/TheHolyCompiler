@@ -144,7 +144,7 @@ List<Token> Compiler::Tokenize() {
 
 				tokens.Emplace(tmp);
 
-				j += len;
+				j += len-1;
 
 			} else if (c0 == '-') {
 				tokens.Emplace(TokenType::OperatorSub, "-", l, j);
