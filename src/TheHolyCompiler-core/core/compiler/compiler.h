@@ -121,7 +121,7 @@ private: //Type stuff
 	
 
 	//start is the index of the type
-	TypePrimitive* CreateTypePrimitive(const Token& token);
+	TypePrimitive* CreateTypePrimitive(const parsing::Token& token);
 	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
