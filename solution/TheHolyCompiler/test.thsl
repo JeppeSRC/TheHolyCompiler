@@ -17,7 +17,7 @@ layout (binding = 0, set = 0) uniform Buffer0 {
 
 out vec4 pos = THSL_Position;
 
-float dot(vec3 v1, vec3 v2);
+float32 dot(vec3 v1, vec3 v2);
 
 void main() {
 
