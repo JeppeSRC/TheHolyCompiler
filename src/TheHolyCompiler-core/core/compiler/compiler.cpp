@@ -623,7 +623,7 @@ auto  CmpFunc = [](const Token& curr, const TokenType& c) -> bool {
 
 //start = '='
 void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 start) {
-	uint64 end = tokens.Find<TokenType>(TokenType::ParenthesisClose, CmpFunc, start);
+	uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
 	ResultVariable res = ParseExpression(tokens, start+1, end);
 
 	if (*variable->type != res.type) {
