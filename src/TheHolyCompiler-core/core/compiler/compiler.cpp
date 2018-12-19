@@ -196,24 +196,22 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 		const Token& token = tokens[i];
 
 		if (token.type == TokenType::DataLayout) {
-			ParseLayout(tokens, i);
+			ParseLayout(tokens, i--);
 		} else if (token.type == TokenType::DataIn) {
-			ParseInOut(tokens, i, VariableScope::In);
+			ParseInOut(tokens, i--, VariableScope::In);
 		} else if (token.type == TokenType::DataOut) {
-			ParseInOut(tokens, i, VariableScope::Out);
+			ParseInOut(tokens, i--, VariableScope::Out);
 		} else if (token.type == TokenType::DataStruct) {
 			CreateTypeStruct(tokens, i + 1);
-			tokens.RemoveAt(i);
+			tokens.RemoveAt(i--);
 		} else if (token.type == TokenType::Name) {
 			const Token& t2 = tokens[i + 1];
 			if (t2.type == TokenType::ParenthesisOpen) {
-				ParseFunction(tokens, i - 1);
+				ParseFunction(tokens, --i);
 			} else {
 				//TODO: implement global variables
 			} 
 		}
-
-		i--;
 	}
 }
 
