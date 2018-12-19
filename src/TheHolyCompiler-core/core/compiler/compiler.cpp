@@ -481,11 +481,11 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (!param->reference) {
 			offset--;
+			param->type = type;
 		} else {
 			param->type = CreateTypePointer(type, VariableScope::Function);
 		}
 
-		param->type = type;
 
 		decl->parameters.Add(param);
 
