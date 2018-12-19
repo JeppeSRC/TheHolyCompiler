@@ -816,6 +816,20 @@ Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* c
 	return var;
 }
 
+utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
+	List<FunctionDeclaration*> decls;
+
+	for (uint64 i = 0; i < functionDeclarations.GetCount(); i++) {
+		FunctionDeclaration* d = functionDeclarations[i];
+
+		if (d->name == name) {
+			decls.Add(d);
+		}
+	}
+
+	return decls;
+}
+
 bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const String& name) {
 	auto cmp = [](FunctionParameter* const& curr, const String& name) -> bool {
 		return curr->name == name;
