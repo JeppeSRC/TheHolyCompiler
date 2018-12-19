@@ -720,7 +720,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 				i += removed;
 			} else { //Normal variable
-				e.type == ExpressionType::Variable;
+				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string);
 
 				if (e.variable == nullptr) {
