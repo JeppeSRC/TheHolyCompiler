@@ -181,7 +181,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 			var->sign = type.sign;
 		} else {
 			var->componentType = Type::Float;;
-			var->bits = 32;
+			var->bits = CompilerOptions::FPPrecision32() ? 32 : 64;
 			var->sign = 0;
 
 			offset--;
@@ -1052,6 +1052,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"int32", TokenType::TypeInt, 32, 1, 0, 0},
 		{"int64", TokenType::TypeInt, 64, 1, 0, 0},
 
+		{"float",  TokenType::TypeFloat, CompilerOptions::FPPrecision32() ? 32 : 64, 0, 0, 0},
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 
