@@ -424,9 +424,9 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
 
-	TypeBase* retType = CreateType(tokens, start);
+	const Token& returnType = tokens[start + offset];
 
-	const Token& returnType = tokens[start + offset++ ];
+	TypeBase* retType = CreateType(tokens, start);
 
 	if (retType == nullptr) {
 		Log::CompilerError(returnType, "Unexpected symbol \"%s\" expected a valid return type");
