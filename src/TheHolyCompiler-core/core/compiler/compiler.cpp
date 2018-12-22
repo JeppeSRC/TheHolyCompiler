@@ -424,7 +424,7 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
 
-	const Token& returnType = tokens[start + offset];
+	const Token& returnType = tokens[start];
 
 	TypeBase* retType = CreateType(tokens, start);
 
