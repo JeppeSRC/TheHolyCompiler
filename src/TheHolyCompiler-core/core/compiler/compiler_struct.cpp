@@ -137,11 +137,11 @@ uint32 Compiler::TypePrimitive::GetSize() const {
 	switch (type) {
 		case Type::Int:
 		case Type::Float:
-			return bits >> 2;
+			return bits >> 3;
 		case Type::Vector:
-			return rows * (bits >> 2);
+			return rows * (bits >> 3);
 		case Type::Matrix:
-			return rows * columns * (bits >> 2);
+			return rows * columns * (bits >> 3);
 	}
 
 	return ~0;
