@@ -155,8 +155,33 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 
 	const Token& token = tokens[start + offset++];
 
-	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
+	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat, TokenType::TypeVoid)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
+	} else if (token.type == TokenType::TypeVoid) {
+		var->type = Type::Void;
+		var->typeString = "void";
+		var->componentType = Type::Void;
+		var->bits = 0;
+		var->sign = 0;
+		var->rows = 0;
+		var->columns = 0;
+		var->typeId = ~0;
+
+		CheckTypeExist((TypeBase**)&var);
+
+		tokens.RemoveAt(start);
+
+		if (var->typeId != ~0) {
+			return var;
+		}
+
+		InstTypeVoid* v = new InstTypeVoid();
+
+		types.Add(v);
+
+		var->typeId = v->id;
+
+		return var;
 	}
 
 
@@ -268,9 +293,9 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		var->typeId = t->id;
 
 		typeDefinitions.Add(var);
-
-		tokens.Remove(start, start + offset-1);
 	}
+	
+	tokens.Remove(start, start + offset-1);
 
 	return var;
 }
@@ -360,7 +385,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	var->type = Type::Struct;
 	var->typeString = name.string;
 
-	if (typeDefinitions.Find<String>(var->name, findStructFunc) == ~0) {
+	if (typeDefinitions.Find<String>(var->typeString, findStructFunc) == ~0) {
 		typeDefinitions.Add(var);
 	} else {
 		delete var;
@@ -756,7 +781,7 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 	var->scope = scope;
 	var->name = name;
 
-	var->type = type;
+	var->type = (TypeBase*)type;
 
 	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
 
@@ -779,7 +804,7 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	var->scope = VariableScope::None;
 	var->name = name;
-	var->type = type;
+	var->type = (TypeBase*)type;
 	
 	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, type->typeId);
 
@@ -838,6 +863,20 @@ bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const 
 	};
 
 	return params.Find<String>(name, cmp) == ~0;
+}
+
+uint32 Compiler::CreateConstantS32(int32 value) {
+	TypePrimitive p;
+
+	p.type = Type::Int;
+	p.componentType = Type::Int;
+	p.bits = 32;
+	p.sign = 1;
+	p.rows = 0;
+	p.columns = 0;
+	p.typeId = ~0;
+
+	return CreateConstant(&p, *(uint32*)&value);
 }
 
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
