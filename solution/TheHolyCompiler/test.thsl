@@ -19,7 +19,20 @@ out vec4 pos = THSL_Position;
 
 float32 dot(vec3 v1, vec3 v2);
 
+struct O {
+    uint32 someOtherName;
+};
+
+struct Dank {
+    uint32 fist;
+    O o;
+};
+
 void main() {
+
+    Dank d;
+
+    uint32 a = d.o.someOtherName;
 
     vec3 v1;
     vec3 v1;
