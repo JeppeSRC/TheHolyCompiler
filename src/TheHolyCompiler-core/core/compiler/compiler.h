@@ -154,6 +154,8 @@ private: //Variable stuff
 		const TypeBase* type;
 		uint32 typePointerId;
 		uint32 variableId;
+
+		bool isConstant;
 	};
 
 	struct ResultVariable {

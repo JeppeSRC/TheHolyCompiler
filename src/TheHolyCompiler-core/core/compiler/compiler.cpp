@@ -209,7 +209,16 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			if (t2.type == TokenType::ParenthesisOpen) {
 				ParseFunction(tokens, --i);
 			} else {
-				//TODO: implement global variables
+				TypeBase* type = CreateType(tokens, i - 1);
+
+				Variable* var = CreateGlobalVariable(type, VariableScope::Private, token.string);
+				var->isConstant = tokens[i - 1].type == TokenType::ModifierConst;
+
+				if (t2.type == TokenType::SemiColon) {
+					continue;
+				} else if (t2.type == TokenType::OperatorAssign) {
+					ParseAssignment(var, tokens, i + 1);
+				}
 			} 
 		}
 	}
