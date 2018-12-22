@@ -839,7 +839,20 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 	FunctionDeclaration* decl = decls[0];
 
+	uint32* ids = new uint32[parameterResults.GetCount()];
+
+	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+		ids[i] = parameterResults[i].id;
+	}
+
+	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
+	instructions.Add(call);
+
 	ResultVariable r;
+
+	r.id = call->id;
+	r.type = decl->returnType;
+	r.isVariable = false;
 
 	return r;
 }
