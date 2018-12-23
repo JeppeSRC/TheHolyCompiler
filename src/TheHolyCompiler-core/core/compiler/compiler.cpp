@@ -208,6 +208,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			const Token& t2 = tokens[i + 1];
 			if (t2.type == TokenType::ParenthesisOpen) {
 				ParseFunction(tokens, --i);
+				i--;
 			} else {
 				TypeBase* type = CreateType(tokens, i - 1);
 
@@ -217,7 +218,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				if (t2.type == TokenType::SemiColon) {
 					continue;
 				} else if (t2.type == TokenType::OperatorAssign) {
-					ParseAssignment(var, tokens, i + 1);
+					ParseAssignment(var, tokens, i + 1); //Fix so it only works with constant variables
 				}
 			} 
 		}
@@ -343,9 +344,9 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 
 
 		for (uint64 start = 0; start < str->members.GetCount(); start++) {
-			if (!CheckGlobalName(str->members[start]->name)) {
+			if (!CheckGlobalName(str->members[start].name)) {
 				const Token& n = tokens[start + offset];
-				Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[start]->name, n.string.str);
+				Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[start].name, n.string.str);
 			}
 		}
 
@@ -458,6 +459,12 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		Log::CompilerError(open, "Unexpected symbol \"%s\" expected \"(\"", open.string.str);
 	}
 
+	const Token& close = tokens[start + offset];
+
+	if (close.type == TokenType::ParenthesisClose) {
+		offset++;
+		goto naughtyLabel;
+	}
 
 	while (true) {
 		FunctionParameter* param = new FunctionParameter;
@@ -513,6 +520,8 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(delim, "Unexpected symbol \"%s\" expected \")\" or \",\"", delim.string.str);
 		}
 	}
+
+	naughtyLabel:
 
 	auto cmp = [](FunctionDeclaration* const& curr, FunctionDeclaration* const& other) {
 		return *curr == other;
@@ -600,12 +609,15 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
 			//variable declaration
 			TypeBase* t = CreateType(tokens, i);
-			tokens.RemoveAt(i);
 
 			const Token& name = tokens[i];
 
 			if (name.type != TokenType::Name) {
 				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+			}
+
+			if (!CheckLocalName(name.string)) {
+				Log::CompilerError(name, "Redefinition of \"%s\"", name.string.str);
 			}
 
 			Variable* var = CreateLocalVariable(t, name.string);
@@ -624,7 +636,41 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				i--;
 				continue;
 			}
-		} 
+		} else if (token.type == TokenType::Name) {
+			const Token& next = tokens[i + 1];
+
+			if (next.type == TokenType::ParenthesisOpen) {
+				uint64 rem = 0;
+				ParseFunctionCall(tokens, i, &rem);
+
+				tokens.Remove(i, i + rem - 1);
+			} else {
+				uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
+
+				if (index == ~0) {
+					Log::CompilerError(token, "Unexpected symbol \"%s\" expected a valid type", token.string.str);
+				}
+
+				TypeStruct* str = (TypeStruct*)typeDefinitions[index];
+				tokens.RemoveAt(i);
+
+				const Token& name = tokens[i];
+
+				if (name.type != TokenType::Name) {
+					Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
+				}
+
+				Variable* var = CreateLocalVariable(str, name.string);
+
+				const Token& assign = tokens[i + 1];
+
+				if (assign.type == TokenType::SemiColon) {
+					tokens.Remove(i, i-- + 1);
+				}  else {
+					Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \";\"", assign.string.str);
+				}
+			}
+		}
 		else {
 			Log::CompilerError(token, "Unexpected symbol \"%s\" expected \"}\"", token.string.str);
 		}
@@ -650,6 +696,109 @@ void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 s
 	tokens.Remove(start, end);
 }
 
+Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
+	uint64 offset = 0;
+
+	const Token& name = tokens[start + offset++];
+
+	Variable* var = GetVariable(name.string);
+
+	if (var == nullptr) {
+		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable or constat", name.string.str);
+	} 
+
+	Token op = tokens[start + offset++];
+
+	NameResult result;
+
+	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::ParenthesisOpen, TokenType::BracketOpen)) {
+		List<uint32> accessIds;
+		
+		result.name = name.string;
+		TypeBase* curr = var->type;
+
+		while (true) {
+			if (op.type == TokenType::OperatorSelector) {
+				if (curr->type != Type::Struct) {
+					Log::CompilerError(op, "Left of operator \".\" must be a struct");
+				}
+
+				const Token& member = tokens[start + offset++];
+
+				if (member.type != TokenType::Name) {
+					Log::CompilerError(member, "Right of operator \".\" must be a valid name");
+				}
+
+				TypeStruct* s = (TypeStruct*)curr;
+
+				uint64 index = s->GetMemberIndex(member.string);
+
+				if (index == ~0) {
+					Log::CompilerError(member, "\"%s\" doesn't have a member named \"%s\"", result.name.str, member.string.str);
+				}
+
+				result.name.Append(".").Append(member.string);
+				curr = s->members[index].type;
+
+				accessIds.Add(CreateConstantS32((int32)index));
+			} else if (op.type == TokenType::BracketOpen) {
+				if (curr->type != Type::Array) {
+					Log::CompilerError(op, "\"%s\" is not an array", result.name.str);
+				}
+
+				TypeArray* arr = (TypeArray*)curr;
+
+				uint64 end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, start);
+
+				if (end == ~0) {
+					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
+				}
+
+				ResultVariable index = ParseExpression(tokens, start + offset, end-1);
+
+				if (index.type->type != Type::Int) {
+					Log::CompilerError(op, "Array index must be a (signed) integer scalar");
+				} else {
+					TypePrimitive* p = (TypePrimitive*)index.type;
+
+					if (!p->sign) {
+						Log::CompilerWarning(op, "Array index is unsigned but will be treated as signed");
+					}
+				}
+
+				if (index.isVariable) {
+					InstLoad* load = new InstLoad(index.type->typeId, index.id, 0);
+					instructions.Add(load);
+
+					accessIds.Add(load->id);
+				} else {
+					accessIds.Add(index.id);
+				}
+
+				result.name.Append("[]");
+
+				curr = arr->elementType;
+
+				offset = end + 1;
+			} /*else if (op.type == TokenType::ParenthesisOpen) {
+				uint64 rem = 0;
+				ParseFunctionCall(tokens, start + offset, &rem); //TODO: Handle return
+
+				offset += rem;
+			} */else {
+				break;
+			}
+
+			op = tokens[start + offset++];
+		}
+		
+
+
+	}
+
+	
+}
+
 Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end) {
 	List<Expression> expressions;
 
@@ -659,8 +808,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 		if (t.type == TokenType::Name) { 
 			const Token& next = tokens[i + 1];
-			if (next.type == TokenType::OperatorSelector) { //Member selection in a struct
-				Variable* str = GetVariable(t.string);
+			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
+				uint64 removed = 0;
+				ParseName(tokens, i, &removed);
+				/*Variable* str = GetVariable(t.string);
 				
 				if (str == nullptr) {
 					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
@@ -719,7 +870,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				e.variable->variableId = access->id;
 
 				instructions.Add(access);
-				i += offset-1;
+				i += offset-1;*/
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;

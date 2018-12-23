@@ -39,7 +39,6 @@ private: //Type stuff
 	struct TypeBase {
 		type::Type type; //Type
 		utils::String typeString; //Type as a string
-		utils::String name; // Only used in TypeStruct as member
 
 		uint32 typeId; //OpType id
 
@@ -63,8 +62,16 @@ private: //Type stuff
 		uint32 GetSize() const override;
 	};
 
+	struct StructMember {
+		utils::String name;
+		TypeBase* type;
+
+		bool operator==(const StructMember& other) const;
+		bool operator!=(const StructMember& other) const;
+	};
+
 	struct TypeStruct : public TypeBase {
-		utils::List<TypeBase*> members;
+		utils::List<StructMember> members;
 
 		bool operator==(const TypeBase* const other) const override;
 		bool operator!=(const TypeBase* const other) const override;
@@ -151,7 +158,7 @@ private: //Variable stuff
 		VariableScope scope;
 		utils::String name;
 
-		const TypeBase* type;
+		TypeBase* type;
 		uint32 typePointerId;
 		uint32 variableId;
 
@@ -213,6 +220,7 @@ private: //Function stuff
 	static bool CheckParameterName(const utils::List<FunctionParameter*>& params, const utils::String& name); //return true if name is available
 
 private: //Constants
+	uint32 CreateConstantS32(int32 value);
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
 	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
@@ -273,6 +281,13 @@ private:
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseAssignment(Variable* variable, utils::List<parsing::Token>& tokens, uint64 start);
 
+	struct NameResult {
+		utils::String name;
+		TypeBase* type;
+		uint32 id;
+	};
+
+	NameResult ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len); //struct member selection, array subscripting and function calls
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 

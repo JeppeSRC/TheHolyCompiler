@@ -35,7 +35,7 @@ using namespace parsing;
 using namespace type;
 
 bool Compiler::TypeBase::operator==(const TypeBase* const other) const {
-	return type == other->type && name == other->name;
+	return type == other->type;
 }
 
 bool Compiler::TypeBase::operator!=(const TypeBase* const other) const {
@@ -56,12 +56,20 @@ bool Compiler::TypePrimitive::operator!=(const Compiler::TypeBase* const other) 
 	return !operator==(other);
 }
 
+bool Compiler::StructMember::operator==(const StructMember& other) const {
+	return *type == other.type;
+}
+
+bool Compiler::StructMember::operator!=(const StructMember& other) const {
+	return !operator==(other);
+}
+
 bool Compiler::TypeStruct::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeStruct* t = (const TypeStruct*)other;
 
 		for (uint64 i = 0; i < members.GetCount(); i++) {
-			if (!(*members[i] == t->members[i])) return false;
+			if (!(members[i] == t->members[i])) return false;
 		}
 
 		return true;
@@ -150,7 +158,7 @@ uint32 Compiler::TypePrimitive::GetSize() const {
 uint32 Compiler::TypeStruct::GetSize() const {
 	uint32 total = 0;
 	for (uint64 i = 0; i < members.GetCount(); i++) {
-		total += members[i]->GetSize();
+		total += members[i].type->GetSize();
 	}
 
 	return total;
@@ -158,7 +166,7 @@ uint32 Compiler::TypeStruct::GetSize() const {
 
 uint32 Compiler::TypeStruct::GetMemberIndex(const String& name) {
 	for (uint64 i = 0; i < members.GetCount(); i++) {
-		if (members[i]->name == name) return (uint32)i;
+		if (members[i].name == name) return (uint32)i;
 	}
 
 	return ~0;

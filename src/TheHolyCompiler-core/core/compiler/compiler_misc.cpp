@@ -321,25 +321,21 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<uint32> ids;
 
 	while (true) {
-		const Token& type = tokens[start + offset];
+		//const Token& type = tokens[start + offset];
 
-		TypeBase* tmp = nullptr;
+		TypeBase* tmp = CreateType(tokens, start + offset);
 
-		if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
+		/*if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
 			uint64 typeLocation = start + offset;
 
-			tmp = CreateTypePrimitive(tokens, typeLocation);
+			tmp = CreateType(tokens, typeLocation);
 		} else {
 			uint64 index = typeDefinitions.Find<String>(type.string, findStructFunc);
-
-			if (index == ~0) {
-				Log::CompilerError(type, "Unexpected symbol \"%s\" expected valid type", type.string.str);
-			}
 
 			tmp = typeDefinitions[index];
 
 			offset++;
-		}
+		}*/
 
 		const Token& tokenName = tokens[start + offset++];
 
@@ -347,8 +343,8 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 			Log::CompilerError(tokenName, "Unexpected symbol \"%s\" expected valid name", tokenName.string.str);
 		}
 
-		uint64 index = var->members.Find<String>(tokenName.string, [](TypeBase* const& curr, const String& name) -> bool {
-			if (curr->name == name) {
+		uint64 index = var->members.Find<String>(tokenName.string, [](const StructMember& curr, const String& name) -> bool {
+			if (curr.name == name) {
 				return true;
 			}
 
@@ -365,9 +361,12 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 			Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
 		}
 
-		tmp->name = tokenName.string;
+		StructMember m;
 
-		var->members.Add(tmp);
+		m.name = tokenName.string;
+		m.type = tmp;
+
+		var->members.Emplace(m);
 
 		ids.Add(tmp->typeId);
 
@@ -403,7 +402,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
 		annotationIstructions.Add(new InstMemberDecorate(st->id, i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
 
-		memberOffset += var->members[i]->GetSize();
+		memberOffset += var->members[i].type->GetSize();
 	}
 
 	var->typeId = st->id;
@@ -465,12 +464,11 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 		return var;
 	}
 
-	InstTypeArray* array = new InstTypeArray(var->elementCount, var->elementType->typeId);
+	InstTypeArray* array = new InstTypeArray(CreateConstantS32(var->elementCount), var->elementType->typeId);
 
 	var->typeId = array->id;
 
 	types.Add(array);
-	typeDefinitions.Add(var);
 
 	return var;
 }
@@ -478,9 +476,9 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
 	const Token& token = tokens[start];
 
-	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
-		const Token& arr = tokens[start + 1];
+	const Token& arr = tokens[start + 1];
 
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
 		if (arr.type == TokenType::BracketOpen) {
 			return CreateTypeArray(tokens, start);
 		} else {
@@ -492,7 +490,11 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
 		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
 
 		if (index != ~0) {
-			return typeDefinitions[index];
+			if (arr.type == TokenType::BracketOpen) {
+				return CreateTypeArray(tokens, start);
+			} else {
+				return typeDefinitions[index];
+			}
 		}
 	}
 
@@ -686,6 +688,11 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			}
 
 			break;
+
+		default:
+			name = type->typeString;
+			break;
+
 	}
 
 	return name;
@@ -740,7 +747,7 @@ bool Compiler::CheckGlobalName(const String& name) const {
 
 		if (curr->name == "_uniform_buf") {
 			for (uint64 i = 0; i < type->members.GetCount(); i++) {
-				if (type->members[i]->name == name) return true;
+				if (type->members[i].name == name) return true;
 			}
 		}
 
@@ -1017,7 +1024,7 @@ uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const
 	List<uint32> ids;
 
 	for (uint64 i = 0; i < str->members.GetCount(); i++) {
-		const TypeBase* member = str->members[i];
+		const TypeBase* member = str->members[i].type;
 
 		if (IsTypeComposite(member)) {
 			ids.Add(CreateConstantComposite(member, values));
