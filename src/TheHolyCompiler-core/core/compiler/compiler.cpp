@@ -906,6 +906,51 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 #pragma endregion
 
+#pragma region precedence 2 
+
+	for (uint64 i = expressions.GetCount(); i >= 0; i--) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		//pre increment/decrement
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement)) {
+			Expression& right = expressions[i + 1];
+
+			if (right.type == ExpressionType::Variable) {
+				if (right.variable->isConstant) {
+					Log::CompilerError(right.parent, "Right hand operand must be a modifiable value");
+				} else if (!Utils::CompareEnums(right.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+					Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
+				}
+
+				InstLoad* load = new InstLoad(right.variable->type->typeId, right.variable->variableId, 0);
+				InstBase* operation = nullptr;
+
+				switch (right.variable->type->type) {
+					case Type::Int:
+						operation = new InstIAdd(right.variable->type->typeId, load->id, CreateConstant(right.variable->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
+						break;
+					case Type::Float:
+						operation = new InstFAdd(right.variable->type->typeId, load->id, CreateConstant(right.variable->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
+						break;
+				}
+				
+				instructions.Add(load);
+				instructions.Add(operation);
+
+				right.type = ExpressionType::Result;
+				right.result.isVariable = false;
+				right.result.type = right.variable->type;
+				right.result.id = operation->id;
+
+				expressions.RemoveAt(i);
+			} 
+		}
+	}
+
+#pragma endregion
+
 	ResultVariable result;
 
 	Expression e = expressions[0];
