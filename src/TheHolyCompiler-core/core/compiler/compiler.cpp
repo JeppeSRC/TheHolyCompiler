@@ -1038,6 +1038,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				right.result.type = type;
 				right.result.id = operation->id;
 			}
+
+			expressions.RemoveAt(i);
 		}
 	}
 
