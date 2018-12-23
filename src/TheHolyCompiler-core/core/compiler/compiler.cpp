@@ -890,6 +890,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				}
 				
 				InstLoad* load = new InstLoad(left.variable->type->typeId, left.variable->variableId, 0);
+				instructions.Add(load);
 
 				left.type = ExpressionType::Result;
 				left.operatorType = e.operatorType;
