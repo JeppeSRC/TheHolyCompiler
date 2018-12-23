@@ -892,10 +892,24 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				const Variable* var = left.variable;
 				
 				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
+				InstBase* operation = nullptr;
+
+				switch (var->type->type) {
+					case Type::Int:
+						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
+						break;
+					case Type::Float:
+						operation = new InstFAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
+						break;
+				}
+
+				InstStore* store = new InstStore(var->variableId, operation->id, 0);
+
 				instructions.Add(load);
+				instructions.Add(operation);
+				instructions.Add(store);
 
 				left.type = ExpressionType::Result;
-				left.operatorType = e.operatorType;
 				left.result.isVariable = false;
 				left.result.type = var->type;
 				left.result.id = load->id;
