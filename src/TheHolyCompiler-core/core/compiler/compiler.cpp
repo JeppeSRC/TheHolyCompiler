@@ -864,9 +864,25 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		expressions.Add(e);
 	}
 
-	ResultVariable r;
 
-	return r;
+
+	ResultVariable result;
+
+	Expression e = expressions[0];
+
+	switch (e.type) {
+		case ExpressionType::Variable:
+			result.isVariable = true;
+			result.type = e.variable->type;
+			result.id = e.variable->variableId;
+			break;
+		case ExpressionType::Constant:
+		case ExpressionType::Result:
+			result = e.constant;
+			break;
+	}
+
+	return result;
 }
 
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len) {
