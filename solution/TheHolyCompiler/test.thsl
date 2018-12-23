@@ -20,22 +20,21 @@ out vec4 pos = THSL_Position;
 float32 dot(vec3 v1, vec3 v2);
 
 struct O {
-    uint32 someOtherName;
+    uint32[10] someOtherName;
 };
 
 struct Dank {
-    uint32 fist;
-    O o;
+    O[2] o;
 };
 
 void main() {
 
+    vec3 v1;
+    vec3 v2;
+
     Dank d;
 
-    uint32 a = d.o.someOtherName;
-
-    vec3 v1;
-    vec3 v1;
+    uint32 a = d.o[0].someOtherName[5];
 
     float res = dot(v1, v2);
 
