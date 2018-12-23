@@ -243,7 +243,7 @@ private: //Expression parsing
 		Variable,
 		Constant,
 		Result,
-		Operator
+		Operator,
 	};
 
 	struct Expression {
@@ -263,6 +263,7 @@ private: //Expression parsing
 		//type = Operator
 		parsing::TokenType operatorType;
 
+		parsing::Token parent;
 	};
 
 private:
@@ -280,14 +281,16 @@ private:
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseAssignment(Variable* variable, utils::List<parsing::Token>& tokens, uint64 start);
 
-	struct NameResult {
+	/*struct NameResult {
 		utils::String name;
 		TypeBase* type;
 		uint32 pointerId;
 		uint32 id;
-	};
 
-	NameResult ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len); //struct member selection, array subscripting and function calls
+		bool isConstant;
+	};*/
+
+	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len); //struct member selection, array subscripting and function calls
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 

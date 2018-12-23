@@ -696,12 +696,13 @@ void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 s
 	tokens.Remove(start, end);
 }
 
-Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
+Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
 	uint64 offset = 0;
 
 	const Token& name = tokens[start + offset++];
 
 	Variable* var = GetVariable(name.string);
+	Variable* result;
 
 	if (var == nullptr) {
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable or constat", name.string.str);
@@ -709,12 +710,10 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 
 	Token op = tokens[start + offset++];
 
-	NameResult result;
-
 	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::BracketOpen)) {
 		List<uint32> accessIds;
 		
-		result.name = name.string;
+		String n = name.string;
 		TypeBase* curr = var->type;
 
 		while (true) {
@@ -734,16 +733,16 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 				uint64 index = s->GetMemberIndex(member.string);
 
 				if (index == ~0) {
-					Log::CompilerError(member, "\"%s\" doesn't have a member named \"%s\"", result.name.str, member.string.str);
+					Log::CompilerError(member, "\"%s\" doesn't have a member named \"%s\"", n.str, member.string.str);
 				}
 
-				result.name.Append(".").Append(member.string);
+				n.Append(".").Append(member.string);
 				curr = s->members[index].type;
 
 				accessIds.Add(CreateConstantS32((int32)index));
 			} else if (op.type == TokenType::BracketOpen) {
 				if (curr->type != Type::Array) {
-					Log::CompilerError(op, "\"%s\" is not an array", result.name.str);
+					Log::CompilerError(op, "\"%s\" is not an array", n.str);
 				}
 
 				TypeArray* arr = (TypeArray*)curr;
@@ -775,7 +774,7 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 					accessIds.Add(index.id);
 				}
 
-				result.name.Append("[]");
+				n.Append("[]");
 
 				curr = arr->elementType;
 
@@ -787,15 +786,24 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 			op = tokens[start + offset++];
 		}
 		
-		TypePointer* pointer = CreateTypePointer(curr, var->scope);
+		if (accessIds.GetCount() != 0) {
+			TypePointer* pointer = CreateTypePointer(curr, var->scope);
 
-		InstAccessChain* access = new InstAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
+			InstAccessChain* access = new InstAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
 
-		instructions.Add(access);
+			instructions.Add(access);
 
-		result.type = curr;
-		result.pointerId = pointer->typeId;
-		result.id = access->id;
+			result = new Variable;
+
+			result->scope = var->scope;
+			result->name = n;
+			result->type = curr;
+			result->typePointerId = pointer->typeId;
+			result->variableId = access->id;
+			result->isConstant = var->isConstant;
+		} else {
+			result = var;
+		}
 	}
 
 	*len = offset-1;
@@ -809,47 +817,45 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 	for (uint64 i = start; i <= end; i++) {
 		const Token& t = tokens[i];
-		Expression e;
+		Expression e = {};
 
 		if (t.type == TokenType::Name) { 
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
 				uint64 removed = 0;
-				NameResult res = ParseName(tokens, i, &removed);
-	
-				Variable* v = new Variable;
-
-				v->scope = VariableScope::Function;
-				v->name = res.name;
-				v->type = res.type;
-				v->typePointerId = res.pointerId;
-				v->variableId = res.id;
+				Variable* v = ParseName(tokens, i, &removed);
 
 				e.type = ExpressionType::Variable;
 				e.variable = v;
+				e.parent = tokens[i + removed - 1];
 
 				tmpVariables.Add(v);
 
+				i += removed;
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;
 				e.result = ParseFunctionCall(tokens, i, &removed);
+				e.parent = tokens[i];
 
 				i += removed;
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string);
+				e.parent = t;
 
 				if (e.variable == nullptr) {
-					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
+					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constant", t.string.str);
 				}
 			}
 		} else if (t.type == TokenType::Value) {
 			e.constant.type = CreateTypePrimitive(t);
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
+			e.parent = t;
 		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
+			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
@@ -859,12 +865,46 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			e.type = ExpressionType::Result;
 			e.result = ParseExpression(tokens, i + 1, parenthesisClose - 1);
+			e.parent = t;
 		}
 
 		expressions.Add(e);
 	}
 
+#pragma region precedence 1
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
 
+		if (e.type != ExpressionType::Operator) continue;
+
+		//post increment/decrement
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement)) {
+			Expression& left = expressions[i - 1];
+			const Expression& right = expressions[i + 1];
+
+			if (left.type == ExpressionType::Variable) {
+				if (left.variable->isConstant) {
+					Log::CompilerError(left.parent, "Left hand operand must be a modifiable value");
+				} else if (!Utils::CompareEnums(left.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+					Log::CompilerError(left.parent, "Left hand operand of must be a interger/float scalar");
+				}
+				
+				InstLoad* load = new InstLoad(left.variable->type->typeId, left.variable->variableId, 0);
+
+				left.type = ExpressionType::Result;
+				left.operatorType = e.operatorType;
+				left.result.isVariable = false;
+				left.result.type = left.variable->type;
+				left.result.id = load->id;
+
+				expressions.RemoveAt(i--);
+			} else if (right.type != ExpressionType::Variable) {
+				Log::CompilerError(e.parent, "Left or right hand operand must be a lvalue");
+			}
+		}
+	}
+
+#pragma endregion
 
 	ResultVariable result;
 
