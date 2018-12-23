@@ -888,14 +888,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				} else if (!Utils::CompareEnums(left.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
 					Log::CompilerError(left.parent, "Left hand operand of must be a interger/float scalar");
 				}
+
+				const Variable* var = left.variable;
 				
-				InstLoad* load = new InstLoad(left.variable->type->typeId, left.variable->variableId, 0);
+				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
 				instructions.Add(load);
 
 				left.type = ExpressionType::Result;
 				left.operatorType = e.operatorType;
 				left.result.isVariable = false;
-				left.result.type = left.variable->type;
+				left.result.type = var->type;
 				left.result.id = load->id;
 
 				expressions.RemoveAt(i--);
@@ -925,15 +927,17 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 					Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
 				}
 
-				InstLoad* load = new InstLoad(right.variable->type->typeId, right.variable->variableId, 0);
+				Variable* var = right.variable;
+
+				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
 				InstBase* operation = nullptr;
 
-				switch (right.variable->type->type) {
+				switch (var->type->type) {
 					case Type::Int:
-						operation = new InstIAdd(right.variable->type->typeId, load->id, CreateConstant(right.variable->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
+						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
 						break;
 					case Type::Float:
-						operation = new InstFAdd(right.variable->type->typeId, load->id, CreateConstant(right.variable->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
+						operation = new InstFAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
 						break;
 				}
 				
@@ -942,7 +946,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 				right.type = ExpressionType::Result;
 				right.result.isVariable = false;
-				right.result.type = right.variable->type;
+				right.result.type = var->type;
 				right.result.id = operation->id;
 
 				expressions.RemoveAt(i);
