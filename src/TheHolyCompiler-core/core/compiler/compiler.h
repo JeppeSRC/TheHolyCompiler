@@ -257,11 +257,11 @@ private: //Expression parsing
 			//type = Constant
 			ResultVariable constant;
 
-			//Result
+			//type = Result
 			ResultVariable result;
 		};
 
-		//Operator
+		//type = Operator
 		parsing::TokenType operatorType;
 
 	};
@@ -284,6 +284,7 @@ private:
 	struct NameResult {
 		utils::String name;
 		TypeBase* type;
+		uint32 pointerId;
 		uint32 id;
 	};
 

@@ -711,7 +711,7 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 
 	NameResult result;
 
-	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::ParenthesisOpen, TokenType::BracketOpen)) {
+	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::BracketOpen)) {
 		List<uint32> accessIds;
 		
 		result.name = name.string;
@@ -780,27 +780,32 @@ Compiler::NameResult Compiler::ParseName(List<Token>& tokens, uint64 start, uint
 				curr = arr->elementType;
 
 				offset = end + 1;
-			} /*else if (op.type == TokenType::ParenthesisOpen) {
-				uint64 rem = 0;
-				ParseFunctionCall(tokens, start + offset, &rem); //TODO: Handle return
-
-				offset += rem;
-			} */else {
+			} else {
 				break;
 			}
 
 			op = tokens[start + offset++];
 		}
 		
+		TypePointer* pointer = CreateTypePointer(curr, var->scope);
 
+		InstAccessChain* access = new InstAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
 
+		instructions.Add(access);
+
+		result.type = curr;
+		result.pointerId = pointer->typeId;
+		result.id = access->id;
 	}
 
+	*len = offset-1;
 	
+	return result;
 }
 
 Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end) {
 	List<Expression> expressions;
+	List<Variable*> tmpVariables;
 
 	for (uint64 i = start; i <= end; i++) {
 		const Token& t = tokens[i];
@@ -810,67 +815,21 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
 				uint64 removed = 0;
-				ParseName(tokens, i, &removed);
-				/*Variable* str = GetVariable(t.string);
-				
-				if (str == nullptr) {
-					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constat", t.string.str);
-				} else if (str->type->type != Type::Struct) {
-					Log::CompilerError(next, "Left of operator \".\" must be a struct");
-				}
+				NameResult res = ParseName(tokens, i, &removed);
+	
+				Variable* v = new Variable;
 
-				List<uint32> accessIds;
-				uint64 offset = 2;
-
-				TypeStruct* currStr = (TypeStruct*)str->type;
+				v->scope = VariableScope::Function;
+				v->name = res.name;
+				v->type = res.type;
+				v->typePointerId = res.pointerId;
+				v->variableId = res.id;
 
 				e.type = ExpressionType::Variable;
-				e.variable = new Variable;
+				e.variable = v;
 
-				e.variable->scope = str->scope;
-				e.variable->name = str->name;
+				tmpVariables.Add(v);
 
-				while (true) {
-					const Token& member = tokens[i + offset++];
-
-					if (member.type == TokenType::Name) {
-						Log::CompilerError(member, "Right hand of operator \".\" must be a valid name");
-					}
-
-					e.variable->name.Append(".").Append(member.string);
-
-					uint32 memberId = currStr->GetMemberIndex(member.string);
-
-					if (memberId == ~0) {
-						Log::CompilerError(member, "\"%s\" has no member \"%s\"", currStr->typeString.str, member.string.str);
-					}
-
-					accessIds.Add(memberId);
-
-					const Token& selector = tokens[i + offset++];
-
-					if (selector.type == TokenType::OperatorSelector) {
-						currStr = (TypeStruct*)currStr->members[i];
-						if (currStr->type == Type::Struct) {
-							continue;
-						} else {
-							Log::CompilerError(selector, "Left of operator \".\" must be a struct");
-						}
-					}
-
-					e.variable->type = currStr->members[memberId];
-
-					break;
-				}
-
-				
-				e.variable->typePointerId = CreateTypePointer(e.variable->type, e.variable->scope)->typeId;
-
-				InstAccessChain* access = new InstAccessChain(e.variable->typePointerId, str->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
-				e.variable->variableId = access->id;
-
-				instructions.Add(access);
-				i += offset-1;*/
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;
