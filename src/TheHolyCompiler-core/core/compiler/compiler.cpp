@@ -941,7 +941,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 					Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
 				}
 
-				Variable* var = right.variable;
+				const Variable* var = right.variable;
 
 				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
 				InstBase* operation = nullptr;
