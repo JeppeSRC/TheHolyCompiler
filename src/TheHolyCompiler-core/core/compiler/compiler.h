@@ -243,7 +243,6 @@ private: //Expression parsing
 		Variable,
 		Constant,
 		Result,
-		FunctionCall,
 		Operator
 	};
 
