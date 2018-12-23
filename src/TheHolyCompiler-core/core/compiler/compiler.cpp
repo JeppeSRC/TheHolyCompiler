@@ -964,7 +964,80 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				right.result.id = operation->id;
 
 				expressions.RemoveAt(i);
-			} 
+			} else if (e.operatorType == TokenType::OperatorNegate) {
+				Expression& right = expressions[i + 1];
+
+				TypePrimitive* type = nullptr;
+				uint32 operandId = ~0;
+
+				if (right.type == ExpressionType::Variable) {
+					const Variable* var = right.variable;
+
+					if (!Utils::CompareEnums(right.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+						Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
+					}
+
+					InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
+					instructions.Add(load);
+
+					operandId = load->id;
+
+					type = (TypePrimitive*)var->type;
+				} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
+					ResultVariable& res = right.result;
+
+					if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+						Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
+					}
+
+					type = (TypePrimitive*)res.type;
+
+					operandId = res.id;
+				}
+				
+				InstBase* operation = nullptr;
+
+				if (type->type == Type::Int) {
+					if (!type->sign) {
+						TypePrimitive* p = new TypePrimitive;
+
+						p->type = type->type;
+						p->typeId = ~0;
+						p->componentType = type->componentType;
+						p->bits = type->bits;
+						p->rows = type->rows;
+						p->columns = type->columns;
+						p->sign = 1;
+
+						CheckTypeExist((TypeBase**)&p);
+
+						if (p->typeId != ~0) {
+							type = p;
+						} else {
+							InstTypeInt* t = new InstTypeInt(p->bits, p->sign);
+
+							p->typeId = t->id;
+							p->typeString = GetTypeString(p);
+
+							types.Add(t);
+							typeDefinitions.Add(p);
+
+							type = p;
+						}
+					}
+
+					operation = new InstSNegate(type->typeId, operandId);
+				} else {
+					operation = new InstFNegate(type->typeId, operandId);
+				}
+
+				instructions.Add(operation);
+
+				right.type = ExpressionType::Result;
+				right.result.isVariable = false;
+				right.result.type = type;
+				right.result.id = operation->id;
+			}
 		}
 	}
 
