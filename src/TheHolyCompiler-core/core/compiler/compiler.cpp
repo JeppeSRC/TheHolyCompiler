@@ -990,6 +990,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				type = (TypePrimitive*)res.type;
 
 				operandId = res.id;
+			} else {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
 			}
 
 			InstBase* operation = nullptr;
