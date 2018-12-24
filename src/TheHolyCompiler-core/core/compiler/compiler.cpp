@@ -849,6 +849,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				}
 			}
 		} else if (t.type == TokenType::Value) {
+			e.type = ExpressionType::Constant;
 			e.constant.type = CreateTypePrimitive(t);
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
