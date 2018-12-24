@@ -35,6 +35,12 @@ void InstTypeVoid::GetInstWords(uint32* words) const {
 	words[1] = id;
 }
 
+void InstTypeBool::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = id;
+}
+
 void InstTypeInt::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 

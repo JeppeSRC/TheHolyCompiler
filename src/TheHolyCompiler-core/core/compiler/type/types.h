@@ -71,6 +71,15 @@ public:
 	bool operator==(const InstTypeBase* type) const override;
 };
 
+class InstTypeBool : public InstTypeBase {
+public:
+	InstTypeBool();
+
+	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstTypeBase* type) const override;
+};
+
 class InstTypeInt : public InstTypeBase {
 public:
 	uint32 bits;
