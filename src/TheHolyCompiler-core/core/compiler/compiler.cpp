@@ -1040,6 +1040,39 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			}
 
 			expressions.RemoveAt(i);
+		} else if (e.operatorType == TokenType::OperatorLogicalNot) {
+			Expression& right = expressions[i + 1];
+
+			uint32 operandId = ~0;
+
+			TypeBase* type = nullptr;
+
+			if (right.type == ExpressionType::Variable) {
+				const Variable* var = right.variable;
+				type = var->type;
+
+				InstLoad* load = new InstLoad(type->typeId, var->variableId, 0);
+				instructions.Add(load);
+
+				operandId = load->id;
+
+			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
+				type = right.result.type;
+
+				operandId = right.result.id;
+			}
+
+			right.type == ExpressionType::Result;
+
+			if (type->type == Type::Bool) {
+				InstLogicalNot* not = new InstLogicalNot(type->typeId, operandId);
+				instructions.Add(not);
+
+				right.result.isVariable = false;
+				right.result.type = type;
+				right.result.id = not->id;
+			}
+
 		}
 	}
 
