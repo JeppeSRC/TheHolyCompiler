@@ -639,18 +639,14 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		} else if (token.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 
+			uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
+
 			if (next.type == TokenType::ParenthesisOpen) {
 				uint64 rem = 0;
 				ParseFunctionCall(tokens, i, &rem);
 
 				tokens.Remove(i, i + rem - 1);
-			} else {
-				uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
-
-				if (index == ~0) {
-					Log::CompilerError(token, "Unexpected symbol \"%s\" expected a valid type", token.string.str);
-				}
-
+			} else if (index != 0) {
 				TypeStruct* str = (TypeStruct*)typeDefinitions[index];
 				tokens.RemoveAt(i);
 
@@ -669,6 +665,8 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				}  else {
 					Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \";\"", assign.string.str);
 				}
+			} else {
+
 			}
 		}
 		else {
@@ -705,7 +703,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 	Variable* result;
 
 	if (var == nullptr) {
-		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable or constat", name.string.str);
+		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable", name.string.str);
 	} 
 
 	Token op = tokens[start + offset++];
@@ -801,9 +799,9 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 			result->typePointerId = pointer->typeId;
 			result->variableId = access->id;
 			result->isConstant = var->isConstant;
-		} else {
-			result = var;
-		}
+		} 
+	} else {
+		result = var;
 	}
 
 	*len = offset-1;
