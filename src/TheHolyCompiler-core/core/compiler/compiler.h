@@ -131,7 +131,9 @@ private: //Type stuff
 	TypePrimitive* CreateTypePrimitive(const parsing::Token& token);
 	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
 	TypePrimitive* CreateTypeBool();
+	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
 	TypePrimitive* CreateTypePrimitiveVector(type::Type componentType, uint8 bits, uint8 sign, uint8 rows);
+	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
 	//start is start of type

@@ -149,7 +149,6 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(const Token& token) {
 }
 
 Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start) {
-	TypePrimitive* var = new TypePrimitive;
 
 	uint64 offset = 0;
 
@@ -158,6 +157,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat, TokenType::TypeVoid)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
 	} else if (token.type == TokenType::TypeVoid) {
+		TypePrimitive* var = new TypePrimitive;
 		var->type = Type::Void;
 		var->typeString = "void";
 		var->componentType = Type::Void;
@@ -180,10 +180,12 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		types.Add(v);
 
 		var->typeId = v->id;
+		typeDefinitions.Add(var);
 
 		return var;
 	}
 
+	TypePrimitive tmpVar;
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
 		const Token& open = tokens[start + offset++];
@@ -201,98 +203,49 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 				Log::CompilerError(close, "Unexpected symbol \"%s\" expected a \">\"", close.string.str);
 			}
 
-			var->componentType = ConvertToType(type.type);
-			var->bits = type.bits;
-			var->sign = type.sign;
+			tmpVar.componentType = ConvertToType(type.type);
+			tmpVar.bits = type.bits;
+			tmpVar.sign = type.sign;
 		} else {
-			var->componentType = Type::Float;;
-			var->bits = CompilerOptions::FPPrecision32() ? 32 : 64;
-			var->sign = 0;
+			tmpVar.componentType = Type::Float;;
+			tmpVar.bits = CompilerOptions::FPPrecision32() ? 32 : 64;
+			tmpVar.sign = 0;
 
 			offset--;
 		}
 	} else {
-		var->componentType = ConvertToType(token.type);
-		var->bits = token.bits;
-		var->sign = token.sign;
+		tmpVar.componentType = ConvertToType(token.type);
+		tmpVar.bits = token.bits;
+		tmpVar.sign = token.sign;
 	}
 	
 
-	var->type = ConvertToType(token.type);
-	var->rows = token.rows;
-	var->columns = token.columns;
-	var->typeString = GetTypeString(var);
+	tmpVar.type = ConvertToType(token.type);
+	tmpVar.rows = token.rows;
+	tmpVar.columns = token.columns;
 	
-	uint64 index = typeDefinitions.Find<TypePrimitive*>(var, [](TypeBase* const& curr, TypePrimitive* const& other) -> bool {
+	uint64 index = typeDefinitions.Find<TypePrimitive*>(&tmpVar, [](TypeBase* const& curr, TypePrimitive* const& other) -> bool {
 		return *curr == other;
 	});
 
+	TypePrimitive* var = nullptr;
 
 	if (index != ~0) {
-		delete var;
 		var = (TypePrimitive*)typeDefinitions[index];
 	} else {
-		InstTypeBase* t = nullptr;
 
-		switch (var->type) {
+		switch (tmpVar.type) {
 			case Type::Int:
-				t = new InstTypeInt(var->bits, var->sign);
-				break;
 			case Type::Float:
-				t = new InstTypeFloat(var->bits);
+				var = CreateTypePrimitiveScalar(tmpVar.type, tmpVar.bits, tmpVar.sign);
 				break;
 			case Type::Vector:
-			{
-				InstTypeBase* tt = nullptr;
-
-				switch (var->componentType) {
-					case Type::Float:
-						tt = new InstTypeFloat(var->bits);
-						break;
-					case Type::Int:
-						tt = new InstTypeInt(var->bits, var->sign);
-						break;
-				}
-
-				CheckTypeExist(&tt);
-
-				t = new InstTypeVector(var->rows, tt->id);
-
-			}
-			break;
+				var = CreateTypePrimitiveVector(tmpVar.componentType, tmpVar.bits, tmpVar.sign, tmpVar.rows);
+				break;
 			case type::Type::Matrix:
-			{
-				InstTypeBase* tt = nullptr;
-
-				switch (var->componentType) {
-					case Type::Float:
-						tt = new InstTypeFloat(var->bits);
-						break;
-					case Type::Int:
-						tt = new InstTypeInt(var->bits, var->sign);
-						break;
-				}
-
-				CheckTypeExist(&tt);
-
-				uint32 compId = tt->id;
-
-				tt = new InstTypeVector(var->rows, compId);
-
-				CheckTypeExist(&tt);
-
-				compId = tt->id;
-
-				t = new InstTypeMatrix(var->columns, compId);
-			}
-
+				var = CreateTypePrimtiveMatrix(tmpVar.componentType, tmpVar.bits, tmpVar.sign, tmpVar.rows, tmpVar.columns);
+				break;
 		}
-
-		CheckTypeExist(&t);
-
-		var->typeId = t->id;
-
-		typeDefinitions.Add(var);
 	}
 	
 	tokens.Remove(start, start + offset-1);
@@ -322,6 +275,49 @@ Compiler::TypePrimitive* Compiler::CreateTypeBool() {
 	CheckTypeExist((InstTypeBase**)&b);
 
 	var->typeId = b->id;
+	var->typeString = "bool";
+
+	typeDefinitions.Add(var);
+
+	return var;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bits, uint8 sign) {
+	THC_ASSERT(Utils::CompareEnums(type, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* var = new TypePrimitive;
+
+	var->type = type;
+	var->componentType = type;
+	var->bits = bits;
+	var->sign = sign;
+	var->rows = 0;
+	var->columns = 0;
+	var->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	if (var->typeId != ~0) {
+		return var;
+	}
+
+	InstTypeBase* t = nullptr;
+
+	switch (type) {
+		case Type::Int:
+			t = new InstTypeInt(bits, sign);
+			break;
+		case Type::Float:
+			t = new InstTypeFloat(bits);
+			break;
+	}
+
+	CheckTypeExist((InstTypeBase**)&t);
+
+	var->typeId = t->id;
+	var->typeString = GetTypeString(var);
+
+	typeDefinitions.Add(var);
 
 	return var;
 }
@@ -344,27 +340,48 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveVector(Type componentType,
 	if (vec->typeId != ~0) {
 		return vec;
 	}
-
-	InstTypeBase* tt = nullptr;
-
-	switch (vec->componentType) {
-		case Type::Float:
-			tt = new InstTypeFloat(vec->bits);
-			break;
-		case Type::Int:
-			tt = new InstTypeInt(vec->bits, vec->sign);
-			break;
-	}
-
-	CheckTypeExist(&tt);
-
-	InstTypeVector* t = new InstTypeVector(vec->rows, tt->id);
+	
+	InstTypeVector* t = new InstTypeVector(vec->rows, CreateTypePrimitiveScalar(componentType, bits, sign)->typeId);
 
 	CheckTypeExist((InstTypeBase**)&t);
 
 	vec->typeId = t->id;
+	vec->typeString = GetTypeString(vec);
+
+	typeDefinitions.Add(vec);
 
 	return vec;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimtiveMatrix(Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns) {
+	THC_ASSERT(Utils::CompareEnums(componentType, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* mat = new TypePrimitive;
+
+	mat->type = Type::Matrix;
+	mat->componentType = componentType;
+	mat->bits = bits;
+	mat->sign = sign;
+	mat->rows = rows;
+	mat->columns = columns;
+	mat->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&mat);
+
+	if (mat->typeId != ~0) {
+		return mat;
+	}
+
+	TypeBase* vec = CreateTypePrimitiveVector(componentType, bits, sign, rows);
+
+	InstTypeMatrix* m = new InstTypeMatrix(columns, vec->typeId);
+
+	CheckTypeExist((InstTypeBase**)&m);
+
+	mat->typeId = m->id;
+	mat->typeString = GetTypeString(mat);
+
+	return mat;
 }
 
 Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
