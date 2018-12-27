@@ -852,20 +852,22 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			}
 		} else if (t.type == TokenType::Value) {
 			e.type = ExpressionType::Constant;
-			e.constant.type = CreateTypePrimitive(t);
+			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
 		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeBool && t.type <= TokenType::TypeInt) { //Type for a cast
+		} else if (t.type >= TokenType::TypeVoid || t.type <= TokenType::TypeMat) { //Type for a cast
 			if (start != end) {
 				Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
+			} else if (t.type != TokenType::TypeInt || t.type != TokenType::TypeFloat) {
+				Log::CompilerError(t, "Cast type must be scalar of type integer or float");
 			}
 
 			e.type == ExpressionType::Type;
-			e.castType = t.type;
+			e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
@@ -934,12 +936,43 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 #pragma endregion
 
-#pragma region precedence 2 
+#pragma region precedence 2
 
 	for (uint64 i = expressions.GetCount(); i >= 0; i--) {
 		const Expression& e = expressions[i];
 
-		if (e.type != ExpressionType::Operator) continue;
+		if (e.type != ExpressionType::Operator) {
+		} else if (e.type == ExpressionType::Type) { //Cast
+			Expression& right = expressions[i + 1];
+
+			TypePrimitive* type = nullptr;
+
+			if (right.type == ExpressionType::Variable) {
+				type = (TypePrimitive*)right.variable->type;
+			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
+				type = (TypePrimitive*)right.result.type;
+			} else {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
+			}
+
+			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
+			}
+
+			if (*e.castType == type) {
+				Log::CompilerWarning(e.parent, "Unnecessary cast");
+				expressions.RemoveAt(i);
+			} else {
+				const TypePrimitive* castType = (TypePrimitive*)e.castType;
+
+				if (castType->componentType == type->componentType) {
+
+				}
+			}
+			
+		} else {
+			continue;
+		}
 
 		//pre increment/decrement
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement)) {
@@ -1123,7 +1156,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			right.result.isVariable = false;
 			right.result.type = type;
 			right.result.id = operation->id;
-		} else if (e.operatorType == TokenType::OperatorCas)
+		}
 	}
 
 #pragma endregion

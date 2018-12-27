@@ -264,7 +264,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bi
 
 	switch (type) {
 		case Type::Int:
-			t = new InstTypeInt(bits, sign);
+			t = new InstTypeInt(bits, 0); //Remove signedness from all integers, signedness will be handled internally
 			break;
 		case Type::Float:
 			t = new InstTypeFloat(bits);
