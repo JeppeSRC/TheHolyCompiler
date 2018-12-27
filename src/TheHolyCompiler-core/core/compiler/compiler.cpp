@@ -1047,11 +1047,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			uint32 operandId = ~0;
 
-			TypeBase* type = nullptr;
+			TypePrimitive* type = nullptr;
 
 			if (right.type == ExpressionType::Variable) {
 				const Variable* var = right.variable;
-				type = var->type;
+				type = (TypePrimitive*)var->type;
 
 				InstLoad* load = new InstLoad(type->typeId, var->variableId, 0);
 				instructions.Add(load);
@@ -1059,24 +1059,44 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				operandId = load->id;
 
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				type = right.result.type;
+				type = (TypePrimitive*)right.result.type;
 
 				operandId = right.result.id;
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a variable or value");
 			}
 
-			right.type == ExpressionType::Result;
-
-			if (type->type == Type::Bool) {
-				InstLogicalNot* not = new InstLogicalNot(type->typeId, operandId);
-				instructions.Add(not);
-
-				right.result.isVariable = false;
-				right.result.type = type;
-				right.result.id = not->id;
+			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer, float or a bool result from an expression");
 			}
 
+			InstBase* operation = nullptr;
+
+			uint32 constantId = ~0;
+
+			if (type->type != Type::Bool) {
+				type = CreateTypeBool();
+			} else {
+				float tmp = 0.0f;
+				constantId = CreateConstant(type, type->type == Type::Float ? *(uint32*)&tmp : 0);
+			}
+			
+
+			if (type->type == Type::Bool) {
+				operation = new InstLogicalNot(type->typeId, operandId);
+			} else if (type->type == Type::Int) {
+				operation = new InstINotEqual(type->typeId, operandId, constantId);
+			} else if (type->type == Type::Float) {
+				operation = new InstFOrdNotEqual(type->typeId, operandId, constantId);
+			} 
+
+			instructions.Add(operation);
+
+			right.result.isVariable = false;
+			right.result.type = type;
+			right.result.id = operation->id;
+
+			expressions.RemoveAt(i);
 		}
 	}
 

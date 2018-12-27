@@ -300,6 +300,73 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 	return var;
 }
 
+Compiler::TypePrimitive* Compiler::CreateTypeBool() {
+	TypePrimitive* var = new TypePrimitive;
+
+	var->type = Type::Bool;
+	var->componentType = Type::Bool;
+	var->bits = 0;
+	var->sign = 0;
+	var->rows = 0;
+	var->columns = 0;
+	var->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	if (var->typeId != ~0) {
+		return var;
+	}
+
+	InstTypeBool* b = new InstTypeBool;
+
+	CheckTypeExist((InstTypeBase**)&b);
+
+	var->typeId = b->id;
+
+	return var;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimitiveVector(Type componentType, uint8 bits, uint8 sign, uint8 rows) {
+	THC_ASSERT(Utils::CompareEnums(componentType, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* vec = new TypePrimitive;
+
+	vec->type = Type::Vector;
+	vec->componentType = componentType;
+	vec->bits = bits;
+	vec->sign = sign;
+	vec->rows = rows;
+	vec->columns = 0;
+	vec->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&vec);
+
+	if (vec->typeId != ~0) {
+		return vec;
+	}
+
+	InstTypeBase* tt = nullptr;
+
+	switch (vec->componentType) {
+		case Type::Float:
+			tt = new InstTypeFloat(vec->bits);
+			break;
+		case Type::Int:
+			tt = new InstTypeInt(vec->bits, vec->sign);
+			break;
+	}
+
+	CheckTypeExist(&tt);
+
+	InstTypeVector* t = new InstTypeVector(vec->rows, tt->id);
+
+	CheckTypeExist((InstTypeBase**)&t);
+
+	vec->typeId = t->id;
+
+	return vec;
+}
+
 Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
 	TypeStruct* var = new TypeStruct;
 
@@ -1085,7 +1152,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"uniform",  TokenType::DataUniform, 0, 0, 0, 0},
 
 		{"void", TokenType::TypeVoid, 0, 0, 0, 0},
-		{"bool", TokenType::TypeBool, 8, 0, 0, 0},
+		{"bool", TokenType::TypeInt, 8, 0, 0, 0},
 		{"byte", TokenType::TypeInt, 8, 0, 0, 0},
 
 		{"uint8",  TokenType::TypeInt, 8,  0, 0, 0},
