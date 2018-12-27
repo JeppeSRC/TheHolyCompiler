@@ -1077,6 +1077,42 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			right.result.id = operation->id;
 
 			expressions.RemoveAt(i);
+		} else if (e.operatorType == TokenType::OperatorBitwiseNot) {
+			Expression& right = expressions[i + 1];
+
+			TypePrimitive* type = nullptr;
+			uint32 operandId = ~0;
+
+			if (right.type == ExpressionType::Variable) {
+				const Variable* var = right.variable;
+
+				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
+				instructions.Add(load);
+
+				operandId = load->id;
+
+				type = (TypePrimitive*)var->type;
+			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
+				ResultVariable& res = right.result;
+
+				type = (TypePrimitive*)res.type;
+
+				operandId = res.id;
+			} else {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
+			}
+
+			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Vector)) {
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer");
+			}
+
+			InstNot* operation = new InstNot(type->typeId, operandId);
+			instructions.Add(operation);
+
+			right.type = ExpressionType::Result;
+			right.result.isVariable = false;
+			right.result.type = type;
+			right.result.id = operation->id;
 		}
 	}
 
