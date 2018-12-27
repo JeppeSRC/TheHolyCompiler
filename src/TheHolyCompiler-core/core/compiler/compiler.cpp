@@ -959,7 +959,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
 				type = (TypePrimitive*)right.result.type;
 
-				operandId = right.result.id;
+				if (right.result.isVariable) {
+					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
+					instructions.Add(load);
+
+					operandId = load->id;
+				} else {
+					operandId = right.result.id;
+				}
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
 			}
@@ -1073,11 +1080,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 				type = (TypePrimitive*)var->type;
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				ResultVariable& res = right.result;
+				type = (TypePrimitive*)right.result.type;
 
-				type = (TypePrimitive*)res.type;
+				if (right.result.isVariable) {
+					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
+					instructions.Add(load);
 
-				operandId = res.id;
+					operandId = load->id;
+				} else {
+					operandId = right.result.id;
+				}
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
 			}
@@ -1129,7 +1141,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
 				type = (TypePrimitive*)right.result.type;
 
-				operandId = right.result.id;
+				if (right.result.isVariable) {
+					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
+					instructions.Add(load);
+
+					operandId = load->id;
+				} else {
+					operandId = right.result.id;
+				}
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a variable or value");
 			}
@@ -1181,11 +1200,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 				type = (TypePrimitive*)var->type;
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				ResultVariable& res = right.result;
+				type = (TypePrimitive*)right.result.type;
 
-				type = (TypePrimitive*)res.type;
+				if (right.result.isVariable) {
+					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
+					instructions.Add(load);
 
-				operandId = res.id;
+					operandId = load->id;
+				} else {
+					operandId = right.result.id;
+				}
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
 			}
