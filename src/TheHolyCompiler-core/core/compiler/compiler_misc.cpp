@@ -874,11 +874,9 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 
 	var->type = (TypeBase*)type;
 
-	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
+	TypePointer* pointer = CreateTypePointer(type, scope);
 
-	CheckTypeExist((InstTypeBase**)&pointer);
-
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
@@ -896,12 +894,10 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	var->scope = VariableScope::None;
 	var->name = name;
 	var->type = (TypeBase*)type;
-	
-	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, type->typeId);
 
-	CheckTypeExist((InstTypeBase**)&pointer);
+	TypePointer* pointer = CreateTypePointer(type, VariableScope::Function);
 
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
@@ -919,11 +915,9 @@ Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* c
 	var->name = param->name;
 	var->type = param->type;
 
-	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, var->type->typeId);
+	TypePointer* pointer = CreateTypePointer(param->type, VariableScope::Function);
 
-	CheckTypeExist((InstTypeBase**)&pointer);
-
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	*opParam = new InstFunctionParameter(var->typePointerId);
 
