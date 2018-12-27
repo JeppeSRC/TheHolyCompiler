@@ -397,21 +397,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<uint32> ids;
 
 	while (true) {
-		//const Token& type = tokens[start + offset];
-
 		TypeBase* tmp = CreateType(tokens, start + offset);
-
-		/*if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
-			uint64 typeLocation = start + offset;
-
-			tmp = CreateType(tokens, typeLocation);
-		} else {
-			uint64 index = typeDefinitions.Find<String>(type.string, findStructFunc);
-
-			tmp = typeDefinitions[index];
-
-			offset++;
-		}*/
 
 		const Token& tokenName = tokens[start + offset++];
 
