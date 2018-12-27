@@ -128,7 +128,6 @@ private: //Type stuff
 	
 
 	//start is the index of the type
-	TypePrimitive* CreateTypePrimitive(const parsing::Token& token);
 	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
 	TypePrimitive* CreateTypeBool();
 	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
@@ -265,14 +264,11 @@ private: //Expression parsing
 			ResultVariable result;
 		};
 
-		union {
-			//type = Operator
-			parsing::TokenType operatorType;
+		//type = Operator
+		parsing::TokenType operatorType;
 
-			//type = Type
-			parsing::TokenType castType;
-		};
-
+		//type = Type
+		TypeBase* castType;
 
 		parsing::Token parent;
 	};
