@@ -1002,28 +1002,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			if (type->componentType == Type::Int) {
 				if (!type->sign) {
-					TypePrimitive* p = new TypePrimitive;
-
-					p->type = type->type;
-					p->typeId = ~0;
-					p->componentType = type->componentType;
-					p->bits = type->bits;
-					p->rows = type->rows;
-					p->columns = type->columns;
-					p->sign = 1;
-
-					CheckTypeExist((TypeBase**)&p);
-
-					if (p->typeId != ~0) {
-						type = p;
+					if (type->type == Type::Vector) {
+						type = CreateTypePrimitiveVector(Type::Int, type->bits, 1, type->rows);
 					} else {
-						InstTypeInt* t = new InstTypeInt(p->bits, p->sign);
-						types.Add(t);
-
-						p->typeId = t->id;
-						p->typeString = GetTypeString(p);
-
-						type = p;
+						type = CreateTypePrimitiveScalar(Type::Int, type->bits, 1);
 					}
 				}
 
