@@ -1018,12 +1018,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 						type = p;
 					} else {
 						InstTypeInt* t = new InstTypeInt(p->bits, p->sign);
+						types.Add(t);
 
 						p->typeId = t->id;
 						p->typeString = GetTypeString(p);
-
-						types.Add(t);
-						typeDefinitions.Add(p);
 
 						type = p;
 					}

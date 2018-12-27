@@ -176,11 +176,9 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		}
 
 		InstTypeVoid* v = new InstTypeVoid();
-
 		types.Add(v);
 
 		var->typeId = v->id;
-		typeDefinitions.Add(var);
 
 		return var;
 	}
@@ -277,8 +275,6 @@ Compiler::TypePrimitive* Compiler::CreateTypeBool() {
 	var->typeId = b->id;
 	var->typeString = "bool";
 
-	typeDefinitions.Add(var);
-
 	return var;
 }
 
@@ -317,8 +313,6 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bi
 	var->typeId = t->id;
 	var->typeString = GetTypeString(var);
 
-	typeDefinitions.Add(var);
-
 	return var;
 }
 
@@ -347,8 +341,6 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveVector(Type componentType,
 
 	vec->typeId = t->id;
 	vec->typeString = GetTypeString(vec);
-
-	typeDefinitions.Add(vec);
 
 	return vec;
 }
@@ -550,9 +542,9 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 
 	InstTypeArray* array = new InstTypeArray(CreateConstantS32(var->elementCount), var->elementType->typeId);
 
-	var->typeId = array->id;
+	CheckTypeExist((InstTypeBase**)&array);
 
-	types.Add(array);
+	var->typeId = array->id;
 
 	return var;
 }
@@ -1019,17 +1011,8 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 
 	List<uint32> ids;
 
-	TypePrimitive* p = new TypePrimitive;
-	
-	p->type = prim->componentType;
-	p->componentType = prim->componentType;
-	p->bits = prim->bits;
-	p->rows = prim->rows;
-	p->columns = prim->columns;
-	p->typeString = GetTypeString(p);
-	p->typeId = ~0;
-
-	CheckTypeExist((TypeBase**)&p);
+	TypePrimitive* tmp = (TypePrimitive*)type;
+	TypePrimitive* p = CreateTypePrimitiveScalar(tmp->componentType, tmp->bits, tmp->sign);
 
 	for (uint8 i = 0; i < prim->rows; i++) {
 		ids.Add(CreateConstant(p, (*values)[i]));
@@ -1049,23 +1032,14 @@ uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const
 
 	List<uint32> ids;
 
-	TypePrimitive* p = new TypePrimitive;
+	TypePrimitive* tmp = (TypePrimitive*)type;
+	TypePrimitive* p = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, tmp->rows);
 
-	p->type = Type::Vector;
-	p->componentType = prim->componentType;
-	p->bits = prim->bits;
-	p->rows = prim->rows;
-	p->columns = prim->columns;
-	p->typeString = GetTypeString(p);
-	p->typeId = ~0;
-
-	CheckTypeExist((TypeBase**)&p);
-
-	for (uint8 i = 0; i < p->rows; i++) {
+	for (uint8 i = 0; i < tmp->columns; i++) {
 		ids.Add(CreateConstantCompositeVector(p, values));
 	}
 
-	InstConstantComposite* composite = new InstConstantComposite(type->typeId, p->rows, ids.GetData());
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, tmp->columns, ids.GetData());
 
 	CheckConstantExist(&composite);
 
