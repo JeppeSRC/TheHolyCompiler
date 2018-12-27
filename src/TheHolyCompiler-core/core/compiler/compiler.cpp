@@ -947,10 +947,19 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			TypePrimitive* type = nullptr;
 
+			uint32 operandId;
+
 			if (right.type == ExpressionType::Variable) {
 				type = (TypePrimitive*)right.variable->type;
+
+				InstLoad* load = new InstLoad(type->typeId, right.variable->variableId, 0);
+				instructions.Add(load);
+
+				operandId = load->id;
 			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
 				type = (TypePrimitive*)right.result.type;
+
+				operandId = right.result.id;
 			} else {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
 			}
@@ -963,11 +972,47 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				Log::CompilerWarning(e.parent, "Unnecessary cast");
 				expressions.RemoveAt(i);
 			} else {
-				const TypePrimitive* castType = (TypePrimitive*)e.castType;
+				TypePrimitive* castType = (TypePrimitive*)e.castType;
 
-				if (castType->componentType == type->componentType) {
+				InstBase* operation = nullptr;
 
+				if (castType->type == Type::Int) {
+					if (type->type == Type::Int) {
+						if (castType->bits != type->bits) {
+							if (castType->sign) {
+								operation = new InstSConvert(castType->typeId, operandId);
+							} else {
+								operation = new InstUConvert(castType->typeId, operandId);
+							}
+						}
+					} else { //Float
+						if (castType->sign) {
+							operation = new InstConvertFToS(castType->typeId, operandId);
+						} else {
+							operation = new InstConvertFToU(castType->typeId, operandId);
+						}
+					}
+				} else { //Float
+					if (type->type == Type::Float) {
+						operation = new InstFConvert(castType->typeId, operandId);
+					} else { //Int
+						if (type->sign) {
+							operation = new InstConvertSToF(castType->typeId, operandId);
+						} else {
+							operation = new InstConvertUToF(castType->typeId, operandId);
+						}
+					}
 				}
+
+				instructions.Add(operation);
+
+				right.type = ExpressionType::Result;
+
+				right.result.isVariable = false;
+				right.result.type = castType;
+				right.result.id = operation->id;
+
+				expressions.RemoveAt(i);
 			}
 			
 		} else {
