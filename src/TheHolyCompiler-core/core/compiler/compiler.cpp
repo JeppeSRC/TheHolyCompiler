@@ -815,11 +815,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 	List<Expression> expressions;
 	List<Variable*> tmpVariables;
 
+
+
 	for (uint64 i = start; i <= end; i++) {
 		const Token& t = tokens[i];
 		Expression e = {};
 
-		if (t.type == TokenType::Name) { 
+		if (t.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
 				uint64 removed = 0;
@@ -856,6 +858,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
+			e.parent = t;
+		} else if (t.type >= TokenType::TypeBool && t.type <= TokenType::TypeInt) { //Type for a cast
+			if (start != end) {
+				Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
+			}
+
+			e.type == ExpressionType::Type;
+			e.castType = t.type;
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
@@ -1113,7 +1123,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			right.result.isVariable = false;
 			right.result.type = type;
 			right.result.id = operation->id;
-		}
+		} else if (e.operatorType == TokenType::OperatorCas)
 	}
 
 #pragma endregion

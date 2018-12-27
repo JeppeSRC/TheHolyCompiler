@@ -248,6 +248,7 @@ private: //Expression parsing
 		Constant,
 		Result,
 		Operator,
+		Type
 	};
 
 	struct Expression {
@@ -264,8 +265,14 @@ private: //Expression parsing
 			ResultVariable result;
 		};
 
-		//type = Operator
-		parsing::TokenType operatorType;
+		union {
+			//type = Operator
+			parsing::TokenType operatorType;
+
+			//type = Type
+			parsing::TokenType castType;
+		};
+
 
 		parsing::Token parent;
 	};
