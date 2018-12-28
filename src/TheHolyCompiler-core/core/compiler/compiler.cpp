@@ -934,6 +934,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.type == ExpressionType::Type;
 			e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 			e.parent = t;
+		} else if (t.type == TokenType::OperatorTernary1 || t.type == TokenType::OperatorTernary2) {
+			e.type = ExpressionType::Operator;
+			e.operatorType = t.type;
+			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
