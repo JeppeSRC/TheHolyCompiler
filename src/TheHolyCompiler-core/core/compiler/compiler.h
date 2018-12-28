@@ -190,6 +190,8 @@ private: //Variable stuff
 	struct FunctionParameter;
 	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
+	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
+
 private: //Function stuff
 	struct FunctionParameter {
 		utils::String name;

@@ -869,6 +869,57 @@ Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* c
 	return var;
 }
 
+Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, uint32 operandId) {
+	TypePrimitive* cType = (TypePrimitive*)castType;
+	TypePrimitive* type = (TypePrimitive*)currType;
+
+	ResultVariable res;
+
+	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float)) {
+		res.id = ~0;
+
+		return res;
+	}
+
+	InstBase* operation = nullptr;
+
+	if (cType->type == Type::Int) {
+		if (type->type == Type::Int) {
+			if (cType->bits != type->bits) {
+				if (cType->sign) {
+					operation = new InstSConvert(cType->typeId, operandId);
+				} else {
+					operation = new InstUConvert(cType->typeId, operandId);
+				}
+			}
+		} else { //Float
+			if (cType->sign) {
+				operation = new InstConvertFToS(cType->typeId, operandId);
+			} else {
+				operation = new InstConvertFToU(cType->typeId, operandId);
+			}
+		}
+	} else { //Float
+		if (type->type == Type::Float) {
+			operation = new InstFConvert(cType->typeId, operandId);
+		} else { //Int
+			if (type->sign) {
+				operation = new InstConvertSToF(cType->typeId, operandId);
+			} else {
+				operation = new InstConvertUToF(cType->typeId, operandId);
+			}
+		}
+	}
+
+	instructions.Add(operation);
+
+	res.isVariable = false;
+	res.type = castType;
+	res.id = operation->id;
+
+	return res;
+}
+
 utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
 	List<FunctionDeclaration*> decls;
 
