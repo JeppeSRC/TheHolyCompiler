@@ -706,10 +706,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
 
-				if (*type != retType) {
-					Log::CompilerError(next, "Type does not match return type"); //TODO: implicit conversions of convertable types.
-				}
-
 				uint32 operandId;
 
 				if (res.isVariable) {
@@ -720,6 +716,20 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				} else {
 					operandId = res.id;
 				}
+
+				if (*type != retType) {
+					ResultVariable tmp = Cast(retType, type, operandId);
+
+					if (tmp.id == ~0) {
+						Log::CompilerError(next, "No suitable conversion between return type(%s) and \"%s\"", retType->typeString.str, type->typeString.str);
+					} else {
+						Log::CompilerWarning(next, "Implicit conversion from \"%s\" to return type(%s)", type->typeString.str, retType->typeString.str);
+					}
+
+					operandId = res.id;
+				}
+
+				
 
 				operation = new InstReturnValue(operandId);
 			}
