@@ -1034,45 +1034,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				Log::CompilerWarning(e.parent, "Unnecessary cast");
 				expressions.RemoveAt(i);
 			} else {
-				TypePrimitive* castType = (TypePrimitive*)e.castType;
-
-				InstBase* operation = nullptr;
-
-				if (castType->type == Type::Int) {
-					if (type->type == Type::Int) {
-						if (castType->bits != type->bits) {
-							if (castType->sign) {
-								operation = new InstSConvert(castType->typeId, operandId);
-							} else {
-								operation = new InstUConvert(castType->typeId, operandId);
-							}
-						}
-					} else { //Float
-						if (castType->sign) {
-							operation = new InstConvertFToS(castType->typeId, operandId);
-						} else {
-							operation = new InstConvertFToU(castType->typeId, operandId);
-						}
-					}
-				} else { //Float
-					if (type->type == Type::Float) {
-						operation = new InstFConvert(castType->typeId, operandId);
-					} else { //Int
-						if (type->sign) {
-							operation = new InstConvertSToF(castType->typeId, operandId);
-						} else {
-							operation = new InstConvertUToF(castType->typeId, operandId);
-						}
-					}
-				}
-
-				instructions.Add(operation);
-
 				right.type = ExpressionType::Result;
+				right.result = Cast(e.castType, type, operandId);
 
-				right.result.isVariable = false;
-				right.result.type = castType;
-				right.result.id = operation->id;
+				if (right.result.id == ~0) {
+					Log::CompilerError(e.parent, "The only castable types are scalar integers or floats");
+				}
 
 				expressions.RemoveAt(i);
 			}
