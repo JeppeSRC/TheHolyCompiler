@@ -666,10 +666,67 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 					Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \";\"", assign.string.str);
 				}
 			} else {
+				uint64 rem = 0;
+				Variable* var = ParseName(tokens, i, &rem);
 
+				const Token& next = tokens[i+1];
+
+				if (next.type == TokenType::SemiColon) {
+					Log::CompilerWarning(token, "Unused");
+					rem++; //To remove semicolon
+				} else if (next.type == TokenType::OperatorAssign) {
+					ParseAssignment(var, tokens, i + 1);
+				} else {
+					Log::CompilerError(next, "Unexpected symbol \"%s\" expected \"=\"", next.string.str);
+				}
+
+				tokens.Remove(i, i + rem-1);
 			}
-		}
-		else {
+		} else if (token.type == TokenType::ControlFlowReturn) {
+			const Token& next = tokens[i + 1];
+
+			InstBase* operation = nullptr;
+
+			bool returnVoid = declaration->returnType->type == Type::Void;
+
+			if (next.type == TokenType::SemiColon) {
+				if (!returnVoid) {
+					Log::CompilerError(token, "Function must return something that matches the return type");
+				}
+
+				operation = new InstReturn;
+			} else {
+				if (returnVoid) {
+					Log::CompilerError(token, "Unexpected symbol \"%s\" expected \";\". Function has return type void", next.string.str);
+				}
+
+				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i+1); //TODO: Check end is legit
+				ResultVariable res = ParseExpression(tokens, i + 1, end-1);
+
+				TypeBase* type = res.type;
+				TypeBase* retType = declaration->returnType;
+
+				if (*type != retType) {
+					Log::CompilerError(next, "Type does not match return type"); //TODO: implicit conversions of convertable types.
+				}
+
+				uint32 operandId;
+
+				if (res.isVariable) {
+					InstLoad* load = new InstLoad(type->typeId, res.id, 0);
+					instructions.Add(load);
+
+					operandId = load->id;
+				} else {
+					operandId = res.id;
+				}
+
+				operation = new InstReturnValue(operandId);
+			}
+
+			instructions.Add(operation);
+
+		} else {
 			Log::CompilerError(token, "Unexpected symbol \"%s\" expected \"}\"", token.string.str);
 		}
 	}
@@ -745,7 +802,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				TypeArray* arr = (TypeArray*)curr;
 
-				uint64 end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, start);
+				uint64 end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, start+offset);
 
 				if (end == ~0) {
 					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
@@ -776,7 +833,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				curr = arr->elementType;
 
-				offset = end + 1;
+				offset = (end - start)+1;
 			} else {
 				break;
 			}
@@ -936,7 +993,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 #pragma region precedence 2
 
-	for (uint64 i = expressions.GetCount(); i >= 0; i--) {
+	for (uint64 i = expressions.GetCount()-1; (int64)i >= 0; i--) {
 		const Expression& e = expressions[i];
 
 		if (e.type != ExpressionType::Operator) {
@@ -1240,7 +1297,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			break;
 		case ExpressionType::Constant:
 		case ExpressionType::Result:
-			result = e.constant;
+			result = e.result;
 			break;
 	}
 
