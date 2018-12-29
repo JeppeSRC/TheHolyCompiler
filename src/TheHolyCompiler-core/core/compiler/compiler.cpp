@@ -886,7 +886,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				Log::CompilerError(t, "Cast type must be scalar of type integer or float");
 			}
 
-			e.type == ExpressionType::Type;
+			e.type = ExpressionType::Type;
 			e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 			e.parent = t;
 		} else if (t.type == TokenType::OperatorTernary1 || t.type == TokenType::OperatorTernary2) {
