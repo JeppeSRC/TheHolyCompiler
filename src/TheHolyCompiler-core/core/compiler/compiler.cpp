@@ -716,6 +716,8 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 
 			instructions.Add(operation);
 
+		} else if (token.type == TokenType::ControlFlowIf) {
+
 		} else {
 			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start); //TODO: check end is legit
 			ParseExpression(tokens, i, end - 1);
