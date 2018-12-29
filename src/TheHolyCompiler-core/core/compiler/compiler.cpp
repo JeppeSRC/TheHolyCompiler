@@ -41,6 +41,10 @@ bool TokenTypeCmpFunc(const Token& token, const TokenType& type) {
 	return token.type == type;
 }
 
+auto  CmpFunc = [](const Token& curr, const TokenType& c) -> bool {
+	return curr.type == c;
+};
+
 List<Token> Compiler::Tokenize() {
 	List<Token> tokens;
 
@@ -712,10 +716,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		}
 	}
 }
-
-auto  CmpFunc = [](const Token& curr, const TokenType& c) -> bool {
-	return curr.type == c;
-};
 
 Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
 	uint64 offset = 0;
