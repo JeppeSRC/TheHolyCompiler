@@ -191,10 +191,10 @@ private: //Variable stuff
 	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
 	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
-	ResultVariable Add(TypeBase* type1, uint32 operand1, uint32 operand2);
-	ResultVariable Subtract(TypeBase* type1, uint32 operand1, uint32 operand2);
-	ResultVariable Multiply(TypeBase* type1, uint32 operand1, uint32 operand2);
-	ResultVariable Divide(TypeBase* type1, uint32 operand1, uint32 operand2);
+	ResultVariable Add(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Subtract(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Multiply(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Divide(TypeBase* type, uint32 operand1, uint32 operand2);
 
 private: //Function stuff
 	struct FunctionParameter {
