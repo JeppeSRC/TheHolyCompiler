@@ -31,15 +31,33 @@ namespace parsing {
 
 using namespace utils;
 
+bool operator>(TokenType left, TokenType right) {
+	return int(left) > int(right);
+}
+
+bool operator<(TokenType left, TokenType right) {
+	return int(left) < int(right);
+}
+
+bool operator>=(TokenType left, TokenType right) {
+	return int(left) >= int(right);
+}
+
+bool operator<=(TokenType left, TokenType right) {
+	return int(left) <= int(right);
+}
+
+
 Token::Token(TokenType type, const String& string, uint64 column) : type(type), string(string), column(column) { }
 Token::Token(TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), string(string), column(column) { }
 Token::Token(TokenType type, const String& string, const Line& line, uint64 column) : type(type), string(string), line(line), column(column) { }
 Token::Token(TokenType type, uint64 value, const String& string, const Line& line, uint64 column) : type(type), value(value), string(string), line(line), column(column) { }
-Token::Token(const Token& other) : type(other.type), value(other.value), string(other.string), line(other.line), column(other.column) { }
-Token::Token(const Token* other) : type(other->type), value(other->value), string(other->string), line(other->line), column(other->column) { }
+Token::Token(const Token& other) : type(other.type), value(other.value), valueType(other.valueType), string(other.string), line(other.line), column(other.column) { }
+Token::Token(const Token* other) : type(other->type), value(other->value), valueType(other->valueType), string(other->string), line(other->line), column(other->column) { }
 Token::Token(Token&& other) {
 	type = other.type;
 	value = other.value;
+	valueType = other.valueType;
 	column = other.column;
 	string = std::move(other.string);
 	line = std::move(other.line);
@@ -49,6 +67,7 @@ Token& Token::operator=(const Token& other) {
 	if (this != &other) {
 		type = other.type;
 		value = other.value;
+		valueType = other.valueType;
 		column = other.column;
 		string = other.string;
 		line = other.line;
@@ -61,6 +80,7 @@ Token& Token::operator=(Token&& other) {
 	if (this != &other) {
 		type = other.type;
 		value = other.value;
+		valueType = other.valueType;
 		column = other.column;
 		string = std::move(other.string);
 		line = std::move(other.line);

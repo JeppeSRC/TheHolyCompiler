@@ -56,6 +56,7 @@ InstBase* Compiler::GetInstFromID(uint32 id)  {
 	
 	return nullptr;
 }
+
 void Compiler::CheckTypeExist(InstTypeBase** type) {
 	auto cmp = [](InstBase* const& curr, InstTypeBase* const& type) -> bool {
 		if (curr->type != InstType::Type) return false;
@@ -111,16 +112,41 @@ void Compiler::CheckConstantExist(InstBase** constant) {
 }
 
 Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start) {
-	TypePrimitive* var = new TypePrimitive;
 
 	uint64 offset = 0;
 
 	const Token& token = tokens[start + offset++];
 
-	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
+	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat, TokenType::TypeVoid)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
+	} else if (token.type == TokenType::TypeVoid) {
+		TypePrimitive* var = new TypePrimitive;
+		var->type = Type::Void;
+		var->typeString = "void";
+		var->componentType = Type::Void;
+		var->bits = 0;
+		var->sign = 0;
+		var->rows = 0;
+		var->columns = 0;
+		var->typeId = ~0;
+
+		CheckTypeExist((TypeBase**)&var);
+
+		tokens.RemoveAt(start);
+
+		if (var->typeId != ~0) {
+			return var;
+		}
+
+		InstTypeVoid* v = new InstTypeVoid();
+		types.Add(v);
+
+		var->typeId = v->id;
+
+		return var;
 	}
 
+	TypePrimitive tmpVar;
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
 		const Token& open = tokens[start + offset++];
@@ -138,103 +164,179 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 				Log::CompilerError(close, "Unexpected symbol \"%s\" expected a \">\"", close.string.str);
 			}
 
-			var->componentType = ConvertToType(type.type);
-			var->bits = type.bits;
-			var->sign = type.sign;
+			tmpVar.componentType = ConvertToType(type.type);
+			tmpVar.bits = type.bits;
+			tmpVar.sign = type.sign;
 		} else {
-			var->componentType = Type::Float;;
-			var->bits = 32;
-			var->sign = 0;
+			tmpVar.componentType = Type::Float;;
+			tmpVar.bits = CompilerOptions::FPPrecision32() ? 32 : 64;
+			tmpVar.sign = 0;
 
 			offset--;
 		}
 	} else {
-		var->componentType = ConvertToType(token.type);
-		var->bits = token.bits;
-		var->sign = token.sign;
+		tmpVar.componentType = ConvertToType(token.type);
+		tmpVar.bits = token.bits;
+		tmpVar.sign = token.sign;
 	}
 	
 
-	var->type = ConvertToType(token.type);
-	var->rows = token.rows;
-	var->columns = token.columns;
-	var->typeString = GetTypeString(var);
+	tmpVar.type = ConvertToType(token.type);
+	tmpVar.rows = token.rows;
+	tmpVar.columns = token.columns;
 	
-	uint64 index = typeDefinitions.Find<TypePrimitive*>(var, [](TypeBase* const& curr, TypePrimitive* const& other) -> bool {
+	uint64 index = typeDefinitions.Find<TypePrimitive*>(&tmpVar, [](TypeBase* const& curr, TypePrimitive* const& other) -> bool {
 		return *curr == other;
 	});
 
+	TypePrimitive* var = nullptr;
 
 	if (index != ~0) {
-		delete var;
 		var = (TypePrimitive*)typeDefinitions[index];
 	} else {
-		InstTypeBase* t = nullptr;
 
-		switch (var->type) {
+		switch (tmpVar.type) {
 			case Type::Int:
-				t = new InstTypeInt(var->bits, var->sign);
-				break;
 			case Type::Float:
-				t = new InstTypeFloat(var->bits);
+				var = CreateTypePrimitiveScalar(tmpVar.type, tmpVar.bits, tmpVar.sign);
 				break;
 			case Type::Vector:
-			{
-				InstTypeBase* tt = nullptr;
-
-				switch (var->componentType) {
-					case Type::Float:
-						tt = new InstTypeFloat(var->bits);
-						break;
-					case Type::Int:
-						tt = new InstTypeInt(var->bits, var->sign);
-						break;
-				}
-
-				CheckTypeExist(&tt);
-
-				t = new InstTypeVector(var->rows, tt->id);
-
-			}
-			break;
+				var = CreateTypePrimitiveVector(tmpVar.componentType, tmpVar.bits, tmpVar.sign, tmpVar.rows);
+				break;
 			case type::Type::Matrix:
-			{
-				InstTypeBase* tt = nullptr;
-
-				switch (var->componentType) {
-					case Type::Float:
-						tt = new InstTypeFloat(var->bits);
-						break;
-					case Type::Int:
-						tt = new InstTypeInt(var->bits, var->sign);
-						break;
-				}
-
-				CheckTypeExist(&tt);
-
-				uint32 compId = tt->id;
-
-				tt = new InstTypeVector(var->rows, compId);
-
-				CheckTypeExist(&tt);
-
-				compId = tt->id;
-
-				t = new InstTypeMatrix(var->columns, compId);
-			}
-
+				var = CreateTypePrimtiveMatrix(tmpVar.componentType, tmpVar.bits, tmpVar.sign, tmpVar.rows, tmpVar.columns);
+				break;
 		}
-
-		CheckTypeExist(&t);
-
-		var->typeId = t->id;
-
-		typeDefinitions.Add(var);
-
-		tokens.Remove(start, start + offset-1);
 	}
+	
+	tokens.Remove(start, start + offset-1);
 
 	return var;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypeBool() {
+	TypePrimitive* var = new TypePrimitive;
+
+	var->type = Type::Bool;
+	var->componentType = Type::Bool;
+	var->bits = 0;
+	var->sign = 0;
+	var->rows = 0;
+	var->columns = 0;
+	var->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	if (var->typeId != ~0) {
+		return var;
+	}
+
+	InstTypeBool* b = new InstTypeBool;
+
+	CheckTypeExist((InstTypeBase**)&b);
+
+	var->typeId = b->id;
+	var->typeString = "bool";
+
+	return var;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bits, uint8 sign) {
+	THC_ASSERT(Utils::CompareEnums(type, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* var = new TypePrimitive;
+
+	var->type = type;
+	var->componentType = type;
+	var->bits = bits;
+	var->sign = sign;
+	var->rows = 0;
+	var->columns = 0;
+	var->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	if (var->typeId != ~0) {
+		return var;
+	}
+
+	InstTypeBase* t = nullptr;
+
+	switch (type) {
+		case Type::Int:
+			t = new InstTypeInt(bits, 0); //Remove signedness from all integers, signedness will be handled internally
+			break;
+		case Type::Float:
+			t = new InstTypeFloat(bits);
+			break;
+	}
+
+	CheckTypeExist((InstTypeBase**)&t);
+
+	var->typeId = t->id;
+	var->typeString = GetTypeString(var);
+
+	return var;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimitiveVector(Type componentType, uint8 bits, uint8 sign, uint8 rows) {
+	THC_ASSERT(Utils::CompareEnums(componentType, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* vec = new TypePrimitive;
+
+	vec->type = Type::Vector;
+	vec->componentType = componentType;
+	vec->bits = bits;
+	vec->sign = sign;
+	vec->rows = rows;
+	vec->columns = 0;
+	vec->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&vec);
+
+	if (vec->typeId != ~0) {
+		return vec;
+	}
+	
+	InstTypeVector* t = new InstTypeVector(vec->rows, CreateTypePrimitiveScalar(componentType, bits, sign)->typeId);
+
+	CheckTypeExist((InstTypeBase**)&t);
+
+	vec->typeId = t->id;
+	vec->typeString = GetTypeString(vec);
+
+	return vec;
+}
+
+Compiler::TypePrimitive* Compiler::CreateTypePrimtiveMatrix(Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns) {
+	THC_ASSERT(Utils::CompareEnums(componentType, CompareOperation::Or, Type::Int, Type::Float));
+
+	TypePrimitive* mat = new TypePrimitive;
+
+	mat->type = Type::Matrix;
+	mat->componentType = componentType;
+	mat->bits = bits;
+	mat->sign = sign;
+	mat->rows = rows;
+	mat->columns = columns;
+	mat->typeId = ~0;
+
+	CheckTypeExist((TypeBase**)&mat);
+
+	if (mat->typeId != ~0) {
+		return mat;
+	}
+
+	TypeBase* vec = CreateTypePrimitiveVector(componentType, bits, sign, rows);
+
+	InstTypeMatrix* m = new InstTypeMatrix(columns, vec->typeId);
+
+	CheckTypeExist((InstTypeBase**)&m);
+
+	mat->typeId = m->id;
+	mat->typeString = GetTypeString(mat);
+
+	return mat;
 }
 
 Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
@@ -258,23 +360,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<uint32> ids;
 
 	while (true) {
-		const Token& type = tokens[start + offset++];
-
-		TypeBase* tmp = nullptr;
-
-		if (Utils::CompareEnums(type.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat)) {
-			uint64 typeLocation = start + offset - 1;
-
-			tmp = CreateTypePrimitive(tokens, typeLocation);
-		} else {
-			uint64 index = typeDefinitions.Find<String>(type.string, findStructFunc);
-
-			if (index == ~0) {
-				Log::CompilerError(type, "Unexpected symbol \"%s\" expected valid type", type.string.str);
-			}
-
-			tmp = typeDefinitions[index];
-		}
+		TypeBase* tmp = CreateType(tokens, start + offset);
 
 		const Token& tokenName = tokens[start + offset++];
 
@@ -282,8 +368,8 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 			Log::CompilerError(tokenName, "Unexpected symbol \"%s\" expected valid name", tokenName.string.str);
 		}
 
-		uint64 index = var->members.Find<String>(tokenName.string, [](TypeBase* const& curr, const String& name) -> bool {
-			if (curr->name == name) {
+		uint64 index = var->members.Find<String>(tokenName.string, [](const StructMember& curr, const String& name) -> bool {
+			if (curr.name == name) {
 				return true;
 			}
 
@@ -300,9 +386,12 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 			Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
 		}
 
-		tmp->name = tokenName.string;
+		StructMember m;
 
-		var->members.Add(tmp);
+		m.name = tokenName.string;
+		m.type = tmp;
+
+		var->members.Emplace(m);
 
 		ids.Add(tmp->typeId);
 
@@ -320,7 +409,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	var->type = Type::Struct;
 	var->typeString = name.string;
 
-	if (typeDefinitions.Find<String>(var->name, findStructFunc) == ~0) {
+	if (typeDefinitions.Find<String>(var->typeString, findStructFunc) == ~0) {
 		typeDefinitions.Add(var);
 	} else {
 		delete var;
@@ -338,7 +427,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
 		annotationIstructions.Add(new InstMemberDecorate(st->id, i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
 
-		memberOffset += var->members[i]->GetSize();
+		memberOffset += var->members[i].type->GetSize();
 	}
 
 	var->typeId = st->id;
@@ -400,12 +489,11 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 		return var;
 	}
 
-	InstTypeArray* array = new InstTypeArray(var->elementCount, var->elementType->typeId);
+	InstTypeArray* array = new InstTypeArray(CreateConstantS32(var->elementCount), var->elementType->typeId);
+
+	CheckTypeExist((InstTypeBase**)&array);
 
 	var->typeId = array->id;
-
-	types.Add(array);
-	typeDefinitions.Add(var);
 
 	return var;
 }
@@ -413,9 +501,9 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
 	const Token& token = tokens[start];
 
-	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
-		const Token& arr = tokens[start + 1];
+	const Token& arr = tokens[start + 1];
 
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
 		if (arr.type == TokenType::BracketOpen) {
 			return CreateTypeArray(tokens, start);
 		} else {
@@ -427,7 +515,11 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
 		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
 
 		if (index != ~0) {
-			return typeDefinitions[index];
+			if (arr.type == TokenType::BracketOpen) {
+				return CreateTypeArray(tokens, start);
+			} else {
+				return typeDefinitions[index];
+			}
 		}
 	}
 
@@ -439,6 +531,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 
 	const TypeArray* arr = (const TypeArray*)type;
 	const TypePrimitive* prim = (const TypePrimitive*)type;
+	const TypePointer* p = (const TypePointer*)type;
 
 	switch (type->type) {
 		case Type::Void:
@@ -597,6 +690,34 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			}
 
 			break;
+
+		case Type::Pointer:
+			name = GetTypeString(p->pointerType).Append("* ");
+
+			switch (p->storageClass) {
+				case THC_SPIRV_STORAGE_CLASS_INPUT:
+					name.Append("INPUT");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_OUTPUT:
+					name.Append("OUTPUT");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_PRIVATE:
+					name.Append("PRIVATE");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_UNIFORM:
+					name.Append("UNIFORM");
+					break;
+				case THC_SPIRV_STORAGE_CLASS_FUNCTION:
+					name.Append("FUNCTION");
+					break;
+			}
+
+			break;
+
+		default:
+			name = type->typeString;
+			break;
+
 	}
 
 	return name;
@@ -612,9 +733,35 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 			return THC_SPIRV_STORAGE_CLASS_PRIVATE;
 		case VariableScope::Uniform:
 			return THC_SPIRV_STORAGE_CLASS_UNIFORM;
+		case VariableScope::Function:
+			return THC_SPIRV_STORAGE_CLASS_FUNCTION;
 	}
 
 	return ~0;
+}
+
+Compiler::Variable* Compiler::GetVariable(const String& name) const {
+	for (uint64 i = 0; i < localVariables.GetCount(); i++) {
+		Variable* v = localVariables[i];
+
+		if (v->name == name) return v;
+	}
+
+	for (uint64 i = 0; i < globalVariables.GetCount(); i++) {
+		Variable* v = globalVariables[i];
+
+		if (v->name == name) return v;
+	}
+
+	return nullptr;
+}
+
+bool Compiler::CheckLocalName(const String& name) const {
+	uint64 index = localVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
+		return curr->name == name;
+	});
+
+	return index == ~0;
 }
 
 bool Compiler::CheckGlobalName(const String& name) const {
@@ -625,7 +772,7 @@ bool Compiler::CheckGlobalName(const String& name) const {
 
 		if (curr->name == "_uniform_buf") {
 			for (uint64 i = 0; i < type->members.GetCount(); i++) {
-				if (type->members[i]->name == name) return true;
+				if (type->members[i].name == name) return true;
 			}
 		}
 
@@ -635,19 +782,42 @@ bool Compiler::CheckGlobalName(const String& name) const {
 	return index == ~0;
 }
 
+Compiler::TypePointer* Compiler::CreateTypePointer(const TypeBase* const type, VariableScope scope) {
+	TypePointer* p = new TypePointer;
+
+	p->type = Type::Pointer;
+	p->pointerType = (TypeBase*)type;
+	p->storageClass = ScopeToStorageClass(scope);
+	p->typeId = ~0;
+	
+	CheckTypeExist((TypeBase**)&p);
+
+	if (p->typeId != ~0) {
+		return p;
+	}
+
+	p->typeString = GetTypeString(p);
+
+	InstTypePointer* pointer = new InstTypePointer(p->storageClass, type->typeId);
+
+	CheckTypeExist((InstTypeBase**)&pointer);
+
+	p->typeId = pointer->id;
+
+	return p;
+}
+
 Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const String& name) {
 	Variable* var = new Variable;
 
 	var->scope = scope;
 	var->name = name;
 
-	var->type = type;
+	var->type = (TypeBase*)type;
 
-	InstTypePointer* pointer = new InstTypePointer(ScopeToStorageClass(scope), type->typeId);
+	TypePointer* pointer = CreateTypePointer(type, scope);
 
-	CheckTypeExist((InstTypeBase**)&pointer);
-
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
@@ -664,17 +834,17 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	var->scope = VariableScope::None;
 	var->name = name;
-	var->type = type;
-	
-	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, type->typeId);
+	var->type = (TypeBase*)type;
 
-	CheckTypeExist((InstTypeBase**)&pointer);
+	TypePointer* pointer = CreateTypePointer(type, VariableScope::Function);
 
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
 	var->variableId = opVar->id;
+
+	localVariables.Add(var);
 
 	return var;
 }
@@ -686,17 +856,197 @@ Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* c
 	var->name = param->name;
 	var->type = param->type;
 
-	InstTypePointer* pointer = new InstTypePointer(THC_SPIRV_STORAGE_CLASS_FUNCTION, var->type->typeId);
+	TypePointer* pointer = CreateTypePointer(param->type, VariableScope::Function);
 
-	CheckTypeExist((InstTypeBase**)&pointer);
-
-	var->typePointerId = pointer->id;
+	var->typePointerId = pointer->typeId;
 
 	*opParam = new InstFunctionParameter(var->typePointerId);
 
 	var->variableId = (*opParam)->id;
 
+	localVariables.Add(var);
+
 	return var;
+}
+
+Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, uint32 operandId) {
+	TypePrimitive* cType = (TypePrimitive*)castType;
+	TypePrimitive* type = (TypePrimitive*)currType;
+
+	ResultVariable res;
+
+	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float)) {
+		res.id = ~0;
+
+		return res;
+	}
+
+	InstBase* operation = nullptr;
+
+	if (cType->type == Type::Int) {
+		if (type->type == Type::Int) {
+			if (cType->bits != type->bits) {
+				if (cType->sign) {
+					operation = new InstSConvert(cType->typeId, operandId);
+				} else {
+					operation = new InstUConvert(cType->typeId, operandId);
+				}
+			}
+		} else { //Float
+			if (cType->sign) {
+				operation = new InstConvertFToS(cType->typeId, operandId);
+			} else {
+				operation = new InstConvertFToU(cType->typeId, operandId);
+			}
+		}
+	} else { //Float
+		if (type->type == Type::Float) {
+			operation = new InstFConvert(cType->typeId, operandId);
+		} else { //Int
+			if (type->sign) {
+				operation = new InstConvertSToF(cType->typeId, operandId);
+			} else {
+				operation = new InstConvertUToF(cType->typeId, operandId);
+			}
+		}
+	}
+	if (operation) {
+		instructions.Add(operation);
+		res.id = operation->id;
+	} else {
+		res.id = operandId;
+	}
+
+	res.isVariable = false;
+	res.type = castType;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Add(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstIAdd(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFAdd(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Subtract(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstISub(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFSub(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Multiply(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstIMul(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFMul(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Divide(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		if (t->sign) {
+			operation = new InstSDiv(type->typeId, operand1, operand2);
+		} else {
+			operation = new InstUDiv(type->typeId, operand1, operand2);
+		}
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFDiv(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
+	List<FunctionDeclaration*> decls;
+
+	for (uint64 i = 0; i < functionDeclarations.GetCount(); i++) {
+		FunctionDeclaration* d = functionDeclarations[i];
+
+		if (d->name == name) {
+			decls.Add(d);
+		}
+	}
+
+	return decls;
 }
 
 bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const String& name) {
@@ -707,8 +1057,22 @@ bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const 
 	return params.Find<String>(name, cmp) == ~0;
 }
 
+uint32 Compiler::CreateConstantS32(int32 value) {
+	TypePrimitive p;
+
+	p.type = Type::Int;
+	p.componentType = Type::Int;
+	p.bits = 32;
+	p.sign = 1;
+	p.rows = 0;
+	p.columns = 0;
+	p.typeId = ~0;
+
+	return CreateConstant(&p, *(uint32*)&value);
+}
+
 uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
-	if (!IsTypeComposite(type)) {
+	if (IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
 		return ~0;
 	}
@@ -762,17 +1126,8 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 
 	List<uint32> ids;
 
-	TypePrimitive* p = new TypePrimitive;
-	
-	p->type = prim->componentType;
-	p->componentType = prim->componentType;
-	p->bits = prim->bits;
-	p->rows = prim->rows;
-	p->columns = prim->columns;
-	p->typeString = GetTypeString(p);
-	p->typeId = ~0;
-
-	CheckTypeExist((TypeBase**)&p);
+	TypePrimitive* tmp = (TypePrimitive*)type;
+	TypePrimitive* p = CreateTypePrimitiveScalar(tmp->componentType, tmp->bits, tmp->sign);
 
 	for (uint8 i = 0; i < prim->rows; i++) {
 		ids.Add(CreateConstant(p, (*values)[i]));
@@ -792,23 +1147,14 @@ uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const
 
 	List<uint32> ids;
 
-	TypePrimitive* p = new TypePrimitive;
+	TypePrimitive* tmp = (TypePrimitive*)type;
+	TypePrimitive* p = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, tmp->rows);
 
-	p->type = Type::Vector;
-	p->componentType = prim->componentType;
-	p->bits = prim->bits;
-	p->rows = prim->rows;
-	p->columns = prim->columns;
-	p->typeString = GetTypeString(p);
-	p->typeId = ~0;
-
-	CheckTypeExist((TypeBase**)&p);
-
-	for (uint8 i = 0; i < p->rows; i++) {
+	for (uint8 i = 0; i < tmp->columns; i++) {
 		ids.Add(CreateConstantCompositeVector(p, values));
 	}
 
-	InstConstantComposite* composite = new InstConstantComposite(type->typeId, p->rows, ids.GetData());
+	InstConstantComposite* composite = new InstConstantComposite(type->typeId, tmp->columns, ids.GetData());
 
 	CheckConstantExist(&composite);
 
@@ -845,7 +1191,7 @@ uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const
 	List<uint32> ids;
 
 	for (uint64 i = 0; i < str->members.GetCount(); i++) {
-		const TypeBase* member = str->members[i];
+		const TypeBase* member = str->members[i].type;
 
 		if (IsTypeComposite(member)) {
 			ids.Add(CreateConstantComposite(member, values));
@@ -906,7 +1252,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"uniform",  TokenType::DataUniform, 0, 0, 0, 0},
 
 		{"void", TokenType::TypeVoid, 0, 0, 0, 0},
-		{"bool", TokenType::TypeBool, 8, 0, 0, 0},
+		{"bool", TokenType::TypeInt, 8, 0, 0, 0},
 		{"byte", TokenType::TypeInt, 8, 0, 0, 0},
 
 		{"uint8",  TokenType::TypeInt, 8,  0, 0, 0},
@@ -919,6 +1265,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"int32", TokenType::TypeInt, 32, 1, 0, 0},
 		{"int64", TokenType::TypeInt, 64, 1, 0, 0},
 
+		{"float",  TokenType::TypeFloat, CompilerOptions::FPPrecision32() ? 32 : 64, 0, 0, 0},
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 
@@ -942,7 +1289,23 @@ void Compiler::ProcessName(Token& t) const {
 			break;
 		}
 	}
+}
 
+uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, TokenType open, TokenType close) const {
+	uint64 count = 0;
+
+	for (uint64 i = start; i < tokens.GetCount(); i++) {
+		const Token& t = tokens[i];
+
+		if (t.type == open) {
+			count++;
+		} else if (t.type == close) {
+			if (count == 1) return i;
+			count--;
+		}
+	}
+
+	return ~0;
 }
 
 }

@@ -674,7 +674,7 @@ public:
 
 #pragma region arithmetic instructions
 
-class InstSNegate : InstBase {
+class InstSNegate : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operandId;
@@ -684,7 +684,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFNegate : InstBase {
+class InstFNegate : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operandId;
@@ -694,7 +694,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstIAdd: InstBase {
+class InstIAdd : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -705,7 +705,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFAdd : InstBase {
+class InstFAdd : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -716,7 +716,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstISub : InstBase {
+class InstISub : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -727,7 +727,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFSub : InstBase {
+class InstFSub : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -738,7 +738,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstIMul : InstBase {
+class InstIMul : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -749,7 +749,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFMul : InstBase {
+class InstFMul : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -760,7 +760,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstUDiv : InstBase {
+class InstUDiv : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -771,7 +771,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstSDiv : InstBase {
+class InstSDiv : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -782,7 +782,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFDiv : InstBase {
+class InstFDiv : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -793,7 +793,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstUMod : InstBase {
+class InstUMod : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -804,7 +804,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstSRem : InstBase {
+class InstSRem : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -815,7 +815,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstSMod : InstBase {
+class InstSMod : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -826,7 +826,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFRem : InstBase {
+class InstFRem : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -837,7 +837,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstFMod : InstBase {
+class InstFMod : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -848,7 +848,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstVectorTimesScalar : InstBase {
+class InstVectorTimesScalar : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 vectorId;
@@ -859,7 +859,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstMatrixTimesScalar : InstBase {
+class InstMatrixTimesScalar : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 matrixId;
@@ -870,7 +870,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstVectorTimesMatrix : InstBase {
+class InstVectorTimesMatrix : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 vectorId;
@@ -881,7 +881,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstMatrixTimesVector: InstBase {
+class InstMatrixTimesVector: public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 matrixId;
@@ -892,7 +892,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstMatrixTimesMatrix : InstBase {
+class InstMatrixTimesMatrix : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 matrix1Id;
@@ -903,7 +903,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstOuterProduct : InstBase {
+class InstOuterProduct : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 vector1Id;
@@ -914,7 +914,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstDot : InstBase {
+class InstDot : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 vector1Id;
@@ -925,7 +925,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstIAddCarry: InstBase {
+class InstIAddCarry: public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -936,7 +936,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstISubBorrow : InstBase {
+class InstISubBorrow : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -947,7 +947,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstUMulExtended : InstBase {
+class InstUMulExtended : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -958,7 +958,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstSMulExtended : InstBase {
+class InstSMulExtended : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -973,7 +973,7 @@ public:
 
 #pragma region bit instructions
 
-class InstShiftRightLogical : InstBase {
+class InstShiftRightLogical : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 baseId;
@@ -984,7 +984,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstShiftRightArithmetic : InstBase {
+class InstShiftRightArithmetic : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 baseId;
@@ -995,7 +995,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstShiftLeftLogical : InstBase {
+class InstShiftLeftLogical : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 baseId;
@@ -1006,7 +1006,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstBitwiseOr: InstBase {
+class InstBitwiseOr: public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -1017,7 +1017,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstBitwiseXor : InstBase {
+class InstBitwiseXor : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -1028,7 +1028,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstBitwiseAnd : InstBase {
+class InstBitwiseAnd : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;
@@ -1039,7 +1039,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstNot : InstBase {
+class InstNot : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operandId;
@@ -1049,7 +1049,7 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-class InstBitReverse : InstBase {
+class InstBitReverse : public InstBase {
 public:
 	uint32 resultTypeId;
 	uint32 operand1Id;

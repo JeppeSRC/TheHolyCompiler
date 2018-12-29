@@ -90,7 +90,7 @@ InstExecutionMode::InstExecutionMode(uint32 entryPointId, uint32 mode, uint32 ex
 
 InstCapability::InstCapability(uint32 capability) : InstBase(THC_SPIRV_OPCODE_OpCapability, 2, "OpCapability"), capability(capability) { }
 
-InstConstant::InstConstant(uint32 resultTypeId, uint32 valueCount, void* values) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(valueCount) { memcpy(this->values, values, valueCount << 2); }
+InstConstant::InstConstant(uint32 resultTypeId, uint32 valueCount, void* values) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(valueCount), u32(0) { memcpy(this->values, values, valueCount << 2); }
 
 InstConstant::InstConstant(uint32 resultTypeId, uint32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), u32(value) { }
 
@@ -320,6 +320,8 @@ bool InstConstant::operator==(const InstBase* const inst) const {
 		for (uint32 i = 0; i < valueCount; i++) {
 			if (values[i] != c->values[i]) return false;
 		}
+
+		if (u32 != c->u32) return false;
 
 		return true;
 	}

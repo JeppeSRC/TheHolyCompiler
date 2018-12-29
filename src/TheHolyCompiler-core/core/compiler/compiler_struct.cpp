@@ -35,7 +35,11 @@ using namespace parsing;
 using namespace type;
 
 bool Compiler::TypeBase::operator==(const TypeBase* const other) const {
-	return type == other->type && name == other->name;
+	return type == other->type;
+}
+
+bool Compiler::TypeBase::operator!=(const TypeBase* const other) const {
+	return !operator==(other);
 }
 
 bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) const {
@@ -48,18 +52,34 @@ bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) 
 	return false;
 }
 
+bool Compiler::TypePrimitive::operator!=(const Compiler::TypeBase* const other) const {
+	return !operator==(other);
+}
+
+bool Compiler::StructMember::operator==(const StructMember& other) const {
+	return *type == other.type;
+}
+
+bool Compiler::StructMember::operator!=(const StructMember& other) const {
+	return !operator==(other);
+}
+
 bool Compiler::TypeStruct::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeStruct* t = (const TypeStruct*)other;
 
 		for (uint64 i = 0; i < members.GetCount(); i++) {
-			if (!(*members[i] == t->members[i])) return false;
+			if (!(members[i] == t->members[i])) return false;
 		}
 
 		return true;
 	}
 
 	return false;
+}
+
+bool Compiler::TypeStruct::operator!=(const Compiler::TypeBase* const other) const {
+	return !operator==(other);
 }
 
 bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
@@ -72,6 +92,23 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 	return false;
 }
 
+bool Compiler::TypeArray::operator!=(const Compiler::TypeBase* const other) const {
+	return !operator==(other);
+}
+
+bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypePointer* t = (const TypePointer*)other;
+
+		return *pointerType == t->pointerType && storageClass == t->storageClass;
+	}
+
+	return false;
+}
+
+bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) const {
+	return !operator==(other);
+}
 /*bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeFunction* t = (const TypeFunction*)other;
@@ -89,7 +126,7 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 }*/
 
 bool Compiler::FunctionParameter::operator==(const FunctionParameter* const other) const {
-	return name == other->name && *type == other->type && constant == other->constant && reference == other->reference;
+	return *type == other->type && constant == other->constant && reference == other->reference;
 }
 
 bool Compiler::FunctionDeclaration::operator==(const FunctionDeclaration* const other) const {
@@ -108,11 +145,11 @@ uint32 Compiler::TypePrimitive::GetSize() const {
 	switch (type) {
 		case Type::Int:
 		case Type::Float:
-			return bits >> 2;
+			return bits >> 3;
 		case Type::Vector:
-			return rows * (bits >> 2);
+			return rows * (bits >> 3);
 		case Type::Matrix:
-			return rows * columns * (bits >> 2);
+			return rows * columns * (bits >> 3);
 	}
 
 	return ~0;
@@ -121,10 +158,18 @@ uint32 Compiler::TypePrimitive::GetSize() const {
 uint32 Compiler::TypeStruct::GetSize() const {
 	uint32 total = 0;
 	for (uint64 i = 0; i < members.GetCount(); i++) {
-		total += members[i]->GetSize();
+		total += members[i].type->GetSize();
 	}
 
 	return total;
+}
+
+uint32 Compiler::TypeStruct::GetMemberIndex(const String& name) {
+	for (uint64 i = 0; i < members.GetCount(); i++) {
+		if (members[i].name == name) return (uint32)i;
+	}
+
+	return ~0;
 }
 
 uint32 Compiler::TypeArray::GetSize() const {

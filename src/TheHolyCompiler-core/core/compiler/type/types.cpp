@@ -59,6 +59,8 @@ InstTypeBase::~InstTypeBase() { }
 
 InstTypeVoid::InstTypeVoid() : InstTypeBase(Type::Void, THC_SPIRV_OPCODE_OpTypeVoid, 2, "OpTypeVoid") {  }
 
+InstTypeBool::InstTypeBool() : InstTypeBase(Type::Bool, THC_SPIRV_OPCODE_OpTypeBool, 2, "OpTypeBool") { }
+
 InstTypeInt::InstTypeInt(uint32 bits, uint32 sign) : InstTypeBase(Type::Int, THC_SPIRV_OPCODE_OpTypeInt, 4, "OpTypeInt"), bits(bits), sign(sign) { }
 
 InstTypeFloat::InstTypeFloat(uint32 bits) : InstTypeBase(Type::Float, THC_SPIRV_OPCODE_OpTypeFloat, 3, "OpTypeFloat"), bits(bits) { }
@@ -76,7 +78,11 @@ InstTypePointer::InstTypePointer(uint32 storageClass, uint32 typeId) : InstTypeB
 InstTypeFunction::InstTypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount << 2); }
 
 bool InstTypeVoid::operator==(const InstTypeBase* type) const {
-	return true;
+	return this->type == type->type;
+}
+
+bool InstTypeBool::operator==(const InstTypeBase* type) const {
+	return this->type == type->type;
 }
 
 bool InstTypeInt::operator==(const InstTypeBase* type) const {

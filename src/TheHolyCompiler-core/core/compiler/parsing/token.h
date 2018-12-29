@@ -56,10 +56,10 @@ enum class TokenType {
 	TypeVec,
 	TypeMat,
 
+	OperatorSelector,
 	OperatorIncrement,
 	OperatorDecrement,
 	OperatorNegate,
-	OperatorSelector,
 	OperatorTernary1,
 	OperatorTernary2,
 	OperatorBitwiseAnd,
@@ -105,6 +105,12 @@ enum class TokenType {
 	ModifierConst,
 	ModifierReference = OperatorBitwiseAnd,
 };
+
+
+bool operator>(TokenType left, TokenType right);
+bool operator<(TokenType left, TokenType right);
+bool operator>=(TokenType left, TokenType right);
+bool operator<=(TokenType left, TokenType right);
 
 class Token {
 public:

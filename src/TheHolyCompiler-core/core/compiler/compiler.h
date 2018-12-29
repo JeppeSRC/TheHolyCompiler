@@ -35,15 +35,15 @@ namespace core {
 namespace compiler {
 
 class Compiler {
-private:
+private: //Type stuff
 	struct TypeBase {
 		type::Type type; //Type
 		utils::String typeString; //Type as a string
-		utils::String name; // Only used in TypeStruct as member
 
 		uint32 typeId; //OpType id
 
 		virtual bool operator==(const TypeBase* const other) const;
+		virtual bool operator!=(const TypeBase* const other) const;
 
 		virtual uint32 GetSize() const = 0;
 	};
@@ -57,16 +57,28 @@ private:
 		uint8 columns;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 		
 		uint32 GetSize() const override;
 	};
 
+	struct StructMember {
+		utils::String name;
+		TypeBase* type;
+
+		bool operator==(const StructMember& other) const;
+		bool operator!=(const StructMember& other) const;
+	};
+
 	struct TypeStruct : public TypeBase {
-		utils::List<TypeBase*> members;
+		utils::List<StructMember> members;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
+
+		uint32 GetMemberIndex(const utils::String& name);
 	};
 
 	struct TypeArray : public TypeBase {
@@ -74,8 +86,19 @@ private:
 		TypeBase* elementType;
 
 		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
 
 		uint32 GetSize() const override;
+	};
+
+	struct TypePointer : public TypeBase {
+		TypeBase* pointerType;
+		uint32 storageClass;
+
+		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
+
+		uint32 GetSize() const override { return ~0; }
 	};
 
 	/*struct TypeFunction : public TypeBase {
@@ -106,6 +129,10 @@ private:
 
 	//start is the index of the type
 	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
+	TypePrimitive* CreateTypeBool();
+	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
+	TypePrimitive* CreateTypePrimitiveVector(type::Type componentType, uint8 bits, uint8 sign, uint8 rows);
+	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
 	//start is start of type
@@ -117,13 +144,15 @@ private:
 
 private:
 	static bool findStructFunc(TypeBase* const& curr, const utils::String& name);
-private:
+
+private: //Variable stuff
 	enum class VariableScope {
 		None,
 		In,
 		Out,
 		Private,
-		Uniform
+		Uniform,
+		Function
 	};
 
 	static uint32 ScopeToStorageClass(VariableScope scope);
@@ -132,22 +161,42 @@ private:
 		VariableScope scope;
 		utils::String name;
 
-		const TypeBase* type;
+		TypeBase* type;
 		uint32 typePointerId;
 		uint32 variableId;
+
+		bool isConstant;
+	};
+
+	struct ResultVariable {
+		TypeBase* type;
+		uint32 id;
+
+		bool isVariable;
 	};
 
 	utils::List<Variable*> globalVariables;
+	utils::List<Variable*> localVariables;
 
+	Variable* GetVariable(const utils::String& name) const;
+
+	bool CheckLocalName(const utils::String& name) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
+	TypePointer* CreateTypePointer(const TypeBase* const type, VariableScope scope);
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
 
 	struct FunctionParameter;
 	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
-private:
+	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
+	ResultVariable Add(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Subtract(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Multiply(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Divide(TypeBase* type, uint32 operand1, uint32 operand2);
+
+private: //Function stuff
 	struct FunctionParameter {
 		utils::String name;
 
@@ -175,9 +224,12 @@ private:
 
 	utils::List<FunctionDeclaration*> functionDeclarations;
 
+	utils::List<FunctionDeclaration*> GetFunctionDeclarations(const utils::String& name); 
+
 	static bool CheckParameterName(const utils::List<FunctionParameter*>& params, const utils::String& name); //return true if name is available
 
-private:
+private: //Constants
+	uint32 CreateConstantS32(int32 value);
 	uint32 CreateConstant(const TypeBase* const type, uint32 value);
 	uint32 CreateConstant(const TypeBase* const type, float32 value);
 	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
@@ -189,10 +241,43 @@ private:
 
 	bool IsTypeComposite(const TypeBase* const type) const;
 
-private:
+private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
+	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
+
+private: //Expression parsing
+	enum class ExpressionType {
+		Variable,
+		Constant,
+		Result,
+		Operator,
+		Type
+	};
+
+	struct Expression {
+		ExpressionType type;
+
+		//type = Variable
+		Variable* variable;
+
+		union {
+			//type = Constant
+			ResultVariable constant;
+
+			//type = Result
+			ResultVariable result;
+		};
+
+		//type = Operator
+		parsing::TokenType operatorType;
+
+		//type = Type
+		TypeBase* castType;
+
+		parsing::Token parent;
+	};
 
 private:
 	utils::String code;
@@ -207,6 +292,20 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
+
+	/*struct NameResult {
+		utils::String name;
+		TypeBase* type;
+		uint32 pointerId;
+		uint32 id;
+
+		bool isConstant;
+	};*/
+
+	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len); //struct member selection, array subscripting and function calls
+	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
+	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
 	bool Process();
 
