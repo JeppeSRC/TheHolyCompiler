@@ -191,6 +191,10 @@ private: //Variable stuff
 	Variable* CreateParameterVariable(const FunctionParameter* const param, instruction::InstFunctionParameter** opParam);
 
 	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
+	ResultVariable Add(TypeBase* type1, uint32 operand1, uint32 operand2);
+	ResultVariable Subtract(TypeBase* type1, uint32 operand1, uint32 operand2);
+	ResultVariable Multiply(TypeBase* type1, uint32 operand1, uint32 operand2);
+	ResultVariable Divide(TypeBase* type1, uint32 operand1, uint32 operand2);
 
 private: //Function stuff
 	struct FunctionParameter {
@@ -288,7 +292,7 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
-	void ParseAssignment(Variable* variable, utils::List<parsing::Token>& tokens, uint64 start);
+	void ParseAssignment(Variable* variable, parsing::TokenType operatorType, utils::List<parsing::Token>& tokens, uint64 start);
 
 	/*struct NameResult {
 		utils::String name;

@@ -218,7 +218,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				if (t2.type == TokenType::SemiColon) {
 					continue;
 				} else if (t2.type == TokenType::OperatorAssign) {
-					ParseAssignment(var, tokens, i + 1); //Fix so it only works with constant variables
+					ParseAssignment(var, t2.type, tokens, i + 1); //Fix so it only works with constant variables
 				}
 			} 
 		}
@@ -631,11 +631,13 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				continue;
 			}
 
-			if (op.type == TokenType::OperatorAssign) {
-				ParseAssignment(var, tokens, i);
+			if (op.type >= TokenType::OperatorAssign && op.type <= TokenType::OperatorCompoundDiv) {
+				ParseAssignment(var, op.type, tokens, i);
 				i--;
 				continue;
 			}
+
+			//TODO: error
 		} else if (token.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 
@@ -674,8 +676,8 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				if (next.type == TokenType::SemiColon) {
 					Log::CompilerWarning(token, "Unused");
 					rem++; //To remove semicolon
-				} else if (next.type == TokenType::OperatorAssign) {
-					ParseAssignment(var, tokens, i + 1);
+				} else if (next.type >= TokenType::OperatorAssign && next.type <= TokenType::OperatorCompoundDiv) {
+					ParseAssignment(var, next.type, tokens, i + 1);
 				} else {
 					Log::CompilerError(next, "Unexpected symbol \"%s\" expected \"=\"", next.string.str);
 				}
@@ -747,16 +749,59 @@ auto  CmpFunc = [](const Token& curr, const TokenType& c) -> bool {
 };
 
 //start = '='
-void Compiler::ParseAssignment(Variable* variable, List<Token>& tokens, uint64 start) {
+void Compiler::ParseAssignment(Variable* variable, TokenType operatorType, List<Token>& tokens, uint64 start) {
 	uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
 	ResultVariable res = ParseExpression(tokens, start+1, end);
 
 	if (*variable->type != res.type) {
 		const Token& tmp = tokens[start];
-		Log::CompilerError(tmp, "Right hand type \"%s\" cannot be assigned to left hand type \"%s\"", res.type->typeString.str, variable->type->typeString.str);
+		
 	}
 
-	InstStore* store = new InstStore(variable->typePointerId, res.id, 0);
+	uint32 resId;
+
+	if (res.isVariable) {
+		InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+		instructions.Add(load);
+		resId = load->id;
+	} else {
+		resId = res.id;
+	}
+
+	InstLoad* load = nullptr;
+	InstBase* op = nullptr;
+
+	ResultVariable r;
+
+	if (*variable->type != res.type) {
+		ResultVariable tmp = Cast(variable->type, res.type, resId);
+
+		if (tmp.id != ~0) {
+			resId = tmp.id;
+			Log::CompilerWarning(tokens[start], "Implicit conversion to \"%s\" from \"%s\"", variable->type->typeString.str, res.type->typeString.str);
+		} else {
+			Log::CompilerError(tokens[start], "No suitable conversion from \"%s\" to \"%s\"", res.type->typeString.str, variable->type->typeString.str);
+		}
+	}
+
+	if (operatorType == TokenType::OperatorAssign) {
+		r.id = resId;
+	} else if (operatorType == TokenType::OperatorCompoundAdd) {
+		load = new InstLoad(variable->type->typeId, variable->variableId, 0);
+		r = Add(variable->type, load->id, resId);
+	} else if (operatorType == TokenType::OperatorCompoundSub) {
+		load = new InstLoad(variable->type->typeId, variable->variableId, 0);
+		r = Subtract(variable->type, load->id, resId);
+	} else if (operatorType == TokenType::OperatorCompoundMul) {
+		load = new InstLoad(variable->type->typeId, variable->variableId, 0);
+		r = Multiply(variable->type, load->id, resId);
+	} else if (operatorType == TokenType::OperatorCompoundDiv) {
+		load = new InstLoad(variable->type->typeId, variable->variableId, 0);
+		r = Divide(variable->type, load->id, resId);
+	}
+
+
+	InstStore* store = new InstStore(variable->variableId, r.id, 0);
 	instructions.Add(store);
 	tokens.Remove(start, end);
 }
