@@ -292,7 +292,6 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
-	void ParseAssignment(Variable* variable, parsing::TokenType operatorType, utils::List<parsing::Token>& tokens, uint64 start);
 
 	/*struct NameResult {
 		utils::String name;
