@@ -923,6 +923,118 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	return res;
 }
 
+Compiler::ResultVariable Compiler::Add(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstIAdd(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFAdd(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Subtract(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstISub(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFSub(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Multiply(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		operation = new InstIMul(type->typeId, operand1, operand2);
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFMul(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
+Compiler::ResultVariable Compiler::Divide(TypeBase* type, uint32 operand1, uint32 operand2) {
+	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+	TypePrimitive* t = (TypePrimitive*)type;
+
+	InstBase* operation = nullptr;
+
+	ResultVariable res;
+
+	res.isVariable = false;
+	res.type = type;
+
+	if (t->componentType == Type::Int) {
+		if (t->sign) {
+			operation = new InstSDiv(type->typeId, operand1, operand2);
+		} else {
+			operation = new InstUDiv(type->typeId, operand1, operand2);
+		}
+	} else if (t->componentType == Type::Float) {
+		operation = new InstFDiv(type->typeId, operand1, operand2);
+	} else {
+		res.id = ~0;
+		return res;
+	}
+
+	instructions.Add(operation);
+
+	res.id = operation->id;
+
+	return res;
+}
+
 utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
 	List<FunctionDeclaration*> decls;
 
