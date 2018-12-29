@@ -199,10 +199,6 @@ uint64 Utils::StringToUint64(const char* string, uint64* length) {
 
 	} 
 
-	ValueResult res;
-
-	
-
 	uint64 len = FindLength(string, base);
 
 	for (uint64 i = 0; i < len; i++) {
