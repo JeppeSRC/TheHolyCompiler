@@ -602,6 +602,7 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	InstLabel* firstBlock = new InstLabel();
 	instructions.Add(firstBlock);
 
+	uint64 closeBracket = ~0;
 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
 		const Token& token = tokens[i];
@@ -609,7 +610,13 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		if (token.type == TokenType::CurlyBracketClose) {
 			//end of function
 			instructions.Add(new InstFunctionEnd);
-			return;
+			closeBracket = i;
+
+			if (declaration->returnType->type != Type::Void) {
+
+			}
+
+			break;
 		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
 			//variable declaration
 			TypeBase* t = CreateType(tokens, i);
@@ -702,7 +709,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 
 					operandId = res.id;
 				}
-
 				
 
 				operation = new InstReturnValue(operandId);
@@ -715,6 +721,8 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 			ParseExpression(tokens, i, end - 1);
 		}
 	}
+
+	tokens.Remove(start, closeBracket);
 }
 
 Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
