@@ -910,12 +910,15 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 			}
 		}
 	}
-
-	instructions.Add(operation);
+	if (operation) {
+		instructions.Add(operation);
+		res.id = operation->id;
+	} else {
+		res.id = operandId;
+	}
 
 	res.isVariable = false;
 	res.type = castType;
-	res.id = operation->id;
 
 	return res;
 }
