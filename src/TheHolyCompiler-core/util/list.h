@@ -175,6 +175,36 @@ public:
 		new (items+count++) T(std::move(item));
 	}
 
+	//Appends another list
+	inline void Add(const List<T>& other) {
+		uint64 totalCount = count + other.count;
+
+		if (totalCount > allocated) {
+			Reserve(totalCount + THC_PREALLOC_COUNT);
+		}
+
+		for (uint64 i = 0; i < other.count; i++) {
+			new (items + index + i) T(other[i]);
+		}
+
+		count = totalCount;
+	}
+
+	//Appends another list
+	inline void Add(List<T>&& other) {
+		uint64 totalCount = count + other.count;
+
+		if (totalCount > allocated) {
+			Reserve(totalCount + THC_PREALLOC_COUNT);
+		}
+
+		for (uint64 i = 0; i < other.count; i++) {
+			new (items + index + i) T(std::move(other[i]));
+		}
+
+		count = totalCount;
+	}
+
 	/*Replaces item*/
 	inline void ReplaceAt(uint64 index, const T& item) {
 		THC_ASSERT(index < count);
