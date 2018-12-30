@@ -530,19 +530,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		return *curr == other;
 	};
 
-	auto CreateDeclarationType = [this](FunctionDeclaration* d) {
-		List<uint32> ids;
-		for (uint64 i = 0; i < d->parameters.GetCount(); i++) {
-			ids.Add(d->parameters[i]->type->typeId);
-		}
-
-		InstTypeFunction* f = new InstTypeFunction(d->returnType->typeId, (uint32)ids.GetCount(), ids.GetData());
-
-		CheckTypeExist((InstTypeBase**)&f);
-
-		d->typeId = f->id;
-	};
-
 	const Token& bracket = tokens[start + offset++];
 
 	uint64 index = functionDeclarations.Find<FunctionDeclaration*>(decl, cmp);
@@ -553,7 +540,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		decl->id = ~0;
 		
 		if (index == ~0) {
-			CreateDeclarationType(decl);
+			CreateFunctionType(decl);
 			functionDeclarations.Add(decl);
 		} else {
 			Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
@@ -562,7 +549,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	} else if (bracket.type == TokenType::CurlyBracketOpen) {
 
 		if (index == ~0) {
-			CreateDeclarationType(decl);
+			CreateFunctionType(decl);
 			functionDeclarations.Add(decl);
 		} else {
 			FunctionDeclaration* old = decl;
@@ -572,7 +559,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 				decl->parameters[i]->name = old->parameters[i]->name;
 			}
 
-			CreateDeclarationType(decl);
+			CreateFunctionType(decl);
 		}
 
 		ParseFunctionBody(decl, tokens, start + offset);

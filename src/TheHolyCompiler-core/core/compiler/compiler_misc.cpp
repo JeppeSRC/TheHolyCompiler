@@ -1049,6 +1049,19 @@ utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(co
 	return decls;
 }
 
+void Compiler::CreateFunctionType(FunctionDeclaration* decl) {
+	List<uint32> ids;
+	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
+		ids.Add(decl->parameters[i]->type->typeId);
+	}
+
+	InstTypeFunction* f = new InstTypeFunction(decl->returnType->typeId, (uint32)ids.GetCount(), ids.GetData());
+
+	CheckTypeExist((InstTypeBase**)&f);
+
+	decl->typeId = f->id;
+}
+
 bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const String& name) {
 	auto cmp = [](FunctionParameter* const& curr, const String& name) -> bool {
 		return curr->name == name;
