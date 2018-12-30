@@ -495,7 +495,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			if (!CheckGlobalName(name.string)) {
 				Log::CompilerWarning(name, "Local parameter \"%s\" overriding global variable", name.string.str);
 			}
-			//Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 		} else {
 			offset--;
 		}
@@ -611,11 +610,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 			//end of function
 			instructions.Add(new InstFunctionEnd);
 			closeBracket = i;
-
-			if (declaration->returnType->type != Type::Void) {
-
-			}
-
 			break;
 		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
 			//variable declaration
@@ -681,7 +675,12 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 					Log::CompilerError(token, "Unexpected symbol \"%s\" expected \";\". Function has return type void", next.string.str);
 				}
 
-				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i+1); //TODO: Check end is legit
+				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i+1);
+
+				if (end == ~0) {
+					Log::CompilerError(token, "Expression is missing \";\"");
+				}
+
 				ResultVariable res = ParseExpression(tokens, i + 1, end-1);
 
 				TypeBase* type = res.type;
@@ -719,7 +718,12 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 		} else if (token.type == TokenType::ControlFlowIf) {
 
 		} else {
-			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start); //TODO: check end is legit
+			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
+
+			if (end == ~0) {
+				Log::CompilerError(token, "Expression is missing \";\"");
+			}
+
 			ParseExpression(tokens, i, end - 1);
 		}
 	}
