@@ -471,12 +471,15 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	}
 
 	while (true) {
-		FunctionParameter* param = new FunctionParameter;
+		Variable* param = new Variable;
+
+		param->scope = VariableScope::None;
+
 		const Token& token = tokens[start + offset++];
 
-		param->constant = token.type == TokenType::ModifierConst;
+		param->isConstant = token.type == TokenType::ModifierConst;
 
-		if (!param->constant) {
+		if (!param->isConstant) {
 			offset--;
 		}
 
@@ -491,7 +494,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (name.type == TokenType::Name) {
 			param->name = name.string;
-			
 			if (!CheckGlobalName(name.string)) {
 				Log::CompilerWarning(name, "Local parameter \"%s\" overriding global variable", name.string.str);
 			}
@@ -501,15 +503,12 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		const Token& ref = tokens[start + offset++];
 
-		param->reference = ref.type == TokenType::ModifierReference;
-
-		if (!param->reference) {
+		if (ref.type == TokenType::ModifierReference) {
+			param->type = CreateTypePointer(type, VariableScope::Function);
+		} else {
 			offset--;
 			param->type = type;
-		} else {
-			param->type = CreateTypePointer(type, VariableScope::Function);
 		}
-
 
 		decl->parameters.Add(param);
 
@@ -536,30 +535,24 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 	decl->defined = false;
 
+	if (index == ~0) {
+		CreateFunctionDeclaration(decl);
+	} else if (bracket.type == TokenType::SemiColon) {
+		Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
+	}
+
+	instructions.Add(decl->declInstructions);
+
 	if (bracket.type == TokenType::SemiColon) {
-		decl->id = ~0;
-		
-		if (index == ~0) {
-			CreateFunctionType(decl);
-			functionDeclarations.Add(decl);
-		} else {
-			Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
-		}
-
+		instructions.Add(new InstFunctionEnd);
 	} else if (bracket.type == TokenType::CurlyBracketOpen) {
-
-		if (index == ~0) {
-			CreateFunctionType(decl);
-			functionDeclarations.Add(decl);
-		} else {
+		if (index != ~0)  {
 			FunctionDeclaration* old = decl;
 			decl = functionDeclarations[index];
 
 			for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
 				decl->parameters[i]->name = old->parameters[i]->name;
 			}
-
-			CreateFunctionType(decl);
 		}
 
 		ParseFunctionBody(decl, tokens, start + offset);
@@ -576,22 +569,7 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	}
 
 	declaration->defined = true;
-
-	InstFunction* func = new InstFunction(declaration->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, declaration->typeId);
-	instructions.Add(func);
-
-	declaration->id = func->id;
-
-	for (uint64 i = 0; i < declaration->parameters.GetCount(); i++) {
-		const FunctionParameter* p = declaration->parameters[i];
-
-		InstFunctionParameter* pa = nullptr;
-
-		Variable* var = CreateParameterVariable(p, &pa);
-
-		instructions.Add(pa);
-	}
-
+	
 	InstLabel* firstBlock = new InstLabel();
 	instructions.Add(firstBlock);
 
@@ -1311,12 +1289,12 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 		for (uint64 j = 0; j < decls.GetCount(); j++) {
 			FunctionDeclaration* d = decls[j];
 
-			FunctionParameter* param = d->parameters[i];
+			Variable* param = d->parameters[i];
 			TypeBase* dt = param->type;
 
-			if (param->reference) {
+			if (param->type->type == Type::Pointer) {
 				//pass by reference but argument is rvalue
-				if (!res.isVariable && !param->constant) {
+				if (!res.isVariable && !param->isConstant) {
 					if (decls.GetCount() == 1) {
 						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
 					} else {

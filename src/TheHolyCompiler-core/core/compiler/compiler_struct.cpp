@@ -125,14 +125,14 @@ bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) co
 	return false;
 }*/
 
-bool Compiler::FunctionParameter::operator==(const FunctionParameter* const other) const {
-	return *type == other->type && constant == other->constant && reference == other->reference;
-}
 
 bool Compiler::FunctionDeclaration::operator==(const FunctionDeclaration* const other) const {
 	if (name == other->name && *returnType == other->returnType && parameters.GetCount() == other->parameters.GetCount()) {
 		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			if (!(*parameters[i] == other->parameters[i])) return false;
+			Variable* param = parameters[i];
+			Variable* paramOther = other->parameters[i];
+
+			if (*param->type != paramOther->type || param->isConstant != paramOther->isConstant) return false;
 		}
 
 		return true;

@@ -425,7 +425,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	uint32 memberOffset = 0;
 
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
-		annotationIstructions.Add(new InstMemberDecorate(st->id, i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
+		annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
 
 		memberOffset += var->members[i].type->GetSize();
 	}
@@ -849,26 +849,6 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	return var;
 }
 
-Compiler::Variable* Compiler::CreateParameterVariable(const FunctionParameter* const param, InstFunctionParameter** opParam) {
-	Variable* var = new Variable;
-
-	var->scope = VariableScope::None;
-	var->name = param->name;
-	var->type = param->type;
-
-	TypePointer* pointer = CreateTypePointer(param->type, VariableScope::Function);
-
-	var->typePointerId = pointer->typeId;
-
-	*opParam = new InstFunctionParameter(var->typePointerId);
-
-	var->variableId = (*opParam)->id;
-
-	localVariables.Add(var);
-
-	return var;
-}
-
 Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, uint32 operandId) {
 	TypePrimitive* cType = (TypePrimitive*)castType;
 	TypePrimitive* type = (TypePrimitive*)currType;
@@ -1062,8 +1042,8 @@ void Compiler::CreateFunctionType(FunctionDeclaration* decl) {
 	decl->typeId = f->id;
 }
 
-bool Compiler::CheckParameterName(const List<FunctionParameter*>& params, const String& name) {
-	auto cmp = [](FunctionParameter* const& curr, const String& name) -> bool {
+bool Compiler::CheckParameterName(const List<Variable*>& params, const String& name) {
+	auto cmp = [](Variable* const& curr, const String& name) -> bool {
 		return curr->name == name;
 	};
 
@@ -1319,6 +1299,31 @@ uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, Toke
 	}
 
 	return ~0;
+}
+
+void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
+	if (decl->declInstructions.GetCount() != 0) {
+		return;
+	}
+
+	CreateFunctionType(decl);
+
+	InstFunction* func = new InstFunction(decl->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, decl->typeId);
+	decl->declInstructions.Add(func);
+
+	decl->id = func->id;
+
+	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
+		Variable* v = decl->parameters[i];
+
+		InstFunctionParameter* pa = new InstFunctionParameter(v->type->typeId);
+
+		v->variableId = pa->id;
+
+		decl->declInstructions.Add(pa);
+	}
+
+	functionDeclarations.Add(decl);
 }
 
 }

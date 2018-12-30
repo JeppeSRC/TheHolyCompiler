@@ -281,7 +281,7 @@ ValueResult Utils::StringToValue(const char* string, uint64* length, const Line&
 		res.type = ValueResultType::Int;
 		res.sign = sign ? 1 : 0;
 
-		res.value = value;
+		res.value = (uint32)value;
 	}
 
 	return res;
