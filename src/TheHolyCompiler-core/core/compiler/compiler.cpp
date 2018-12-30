@@ -547,8 +547,9 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 	uint64 index = functionDeclarations.Find<FunctionDeclaration*>(decl, cmp);
 
+	decl->defined = false;
+
 	if (bracket.type == TokenType::SemiColon) {
-		decl->defined = false;
 		decl->id = ~0;
 		
 		if (index == ~0) {
@@ -583,6 +584,12 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 }
 
 void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start) {
+	if (declaration->defined) {
+		Log::CompilerError(tokens[start], "Redefinition");
+	}
+
+	declaration->defined = true;
+
 	InstFunction* func = new InstFunction(declaration->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, declaration->typeId);
 	instructions.Add(func);
 
