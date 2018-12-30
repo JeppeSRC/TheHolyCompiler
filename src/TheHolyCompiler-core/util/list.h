@@ -184,7 +184,7 @@ public:
 		}
 
 		for (uint64 i = 0; i < other.count; i++) {
-			new (items + index + i) T(other[i]);
+			new (items + count + i) T(other[i]);
 		}
 
 		count = totalCount;
@@ -199,7 +199,7 @@ public:
 		}
 
 		for (uint64 i = 0; i < other.count; i++) {
-			new (items + index + i) T(std::move(other[i]));
+			new (items + count + i) T(std::move(other[i]));
 		}
 
 		count = totalCount;
