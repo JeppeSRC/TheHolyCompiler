@@ -281,7 +281,7 @@ private:
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
 	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
-	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
+	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start, uint64* len);
 
 	/*struct NameResult {
 		utils::String name;

@@ -695,6 +695,9 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 			instructions.Add(operation);
 
 		} else if (token.type == TokenType::ControlFlowIf) {
+			uint64 rem = 0;
+			ParseIf(declaration, tokens, localVariables, i, &rem);
+
 
 		} else {
 			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
@@ -708,6 +711,18 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	}
 
 	tokens.Remove(start, closeBracket);
+}
+
+void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, utils::List<Variable*> localVariables, uint64 start, uint64* len) {
+	uint64 offset = 1;
+
+	const Token& parenthesisOpen = tokens[start + offset++];
+
+	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
+		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
+	}
+
+	
 }
 
 Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
