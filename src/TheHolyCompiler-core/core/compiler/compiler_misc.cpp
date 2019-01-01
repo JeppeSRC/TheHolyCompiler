@@ -756,8 +756,8 @@ Compiler::Variable* Compiler::GetVariable(const String& name) const {
 	return nullptr;
 }
 
-bool Compiler::CheckLocalName(const String& name) const {
-	uint64 index = localVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
+bool Compiler::CheckLocalName(const String& name, const List<Variable*>& variables) const {
+	uint64 index = variables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
 		return curr->name == name;
 	});
 

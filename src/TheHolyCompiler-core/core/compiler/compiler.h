@@ -176,11 +176,10 @@ private: //Variable stuff
 	};
 
 	utils::List<Variable*> globalVariables;
-	utils::List<Variable*> localVariables;
 
 	Variable* GetVariable(const utils::String& name) const;
 
-	bool CheckLocalName(const utils::String& name) const; //return true if name is available
+	bool CheckLocalName(const utils::String& name, const utils::List<Variable*>& variables) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
 	TypePointer* CreateTypePointer(const TypeBase* const type, VariableScope scope);

@@ -483,7 +483,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			offset--;
 		}
 
-		TypeBase* type = CreateType(tokens, start + offset++);
+		TypeBase* type = CreateType(tokens, start + offset);
 
 		if (type == nullptr) {
 			const Token& tmp = tokens[start + offset];
@@ -573,6 +573,8 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	InstLabel* firstBlock = new InstLabel();
 	instructions.Add(firstBlock);
 
+	List<Variable*> localVariables;
+
 	uint64 closeBracket = ~0;
 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
@@ -593,12 +595,17 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 			}
 
-			if (!CheckLocalName(name.string)) {
+			if (!CheckLocalName(name.string, localVariables)) {
 				Log::CompilerError(name, "Redefinition of \"%s\"", name.string.str);
 			}
 
-			Variable* var = CreateLocalVariable(t, name.string);
-			tokens.RemoveAt(i--);
+			localVariables.Add(CreateLocalVariable(t, name.string));
+
+			const Token& next = tokens[i + 1];
+
+			if (next.type == TokenType::SemiColon) {
+				tokens.Remove(i, i + 1);
+			}
 		} else if (token.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 
@@ -619,7 +626,7 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 					Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 				}
 
-				Variable* var = CreateLocalVariable(str, name.string);
+				localVariables.Add(CreateLocalVariable(str, name.string));
 
 				const Token& assign = tokens[i + 1];
 
