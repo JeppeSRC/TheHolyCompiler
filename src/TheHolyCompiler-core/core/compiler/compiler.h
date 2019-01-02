@@ -177,7 +177,7 @@ private: //Variable stuff
 
 	utils::List<Variable*> globalVariables;
 
-	Variable* GetVariable(const utils::String& name) const;
+	Variable* GetVariable(const utils::String& name, utils::List<Variable*>& localVariables) const;
 
 	bool CheckLocalName(const utils::String& name, const utils::List<Variable*>& variables) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
@@ -280,8 +280,8 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
-	void ParseFunctionBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start);
-	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start, uint64* len);
+	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start);
+	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start);
 
 	/*struct NameResult {
 		utils::String name;

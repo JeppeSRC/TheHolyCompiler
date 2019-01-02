@@ -555,7 +555,18 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			}
 		}
 
-		ParseFunctionBody(decl, tokens, start + offset);
+		if (decl->defined) {
+			Log::CompilerError(tokens[start], "Redefinition");
+		}
+
+		List<Variable*> localVariables;
+		localVariables.Add(decl->parameters);
+
+		instructions.Add(new InstLabel);
+
+		ParseBody(decl, tokens, localVariables, start + offset);
+		
+		decl->defined = true;
 	} else {
 		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \";\" or \"{\"", bracket.string.str);
 	}
@@ -563,18 +574,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	tokens.Remove(start, start + offset - 1);
 }
 
-void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start) {
-	if (declaration->defined) {
-		Log::CompilerError(tokens[start], "Redefinition");
-	}
-
-	declaration->defined = true;
-	
-	InstLabel* firstBlock = new InstLabel();
-	instructions.Add(firstBlock);
-
-	List<Variable*> localVariables;
-
+void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, List<Variable*> localVariables, uint64 start) {
 	uint64 closeBracket = ~0;
 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
@@ -582,7 +582,6 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 
 		if (token.type == TokenType::CurlyBracketClose) {
 			//end of function
-			instructions.Add(new InstFunctionEnd);
 			closeBracket = i;
 			break;
 		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
@@ -695,9 +694,7 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 			instructions.Add(operation);
 
 		} else if (token.type == TokenType::ControlFlowIf) {
-			uint64 rem = 0;
-			ParseIf(declaration, tokens, localVariables, i, &rem);
-
+			ParseIf(declaration, tokens, localVariables, i);
 
 		} else {
 			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
@@ -713,16 +710,52 @@ void Compiler::ParseFunctionBody(FunctionDeclaration* declaration, List<Token>& 
 	tokens.Remove(start, closeBracket);
 }
 
-void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, utils::List<Variable*> localVariables, uint64 start, uint64* len) {
-	uint64 offset = 1;
-
-	const Token& parenthesisOpen = tokens[start + offset++];
+void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, utils::List<Variable*> localVariables, uint64 start) {
+	const Token& parenthesisOpen = tokens[start + 1];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
 	}
 
-	
+	uint64 statementEnd = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+	if (statementEnd == ~0) {
+		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
+	}
+
+	ResultVariable res = ParseExpression(tokens, start + 2, statementEnd - 1);
+
+	if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
+		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res.type->typeString.str);
+	}
+
+	if (res.isVariable) {
+		InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+		instructions.Add(load);
+
+		res.id = load->id;
+	}
+
+	if (res.type->type != Type::Bool) {
+		TypeBase* tmp = res.type;
+		res = Cast(CreateTypeBool(), res.type, res.id);
+
+		if (res.id == ~0) {
+			Log::CompilerError(tokens[start+2], "No suitable conversion between \"bool\" and \"%s\"", tmp->typeString.str);
+		} else {
+			Log::CompilerWarning(tokens[start + 2], "Implicit conversion from \"%s\" to \"bool\"", tmp->typeString.str);
+		}
+	}
+
+	tokens.Remove(start, statementEnd);
+
+	const Token& bracket = tokens[start];
+
+	if (bracket.type != TokenType::CurlyBracketOpen) { //TODO: one line if statements
+		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
+	}
+
+
 }
 
 Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {

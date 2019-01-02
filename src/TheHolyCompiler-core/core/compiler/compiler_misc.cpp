@@ -740,7 +740,7 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 	return ~0;
 }
 
-Compiler::Variable* Compiler::GetVariable(const String& name) const {
+Compiler::Variable* Compiler::GetVariable(const String& name, List<Variable*>& localVariables) const {
 	for (uint64 i = 0; i < localVariables.GetCount(); i++) {
 		Variable* v = localVariables[i];
 
@@ -843,9 +843,7 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
 	var->variableId = opVar->id;
-
-	localVariables.Add(var);
-
+	
 	return var;
 }
 
@@ -854,10 +852,9 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	TypePrimitive* type = (TypePrimitive*)currType;
 
 	ResultVariable res;
+	res.id = ~0;
 
-	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float)) {
-		res.id = ~0;
-
+	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 		return res;
 	}
 
@@ -872,24 +869,35 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 					operation = new InstUConvert(cType->typeId, operandId);
 				}
 			}
-		} else { //Float
+		} else if (type->type == Type::Float) { //Float
 			if (cType->sign) {
 				operation = new InstConvertFToS(cType->typeId, operandId);
 			} else {
 				operation = new InstConvertFToU(cType->typeId, operandId);
 			}
+		} else { // Bool
+			return res;
 		}
-	} else { //Float
+	} else if (cType->type == Type::Float) { //Float
 		if (type->type == Type::Float) {
 			operation = new InstFConvert(cType->typeId, operandId);
-		} else { //Int
+		} else if (type->type == Type::Int) { //Int
 			if (type->sign) {
 				operation = new InstConvertSToF(cType->typeId, operandId);
 			} else {
 				operation = new InstConvertUToF(cType->typeId, operandId);
 			}
+		} else { //Bool
+			return res;
+		}
+	} else { //Bool
+		if (type->type == Type::Int) { //Int
+			operation = new InstINotEqual(castType->typeId, operandId, CreateConstant(type, 0U));
+		} else if (type->type == Type::Float) { //Float
+			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0U));
 		}
 	}
+
 	if (operation) {
 		instructions.Add(operation);
 		res.id = operation->id;
@@ -1305,6 +1313,8 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	if (decl->declInstructions.GetCount() != 0) {
 		return;
 	}
+
+	decl->defined = false;
 
 	CreateFunctionType(decl);
 
