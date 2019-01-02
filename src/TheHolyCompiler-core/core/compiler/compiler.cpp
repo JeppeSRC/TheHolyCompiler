@@ -1359,7 +1359,22 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 				}
 			} else if (*dt != res.type) {
 				if (decls.GetCount() == 1) {
-					Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
+					uint32 operandId = res.id;
+
+					if (res.isVariable) {
+						InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+						instructions.Add(load);
+
+						operandId = load->id;
+					}
+					TypeBase* tmp = res.type;
+					res = Cast(dt, res.type, operandId);
+
+					if (res.id == ~0) {
+						Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
+					} else {
+						Log::CompilerWarning(functionName, "Implicit conversion from \"%s\" to \"%s\"", tmp->typeString.str, dt->typeString.str);
+					}
 				} else {
 					decls.RemoveAt(j--);
 					continue;
