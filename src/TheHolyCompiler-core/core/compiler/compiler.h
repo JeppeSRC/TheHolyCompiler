@@ -92,7 +92,7 @@ private: //Type stuff
 	};
 
 	struct TypePointer : public TypeBase {
-		TypeBase* pointerType;
+		TypeBase* baseType;
 		uint32 storageClass;
 
 		bool operator==(const TypeBase* const other) const override;
