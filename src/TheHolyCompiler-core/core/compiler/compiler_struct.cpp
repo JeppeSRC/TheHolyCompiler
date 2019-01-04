@@ -100,7 +100,7 @@ bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypePointer* t = (const TypePointer*)other;
 
-		return *pointerType == t->pointerType && storageClass == t->storageClass;
+		return *baseType == t->baseType && storageClass == t->storageClass;
 	}
 
 	return false;

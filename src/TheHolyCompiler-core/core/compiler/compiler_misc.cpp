@@ -692,7 +692,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			break;
 
 		case Type::Pointer:
-			name = GetTypeString(p->pointerType).Append("* ");
+			name = GetTypeString(p->baseType).Append("* ");
 
 			switch (p->storageClass) {
 				case THC_SPIRV_STORAGE_CLASS_INPUT:
@@ -756,12 +756,6 @@ Compiler::Variable* Compiler::GetVariable(const String& name, VariableStack* loc
 	return var;
 }
 
-bool Compiler::CheckLocalName(const String& name, VariableStack* variables) const {
-	Variable* var = variables->GetVariable(name);
-
-	return var == nullptr;
-}
-
 bool Compiler::CheckGlobalName(const String& name) const {
 	uint64 index = globalVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
 		if (curr->name == name) return true;
@@ -784,7 +778,7 @@ Compiler::TypePointer* Compiler::CreateTypePointer(const TypeBase* const type, V
 	TypePointer* p = new TypePointer;
 
 	p->type = Type::Pointer;
-	p->pointerType = (TypeBase*)type;
+	p->baseType = (TypeBase*)type;
 	p->storageClass = ScopeToStorageClass(scope);
 	p->typeId = ~0;
 	
