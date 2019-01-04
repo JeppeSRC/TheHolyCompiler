@@ -177,20 +177,47 @@ private: //Variable stuff
 
 	utils::List<Variable*> globalVariables;
 
-	Variable* GetVariable(const utils::String& name, utils::List<Variable*>& localVariables) const;
+	class VariableStack;
+	Variable* GetVariable(const utils::String& name, VariableStack* localVariables) const;
 
-	bool CheckLocalName(const utils::String& name, const utils::List<Variable*>& variables) const; //return true if name is available
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
 	TypePointer* CreateTypePointer(const TypeBase* const type, VariableScope scope);
 	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
-	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name);
+	
+	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name, VariableStack* localVariables);
 
 	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
 	ResultVariable Add(TypeBase* type, uint32 operand1, uint32 operand2);
 	ResultVariable Subtract(TypeBase* type, uint32 operand1, uint32 operand2);
 	ResultVariable Multiply(TypeBase* type, uint32 operand1, uint32 operand2);
 	ResultVariable Divide(TypeBase* type, uint32 operand1, uint32 operand2);
+
+private:
+	class VariableStack {
+	public:
+		utils::List<instruction::InstBase*> variableInstructions;
+		utils::List<Variable*> variables;
+		utils::List<uint64> offsets;
+
+		Compiler* compiler;
+	public:
+		VariableStack(Compiler* compiler, utils::List<Variable*>& parameters);
+		~VariableStack();
+
+		uint64 PushStack();
+		void   PopStack();
+
+		bool CheckName(const parsing::Token& name);
+		bool CheckName(const utils::String& name, const parsing::Token& token);
+
+		void AddVariable(Variable* variable, instruction::InstBase* inst);
+		Variable* GetVariable(const utils::String& name);
+
+		uint64 GetSize() const;
+		uint64 GetStackSize(uint64 stack) const;
+		uint64 GetCurrentStackSize() const;
+	};
 
 private: //Function stuff
 	struct FunctionDeclaration {
@@ -280,8 +307,8 @@ private:
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
-	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start);
-	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, utils::List<Variable*> localVariables, uint64 start);
+	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
+	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
 
 	/*struct NameResult {
 		utils::String name;
@@ -292,9 +319,9 @@ private:
 		bool isConstant;
 	};*/
 
-	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len); //struct member selection, array subscripting and function calls
-	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end);
-	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
+	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables); //struct member selection, array subscripting and function calls
+	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end, VariableStack* localVariables);
+	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables);
 
 	bool Process();
 

@@ -559,12 +559,13 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(tokens[start], "Redefinition");
 		}
 
-		List<Variable*> localVariables;
-		localVariables.Add(decl->parameters);
+		VariableStack localVariables(this, decl->parameters);
 
 		instructions.Add(new InstLabel);
 
-		ParseBody(decl, tokens, localVariables, start + offset);
+		uint64 index = instructions.GetCount();
+
+		ParseBody(decl, tokens, start + offset, &localVariables);
 		
 		decl->defined = true;
 	} else {
@@ -574,7 +575,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	tokens.Remove(start, start + offset - 1);
 }
 
-void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, List<Variable*> localVariables, uint64 start) {
+void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start, VariableStack* localVariables) {
 	uint64 closeBracket = ~0;
 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
@@ -594,11 +595,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 			}
 
-			if (!CheckLocalName(name.string, localVariables)) {
-				Log::CompilerError(name, "Redefinition of \"%s\"", name.string.str);
-			}
+			if (!localVariables->CheckName(name)) {	}
 
-			localVariables.Add(CreateLocalVariable(t, name.string));
+			CreateLocalVariable(t, name.string, localVariables);
 
 			const Token& next = tokens[i + 1];
 
@@ -612,7 +611,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 			if (next.type == TokenType::ParenthesisOpen) {
 				uint64 rem = 0;
-				ParseFunctionCall(tokens, i, &rem);
+				ParseFunctionCall(tokens, i, &rem, localVariables);
 
 				tokens.Remove(i, i + rem - 1);
 			} else if (index != 0) {
@@ -625,7 +624,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 					Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 				}
 
-				localVariables.Add(CreateLocalVariable(str, name.string));
+				if (!localVariables->CheckName(name)) { }
+
+				CreateLocalVariable(str, name.string, localVariables);
 
 				const Token& assign = tokens[i + 1];
 
@@ -659,7 +660,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
-				ResultVariable res = ParseExpression(tokens, i + 1, end-1);
+				ResultVariable res = ParseExpression(tokens, i + 1, end-1, localVariables);
 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
@@ -694,7 +695,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			instructions.Add(operation);
 
 		} else if (token.type == TokenType::ControlFlowIf) {
-			ParseIf(declaration, tokens, localVariables, i);
+			ParseIf(declaration, tokens, i, localVariables);
 
 		} else {
 			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
@@ -703,14 +704,14 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				Log::CompilerError(token, "Expression is missing \";\"");
 			}
 
-			ParseExpression(tokens, i, end - 1);
+			ParseExpression(tokens, i, end - 1, localVariables);
 		}
 	}
 
 	tokens.Remove(start, closeBracket);
 }
 
-void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, utils::List<Variable*> localVariables, uint64 start) {
+void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start, VariableStack* localVariables) {
 	const Token& parenthesisOpen = tokens[start + 1];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
@@ -723,7 +724,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ut
 		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
 	}
 
-	ResultVariable res = ParseExpression(tokens, start + 2, statementEnd - 1);
+	ResultVariable res = ParseExpression(tokens, start + 2, statementEnd - 1, localVariables);
 
 	if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
 		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res.type->typeString.str);
@@ -755,15 +756,15 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ut
 		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
 	}
 
-
+	
 }
 
-Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len) {
+Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
 	uint64 offset = 0;
 
 	const Token& name = tokens[start + offset++];
 
-	Variable* var = GetVariable(name.string);
+	Variable* var = GetVariable(name.string, localVariables);
 	Variable* result;
 
 	if (var == nullptr) {
@@ -815,7 +816,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
 				}
 
-				ResultVariable index = ParseExpression(tokens, start + offset, end-1);
+				ResultVariable index = ParseExpression(tokens, start + offset, end-1, localVariables);
 
 				if (index.type->type != Type::Int) {
 					Log::CompilerError(op, "Array index must be a (signed) integer scalar");
@@ -873,7 +874,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 	return result;
 }
 
-Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end) {
+Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end, VariableStack* localVariables) {
 	List<Expression> expressions;
 	List<Variable*> tmpVariables;
 
@@ -886,7 +887,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
 				uint64 removed = 0;
-				Variable* v = ParseName(tokens, i, &removed);
+				Variable* v = ParseName(tokens, i, &removed, localVariables);
 
 				e.type = ExpressionType::Variable;
 				e.variable = v;
@@ -898,13 +899,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;
-				e.result = ParseFunctionCall(tokens, i, &removed);
+				e.result = ParseFunctionCall(tokens, i, &removed, localVariables);
 				e.parent = tokens[i];
 
 				i += removed;
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
-				e.variable = GetVariable(t.string);
+				e.variable = GetVariable(t.string, localVariables);
 				e.parent = t;
 
 				if (e.variable == nullptr) {
@@ -942,7 +943,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			}
 
 			e.type = ExpressionType::Result;
-			e.result = ParseExpression(tokens, i + 1, parenthesisClose - 1);
+			e.result = ParseExpression(tokens, i + 1, parenthesisClose - 1, localVariables);
 			e.parent = t;
 		}
 
@@ -1281,7 +1282,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 	return result;
 }
 
-Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len) {
+Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
 	const Token& functionName = tokens[start];
 
 	List<ResultVariable> parameterResults;
@@ -1312,7 +1313,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 		offset = end + 1;
 
-		ResultVariable res = ParseExpression(tokens, start + offset, end);
+		ResultVariable res = ParseExpression(tokens, start + offset, end, localVariables);
 		
 		parameterResults.Add(res);
 	} while (moreParams);
@@ -1351,6 +1352,8 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 				//pass by reference but argument is rvalue
 				if (!res.isVariable && !param->isConstant) {
 					if (decls.GetCount() == 1) {
+
+
 						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
 					} else {
 						decls.RemoveAt(j--);
@@ -1367,6 +1370,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 						operandId = load->id;
 					}
+
 					TypeBase* tmp = res.type;
 					res = Cast(dt, res.type, operandId);
 

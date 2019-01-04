@@ -740,28 +740,26 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 	return ~0;
 }
 
-Compiler::Variable* Compiler::GetVariable(const String& name, List<Variable*>& localVariables) const {
-	for (uint64 i = 0; i < localVariables.GetCount(); i++) {
-		Variable* v = localVariables[i];
+Compiler::Variable* Compiler::GetVariable(const String& name, VariableStack* localVariables) const {
+	Variable* var = localVariables->GetVariable(name);
 
-		if (v->name == name) return v;
+	if (var == nullptr) {
+		for (uint64 i = 0; i < globalVariables.GetCount(); i++) {
+			Variable* v = globalVariables[i];
+
+			if (v->name == name) {
+				var = v;
+				break;
+			}
+		}
 	}
-
-	for (uint64 i = 0; i < globalVariables.GetCount(); i++) {
-		Variable* v = globalVariables[i];
-
-		if (v->name == name) return v;
-	}
-
-	return nullptr;
+	return var;
 }
 
-bool Compiler::CheckLocalName(const String& name, const List<Variable*>& variables) const {
-	uint64 index = variables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
-		return curr->name == name;
-	});
+bool Compiler::CheckLocalName(const String& name, VariableStack* variables) const {
+	Variable* var = variables->GetVariable(name);
 
-	return index == ~0;
+	return var == nullptr;
 }
 
 bool Compiler::CheckGlobalName(const String& name) const {
@@ -829,7 +827,7 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 	return var;
 }
 
-Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, const String& name) {
+Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, const String& name, VariableStack* localVariables) {
 	Variable* var = new Variable;
 
 	var->scope = VariableScope::None;
@@ -844,6 +842,8 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	var->variableId = opVar->id;
 	
+	localVariables->AddVariable(var, opVar);
+
 	return var;
 }
 
