@@ -1350,10 +1350,8 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 			if (param->type->type == Type::Pointer) {
 				//pass by reference but argument is rvalue
-				if (!res.isVariable && !param->isConstant) {
+				if (!res.isVariable /*&& !param->isConstant*/) {
 					if (decls.GetCount() == 1) {
-
-
 						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
 					} else {
 						decls.RemoveAt(j--);
