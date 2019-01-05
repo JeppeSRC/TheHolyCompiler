@@ -59,77 +59,77 @@ List<Token> Compiler::Tokenize() {
 			if (IsCharWhitespace(c0)) {
 				continue;
 			} else if (c0 == '(') {
-				tokens.Emplace(TokenType::ParenthesisOpen, "(", l, j);
+				tokens.Emplace(TokenType::ParenthesisOpen, "(", l, j+1);
 			} else if (c0 == ')') {
-				tokens.Emplace(TokenType::ParenthesisClose, ")", l, j);
+				tokens.Emplace(TokenType::ParenthesisClose, ")", l, j+1);
 			} else if (c0 == '{') {
-				tokens.Emplace(TokenType::CurlyBracketOpen, "{", l, j);
+				tokens.Emplace(TokenType::CurlyBracketOpen, "{", l, j+1);
 			} else if (c0 == '}') {
-				tokens.Emplace(TokenType::CurlyBracketClose, "}", l, j);
+				tokens.Emplace(TokenType::CurlyBracketClose, "}", l, j+1);
 			} else if (c0 == '[') {
-				tokens.Emplace(TokenType::BracketOpen, "[", l, j);
+				tokens.Emplace(TokenType::BracketOpen, "[", l, j+1);
 			} else if (c0 == ']') {
-				tokens.Emplace(TokenType::BracketClose, "]", l, j);
+				tokens.Emplace(TokenType::BracketClose, "]", l, j+1);
 			} else if (c0 == ';') {
-				tokens.Emplace(TokenType::SemiColon, 0, ";", l, j);
+				tokens.Emplace(TokenType::SemiColon, 0, ";", l, j+1);
 			} else if (c0 == '+' && c1 == '+') {
-				tokens.Emplace(TokenType::OperatorIncrement, "++", l, j++);
+				tokens.Emplace(TokenType::OperatorIncrement, "++", l, ++j);
 			} else if (c0 == '-' && c1 == '-') {
-				tokens.Emplace(TokenType::OperatorDecrement, "--", l, j++);
+				tokens.Emplace(TokenType::OperatorDecrement, "--", l, ++j);
 			} else if (c0 == '+' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorCompoundAdd, "+=", l, j++);
+				tokens.Emplace(TokenType::OperatorCompoundAdd, "+=", l, ++j);
 			} else if (c0 == '-' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorCompoundSub, "-=", l, j++);
+				tokens.Emplace(TokenType::OperatorCompoundSub, "-=", l, ++j);
 			} else if (c0 == '*' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorCompoundMul, "*=", l, j++);
+				tokens.Emplace(TokenType::OperatorCompoundMul, "*=", l, ++j);
 			} else if (c0 == '/' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorCompoundDiv, "/=", l, j++);
+				tokens.Emplace(TokenType::OperatorCompoundDiv, "/=", l, ++j);
 			} else if (c0 == '<' && c1 == '<') {
-				tokens.Emplace(TokenType::OperatorLeftShift, "<<", l, j++);
+				tokens.Emplace(TokenType::OperatorLeftShift, "<<", l, ++j);
 			} else if (c0 == '>' && c1 == '>') {
-				tokens.Emplace(TokenType::OperatorRightShift, ">>", l, j++);
+				tokens.Emplace(TokenType::OperatorRightShift, ">>", l, ++j);
 			} else if (c0 == '<' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorLessEqual, "<=", l, j++);
+				tokens.Emplace(TokenType::OperatorLessEqual, "<=", l, ++j);
 			} else if (c0 == '>' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorGreaterEqual, ">=", l, j++);
+				tokens.Emplace(TokenType::OperatorGreaterEqual, ">=", l, ++j);
 			} else if (c0 == '&' && c1 == '&') {
-				tokens.Emplace(TokenType::OperatorLogicalAnd, "&&", l, j++);
+				tokens.Emplace(TokenType::OperatorLogicalAnd, "&&", l, ++j);
 			} else if (c0 == '|' && c1 == '|') {
-				tokens.Emplace(TokenType::OperatorLogicalOr, "||", l, j++);
+				tokens.Emplace(TokenType::OperatorLogicalOr, "||", l, ++j);
 			} else if (c0 == '=' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorLogicalEqual, "==", l, j++);
+				tokens.Emplace(TokenType::OperatorLogicalEqual, "==", l, ++j);
 			} else if (c0 == '!' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorLogicalNotEqual, "!=", l, j++);
+				tokens.Emplace(TokenType::OperatorLogicalNotEqual, "!=", l, ++j);
 			} else if (c0 == '+') {
-				tokens.Emplace(TokenType::OperatorAdd, "+", l, j);
+				tokens.Emplace(TokenType::OperatorAdd, "+", l, j+1);
 			} else if (c0 == '*') {
-				tokens.Emplace(TokenType::OperatorMul, "*", l, j);
+				tokens.Emplace(TokenType::OperatorMul, "*", l, j+1);
 			} else if (c0 == '/') {
-				tokens.Emplace(TokenType::OperatorDiv, "/", l, j);
+				tokens.Emplace(TokenType::OperatorDiv, "/", l, j+1);
 			} else if (c0 == '<') {
-				tokens.Emplace(TokenType::OperatorLess, "<", l, j);
+				tokens.Emplace(TokenType::OperatorLess, "<", l, j+1);
 			} else if (c0 == '>') {
-				tokens.Emplace(TokenType::OperatorGreater, ">", l, j);
+				tokens.Emplace(TokenType::OperatorGreater, ">", l, j+1);
 			} else if (c0 == '!') {
-				tokens.Emplace(TokenType::OperatorLogicalNot, "!", l, j);
+				tokens.Emplace(TokenType::OperatorLogicalNot, "!", l, j+1);
 			} else if (c0 == '&') {
-				tokens.Emplace(TokenType::OperatorBitwiseAnd, "&", l, j);
+				tokens.Emplace(TokenType::OperatorBitwiseAnd, "&", l, j+1);
 			} else if (c0 == '|') {
-				tokens.Emplace(TokenType::OperatorBitwiseOr, "|", l, j);
+				tokens.Emplace(TokenType::OperatorBitwiseOr, "|", l, j+1);
 			} else if (c0 == '~') {
-				tokens.Emplace(TokenType::OperatorBitwiseNot, "~", l, j);
+				tokens.Emplace(TokenType::OperatorBitwiseNot, "~", l, j+1);
 			} else if (c0 == '^') {
-				tokens.Emplace(TokenType::OperatorBitwiseXor, "^", l, j);
+				tokens.Emplace(TokenType::OperatorBitwiseXor, "^", l, j+1);
 			} else if (c0 == '?') {
-				tokens.Emplace(TokenType::OperatorTernary1, "?", l, j);
+				tokens.Emplace(TokenType::OperatorTernary1, "?", l, j+1);
 			} else if (c0 == ':') {
-				tokens.Emplace(TokenType::OperatorTernary2, ":", l, j);
+				tokens.Emplace(TokenType::OperatorTernary2, ":", l, j+1);
 			} else if (c0 == '.') {
-				tokens.Emplace(TokenType::OperatorSelector, ".", l, j);
+				tokens.Emplace(TokenType::OperatorSelector, ".", l, j+1);
 			} else if (c0 == ',') {
-				tokens.Emplace(TokenType::Comma, ",", l, j);
+				tokens.Emplace(TokenType::Comma, ",", l, j+1);
 			} else if (c0 == '=') {
-				tokens.Emplace(TokenType::OperatorAssign, "=", l, j);
+				tokens.Emplace(TokenType::OperatorAssign, "=", l, j+1);
 			} else if (c0 >= '0' && c0 <= '9') {
 				uint64 len = 0;
 				
@@ -151,7 +151,7 @@ List<Token> Compiler::Tokenize() {
 				j += len-1;
 
 			} else if (c0 == '-') {
-				tokens.Emplace(TokenType::OperatorSub, "-", l, j);
+				tokens.Emplace(TokenType::OperatorSub, "-", l, j+1);
 			} else {
 				uint64 end = ~0;
 
@@ -166,7 +166,7 @@ List<Token> Compiler::Tokenize() {
 					Log::CompilerError(l, j, "Unexpect symbol \"%c\"", c0);
 				}
 
-				tokens.Emplace(TokenType::Name, 0, line.SubString(j, end-1), l, j);
+				tokens.Emplace(TokenType::Name, 0, line.SubString(j, end-1), l, j+1);
 
 				j = end-1;
 			}
@@ -487,7 +487,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (type == nullptr) {
 			const Token& tmp = tokens[start + offset];
-			Log::CompilerError(tmp, "Unexpected symbol \"%s\" expected ", tmp.string.str);
+			Log::CompilerError(tmp, "Unexpected symbol \"%s\" expected valid type", tmp.string.str);
 		}
 
 		const Token& name = tokens[start + offset++];
@@ -603,8 +603,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 			if (next.type == TokenType::SemiColon) {
 				tokens.Remove(i, i + 1);
-				i--;
 			}
+
+			i--;
 			
 		} else if (token.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
@@ -616,7 +617,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				ParseFunctionCall(tokens, i, &rem, localVariables);
 
 				tokens.Remove(i, i + rem - 1);
-			} else if (index != 0) {
+			} else if (index != ~0) {
 				TypeStruct* str = (TypeStruct*)typeDefinitions[index];
 				tokens.RemoveAt(i);
 
@@ -637,7 +638,19 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				}  else {
 					Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \";\"", assign.string.str);
 				}
-			} 
+			} else {
+				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i);
+
+				if (end == ~0) {
+					Log::CompilerError(token, "Expression is missing \";\"");
+				}
+
+				uint64 tmp = Utils::CompareEnums(tokens[i - 1].type, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement) ? i - 1 : i;
+
+				ParseExpression(tokens, tmp, end - 1, localVariables);
+
+				i = end;
+			}
 		} else if (token.type == TokenType::ControlFlowReturn) {
 			const Token& next = tokens[i + 1];
 
@@ -699,15 +712,17 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 		} else if (token.type == TokenType::ControlFlowIf) {
 			ParseIf(declaration, tokens, i, localVariables);
 
-		} else {
+		} /*else {
 			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
 
 			if (end == ~0) {
 				Log::CompilerError(token, "Expression is missing \";\"");
 			}
 
-			ParseExpression(tokens, i-1, end - 1, localVariables);
-		}
+			ParseExpression(tokens, --i, end - 1, localVariables);
+
+			tokens.Remove(i, end);
+		}*/
 	}
 
 	tokens.Remove(start, closeBracket);
@@ -956,8 +971,17 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 		//post increment/decrement
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement)) {
+			if (i < 1) continue;
 			Expression& left = expressions[i - 1];
-			const Expression& right = expressions[i + 1];
+
+			bool rightVar = false;
+
+			if (i < expressions.GetCount()-1) {
+				const Expression& right = expressions[i + 1];
+
+				rightVar = right.type == ExpressionType::Variable;
+			}
+
 
 			if (left.type == ExpressionType::Variable) {
 				if (left.variable->isConstant) {
@@ -992,7 +1016,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				left.result.id = load->id;
 
 				expressions.RemoveAt(i--);
-			} else if (right.type != ExpressionType::Variable) {
+			} else if (rightVar) {
 				Log::CompilerError(e.parent, "Left or right hand operand must be a lvalue");
 			}
 		}
@@ -1005,8 +1029,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 	for (uint64 i = expressions.GetCount()-1; (int64)i >= 0; i--) {
 		const Expression& e = expressions[i];
 
-		if (e.type != ExpressionType::Operator) {
-		} else if (e.type == ExpressionType::Type) { //Cast
+		if (e.type == ExpressionType::Type) { //Cast
+			if (i >= expressions.GetCount() - 1) {
+				Log::CompilerError(e.parent, "No right hand operand");
+			}
+
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
@@ -1053,12 +1080,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				expressions.RemoveAt(i);
 			}
 			
-		} else {
+		} else if (e.type != ExpressionType::Operator) {
 			continue;
 		}
 
 		//pre increment/decrement
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement)) {
+			if (i >= expressions.GetCount() - 1) {
+				Log::CompilerError(e.parent, "Left or right hand operand must be a lvalue");
+			}
+
 			Expression& right = expressions[i + 1];
 
 			if (right.type == ExpressionType::Variable) {
@@ -1096,6 +1127,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			}
 
 		} else if (e.operatorType == TokenType::OperatorNegate) {
+			if (i >= expressions.GetCount() - 1) {
+				Log::CompilerError(e.parent, "No right hand operand");
+			}
+
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
@@ -1154,6 +1189,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			right.result.type = type;
 			right.result.id = operation->id;
 		} else if (e.operatorType == TokenType::OperatorLogicalNot) {
+			if (i >= expressions.GetCount() - 1) {
+				Log::CompilerError(e.parent, "No right hand operand");
+			}
+
 			Expression& right = expressions[i + 1];
 
 			uint32 operandId = ~0;
@@ -1216,6 +1255,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			expressions.RemoveAt(i);
 		} else if (e.operatorType == TokenType::OperatorBitwiseNot) {
+			if (i >= expressions.GetCount() - 1) {
+				Log::CompilerError(e.parent, "No right hand operand");
+			}
+
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
