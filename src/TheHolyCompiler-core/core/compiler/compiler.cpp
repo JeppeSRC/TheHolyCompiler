@@ -919,7 +919,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
-		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorDiv) {
+		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorCompoundDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
@@ -932,10 +932,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 
 			e.type = ExpressionType::Type;
 			e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
-			e.parent = t;
-		} else if (t.type == TokenType::OperatorTernary1 || t.type == TokenType::OperatorTernary2) {
-			e.type = ExpressionType::Operator;
-			e.operatorType = t.type;
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
