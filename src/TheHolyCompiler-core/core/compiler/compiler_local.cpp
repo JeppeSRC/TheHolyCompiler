@@ -78,8 +78,8 @@ bool Compiler::VariableStack::CheckName(const String& name, const Token& token) 
 			res = false;
 		}
 	}
-
-	for (int64 i = stackOffset - 1; i >= endOfParam; i--) {
+	int64 i = stackOffset - 1;
+	for (; i >= (int64)endOfParam; i--) {
 		Variable* var = variables[i];
 		if (var->name == name) {
 			Log::CompilerWarning(token, "Overriding local variable \"%s\"", name.str);
