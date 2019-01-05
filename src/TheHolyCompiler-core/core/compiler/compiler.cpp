@@ -595,7 +595,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				Log::CompilerError(name, "Unexpected symbol \"%s\" expected a valid name", name.string.str);
 			}
 
-			if (!localVariables->CheckName(name)) {	}
+			if (!localVariables->CheckName(name)) { }
 
 			CreateLocalVariable(t, name.string, localVariables);
 
@@ -603,7 +603,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 			if (next.type == TokenType::SemiColon) {
 				tokens.Remove(i, i + 1);
+				i--;
 			}
+			
 		} else if (token.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 
@@ -704,7 +706,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				Log::CompilerError(token, "Expression is missing \";\"");
 			}
 
-			ParseExpression(tokens, i, end - 1, localVariables);
+			ParseExpression(tokens, i-1, end - 1, localVariables);
 		}
 	}
 
@@ -921,7 +923,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeVoid || t.type <= TokenType::TypeMat) { //Type for a cast
+		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMat) { //Type for a cast
 			if (start != end) {
 				Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 			} else if (t.type != TokenType::TypeInt || t.type != TokenType::TypeFloat) {
