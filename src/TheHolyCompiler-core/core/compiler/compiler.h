@@ -128,8 +128,8 @@ private: //Type stuff
 	
 
 	//start is the index of the type
-	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
 	TypePrimitive* CreateTypeBool();
+	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
 	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
 	TypePrimitive* CreateTypePrimitiveVector(type::Type componentType, uint8 bits, uint8 sign, uint8 rows);
 	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
