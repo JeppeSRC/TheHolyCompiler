@@ -938,15 +938,22 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMat) { //Type for a cast
-			if (start != end) {
-				Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
-			} else if (t.type != TokenType::TypeInt || t.type != TokenType::TypeFloat) {
-				Log::CompilerError(t, "Cast type must be scalar of type integer or float");
+		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMat) { 
+			if (start == end) {//Type for a cast
+				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
+				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
+					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
+				}
+
+				e.type = ExpressionType::Type;
+				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
+			} else { //Type constructor
+				uint64 rem = 0;
+				e.type = ExpressionType::Result;
+				e.result = ParseTypeConstructor(tokens, i, &rem, localVariables);
 			}
 
-			e.type = ExpressionType::Type;
-			e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
+			
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
@@ -1446,6 +1453,10 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 	r.isVariable = false;
 
 	return r;
+}
+
+Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
+
 }
 
 bool Compiler::Process() {

@@ -309,7 +309,7 @@ private:
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
 	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
 	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
-
+	
 	/*struct NameResult {
 		utils::String name;
 		TypeBase* type;
@@ -322,6 +322,7 @@ private:
 	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables); //struct member selection, array subscripting and function calls
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64 end, VariableStack* localVariables);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables);
+	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables);
 
 	bool Process();
 
