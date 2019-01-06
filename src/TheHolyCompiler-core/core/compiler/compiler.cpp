@@ -1458,6 +1458,11 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 }
 
 Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
+	const Token& t = tokens[start];
+
+	if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
+		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
+	}
 
 }
 
