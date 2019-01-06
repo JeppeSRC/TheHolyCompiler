@@ -95,8 +95,8 @@ bool Token::ValidReturnType(TokenType type) {
 		case TokenType::TypeBool:
 		case TokenType::TypeInt:
 		case TokenType::TypeFloat:
-		case TokenType::TypeVec:
-		case TokenType::TypeMat:
+		case TokenType::TypeVector:
+		case TokenType::TypeMatrix:
 			return true;
 	}
 
@@ -107,8 +107,8 @@ bool Token::ValidInOutType(TokenType type) {
 	switch (type) {
 		case TokenType::TypeInt:
 		case TokenType::TypeFloat:
-		case TokenType::TypeVec:
-		case TokenType::TypeMat:
+		case TokenType::TypeVector:
+		case TokenType::TypeMatrix:
 			return true;
 	}
 

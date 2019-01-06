@@ -41,9 +41,9 @@ Type ConvertToType(TokenType type) {
 			return Type::Int;
 		case TokenType::TypeFloat:
 			return Type::Float;
-		case TokenType::TypeVec:
+		case TokenType::TypeVector:
 			return Type::Vector;
-		case TokenType::TypeMat:
+		case TokenType::TypeMatrix:
 			return Type::Matrix;
 	}
 
