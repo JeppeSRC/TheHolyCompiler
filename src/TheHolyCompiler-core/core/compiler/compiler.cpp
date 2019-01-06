@@ -1365,9 +1365,9 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 			moreParams = false;
 		}
 
-		offset = end + 1;
+		ResultVariable res = ParseExpression(tokens, start + offset, &end, localVariables);
 
-		ResultVariable res = ParseExpression(tokens, start + offset, end, localVariables);
+		offset = end + 1;
 		
 		parameterResults.Add(res);
 	} while (moreParams);
