@@ -641,15 +641,15 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			} else {
 				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i);
 
-				if (end == ~0) {
+				if (end-- == ~0) {
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
 				uint64 tmp = Utils::CompareEnums(tokens[i - 1].type, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement) ? i - 1 : i;
 
-				ParseExpression(tokens, tmp, end - 1, localVariables);
+				ParseExpression(tokens, tmp, &end, localVariables);
 
-				i = end;
+				i = end+1;
 			}
 		} else if (token.type == TokenType::ControlFlowReturn) {
 			const Token& next = tokens[i + 1];
@@ -671,11 +671,11 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i+1);
 
-				if (end == ~0) {
+				if (end-- == ~0) {
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
-				ResultVariable res = ParseExpression(tokens, i + 1, end-1, localVariables);
+				ResultVariable res = ParseExpression(tokens, i + 1, &end, localVariables);
 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
@@ -737,11 +737,11 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 
 	uint64 statementEnd = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
-	if (statementEnd == ~0) {
+	if (statementEnd-- == ~0) {
 		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
 	}
 
-	ResultVariable res = ParseExpression(tokens, start + 2, statementEnd - 1, localVariables);
+	ResultVariable res = ParseExpression(tokens, start + 2, &statementEnd, localVariables);
 
 	if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
 		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res.type->typeString.str);
@@ -765,7 +765,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 		}
 	}
 
-	tokens.Remove(start, statementEnd);
+	tokens.Remove(start, statementEnd+1);
 
 	const Token& bracket = tokens[start];
 
@@ -829,11 +829,11 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				uint64 end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, start+offset);
 
-				if (end == ~0) {
+				if (end-- == ~0) {
 					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
 				}
 
-				ResultVariable index = ParseExpression(tokens, start + offset, end-1, localVariables);
+				ResultVariable index = ParseExpression(tokens, start + offset, &end, localVariables);
 
 				if (index.type->type != Type::Int) {
 					Log::CompilerError(op, "Array index must be a (signed) integer scalar");
@@ -858,7 +858,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				curr = arr->elementType;
 
-				offset = (end - start)+1;
+				offset = (end - start)+2;
 			} else {
 				break;
 			}
@@ -891,12 +891,12 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 	return result;
 }
 
-Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64 end, VariableStack* localVariables) {
+Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64* end, VariableStack* localVariables) {
 	List<Expression> expressions;
 	List<Variable*> tmpVariables;
 
 
-	for (uint64 i = start; i <= end; i++) {
+	for (uint64 i = start; i <= *end; i++) {
 		const Token& t = tokens[i];
 		Expression e = {};
 
@@ -939,7 +939,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.operatorType = t.type;
 			e.parent = t;
 		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) { 
-			if (start == end) {//Type for a cast
+			if (start == *end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
 					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
@@ -952,7 +952,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				e.type = ExpressionType::Result;
 				e.result = ParseTypeConstructor(tokens, i, &rem, localVariables);
 
-				end -= rem;
+				*end -= rem;
 			}
 
 			
@@ -960,13 +960,17 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
-			if (parenthesisClose > end) {
+			if (parenthesisClose > *end) {
 				Log::CompilerError(t, "\"(\" needs a closing \")\"");
 			}
 
+			uint64 tmp = parenthesisClose - 1;
+
 			e.type = ExpressionType::Result;
-			e.result = ParseExpression(tokens, i + 1, parenthesisClose - 1, localVariables);
+			e.result = ParseExpression(tokens, i + 1, &tmp, localVariables);
 			e.parent = t;
+
+			end -= parenthesisClose - 1 - tmp;
 		}
 
 		expressions.Add(e);
