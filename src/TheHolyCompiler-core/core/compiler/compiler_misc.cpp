@@ -445,7 +445,7 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 	const Token& token = tokens[start + offset++];
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVec, TokenType::TypeMat)) {
-		var->elementType = CreateTypePrimitive(tokens, start);
+		var->elementType = CreateTypePrimitive(tokens, start, nullptr);
 		offset--;
 	} else if (token.type == TokenType::Name) {
 		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
