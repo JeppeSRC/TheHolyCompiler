@@ -117,7 +117,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 
 	const Token& token = tokens[start + offset++];
 
-	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVec, TokenType::TypeMat, TokenType::TypeVoid)) {
+	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVector, TokenType::TypeMatrix, TokenType::TypeVoid)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
 	} else if (token.type == TokenType::TypeVoid) {
 		TypePrimitive* var = new TypePrimitive;
@@ -148,7 +148,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 
 	TypePrimitive tmpVar;
 
-	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
 		const Token& open = tokens[start + offset++];
 
 		if (open.type == TokenType::OperatorLess) {
@@ -444,7 +444,7 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 
 	const Token& token = tokens[start + offset++];
 
-	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVec, TokenType::TypeMat)) {
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVector, TokenType::TypeMatrix)) {
 		var->elementType = CreateTypePrimitive(tokens, start, nullptr);
 		offset--;
 	} else if (token.type == TokenType::Name) {
@@ -505,7 +505,7 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start, uint
 
 	const Token& arr = tokens[start + 1];
 
-	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec, TokenType::TypeVoid)) {
+	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMatrix, TokenType::TypeVector, TokenType::TypeVoid)) {
 		if (arr.type == TokenType::BracketOpen) {
 			return CreateTypeArray(tokens, start);
 		} else {
@@ -1266,12 +1266,12 @@ void Compiler::ProcessName(Token& t) const {
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 
-		{"vec2", TokenType::TypeVec, 0, 0, 2, 0},
-		{"vec3", TokenType::TypeVec, 0, 0, 3, 0},
-		{"vec4", TokenType::TypeVec, 0, 0, 4, 0},
+		{"vec2", TokenType::TypeVector, 0, 0, 2, 0},
+		{"vec3", TokenType::TypeVector, 0, 0, 3, 0},
+		{"vec4", TokenType::TypeVector, 0, 0, 4, 0},
 
-		{"mat3", TokenType::TypeMat, 0, 0, 3, 3},
-		{"mat4", TokenType::TypeMat, 0, 0, 4, 4},
+		{"mat3", TokenType::TypeMatrix, 0, 0, 3, 3},
+		{"mat4", TokenType::TypeMatrix, 0, 0, 4, 4},
 	};
 
 	for (uint64 i = 0; i < sizeof(props) / sizeof(TokenProperties); i++) {

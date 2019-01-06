@@ -585,7 +585,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			//end of function
 			closeBracket = i;
 			break;
-		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
+		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMatrix, TokenType::TypeVector)) {
 			//variable declaration
 			TypeBase* t = CreateType(tokens, i, nullptr);
 
@@ -938,7 +938,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMat) { 
+		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) { 
 			if (start == end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
@@ -1460,7 +1460,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
 	const Token& t = tokens[start];
 
-	if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeVec, TokenType::TypeMat)) {
+	if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
 		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
 	}
 

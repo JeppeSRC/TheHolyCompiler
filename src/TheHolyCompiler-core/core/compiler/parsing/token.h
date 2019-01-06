@@ -53,8 +53,8 @@ enum class TokenType {
 	TypeBool,
 	TypeInt,
 	TypeFloat,
-	TypeVec,
-	TypeMat,
+	TypeVector,
+	TypeMatrix,
 
 	OperatorSelector,
 	OperatorIncrement,
