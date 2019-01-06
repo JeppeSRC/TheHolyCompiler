@@ -1460,10 +1460,29 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
 	const Token& t = tokens[start];
 
+	uint64 offset = 0;
+
 	if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
 		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
 	}
 
+	TypeBase* type = CreateType(tokens, start, len);
+
+	const Token& parenthesis = tokens[start + offset++];
+
+	if (parenthesis.type != TokenType::ParenthesisOpen) {
+		Log::CompilerError(parenthesis, "Unexpected symbol \"%s\" expected  \"(\"", parenthesis.string.str);
+	}
+
+	uint64 pEnd = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+	if (pEnd == ~0) {
+		Log::CompilerError(parenthesis, "\"(\" has no closing \")\"");
+	}
+
+	while (true) {
+
+	}
 }
 
 bool Compiler::Process() {
