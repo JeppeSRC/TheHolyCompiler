@@ -903,16 +903,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		if (t.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
-				uint64 removed = 0;
-				Variable* v = ParseName(tokens, i, &removed, localVariables);
+				uint64 len = 0;
+				Variable* v = ParseName(tokens, i, &len, localVariables);
 
 				e.type = ExpressionType::Variable;
 				e.variable = v;
-				e.parent = tokens[i + removed - 1];
+				e.parent = tokens[i + len - 1];
 
 				tmpVariables.Add(v);
 
-				i += removed;
+				i += len;
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				uint64 removed = 0;
 				e.type = ExpressionType::Result;
@@ -1357,22 +1357,24 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 	bool moreParams = true;
 
-	do {
-		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, start + offset);
+	offset += start;
 
-		if (end > parenthesisClose) {
+	do {
+		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
+
+		if (end-- > parenthesisClose) {
 			end = parenthesisClose-1;
 			moreParams = false;
 		}
 
-		ResultVariable res = ParseExpression(tokens, start + offset, &end, localVariables);
+		ResultVariable res = ParseExpression(tokens, offset, &end, localVariables);
 
-		offset = end + 1;
+		offset = end + 2;
 		
 		parameterResults.Add(res);
 	} while (moreParams);
 
-	*len = offset;
+	*len = offset-start;
 
 	uint64 fOffset = 0;
 	
