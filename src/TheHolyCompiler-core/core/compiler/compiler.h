@@ -129,7 +129,7 @@ private: //Type stuff
 
 	//start is the index of the type
 	TypePrimitive* CreateTypeBool();
-	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start);
+	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
 	TypePrimitive* CreateTypePrimitiveVector(type::Type componentType, uint8 bits, uint8 sign, uint8 rows);
 	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
@@ -138,7 +138,7 @@ private: //Type stuff
 	//start is start of type
 	TypeArray* CreateTypeArray(utils::List<parsing::Token>& tokens, uint64 start);
 
-	TypeBase* CreateType(utils::List<parsing::Token>& tokens, uint64 start);
+	TypeBase* CreateType(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
 	utils::String GetTypeString(const TypeBase* const type) const;
 

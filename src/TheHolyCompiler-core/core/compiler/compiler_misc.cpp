@@ -111,7 +111,7 @@ void Compiler::CheckConstantExist(InstBase** constant) {
 	}
 }
 
-Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start) {
+Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint64 start, uint64* len) {
 
 	uint64 offset = 0;
 
@@ -209,7 +209,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		}
 	}
 	
-	tokens.Remove(start, start + offset-1);
+	if (len) *len = offset-1;
 
 	return var;
 }
@@ -360,7 +360,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<uint32> ids;
 
 	while (true) {
-		TypeBase* tmp = CreateType(tokens, start + offset);
+		TypeBase* tmp = CreateType(tokens, start + offset, nullptr);
 
 		const Token& tokenName = tokens[start + offset++];
 
@@ -498,7 +498,7 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 	return var;
 }
 
-Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
+Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start, uint64* len) {
 	const Token& token = tokens[start];
 
 	const Token& arr = tokens[start + 1];
@@ -507,7 +507,7 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start) {
 		if (arr.type == TokenType::BracketOpen) {
 			return CreateTypeArray(tokens, start);
 		} else {
-			return CreateTypePrimitive(tokens, start);
+			return CreateTypePrimitive(tokens, start, len);
 		}
 	}
 
