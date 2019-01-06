@@ -951,6 +951,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				uint64 rem = 0;
 				e.type = ExpressionType::Result;
 				e.result = ParseTypeConstructor(tokens, i, &rem, localVariables);
+
+				end -= rem;
 			}
 
 			
