@@ -214,7 +214,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 				ParseFunction(tokens, --i);
 				i--;
 			} else {
-				TypeBase* type = CreateType(tokens, i - 1);
+				TypeBase* type = CreateType(tokens, i - 1, nullptr);
 
 				Variable* var = CreateGlobalVariable(type, VariableScope::Private, token.string);
 				var->isConstant = tokens[i - 1].type == TokenType::ModifierConst;
@@ -377,7 +377,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
 		}
 
-		TypePrimitive* type = CreateTypePrimitive(tokens, typeLocation);
+		TypePrimitive* type = CreateTypePrimitive(tokens, typeLocation, nullptr);
 
 		var = CreateGlobalVariable(type, tmp.scope, name.string);
 
@@ -392,7 +392,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope) {
 	uint64 offset = 0;
 
-	TypePrimitive* type = CreateTypePrimitive(tokens, ++start + offset);
+	TypePrimitive* type = CreateTypePrimitive(tokens, ++start + offset, nullptr);
 
 	const Token& name = tokens[start + offset++];
 
@@ -440,7 +440,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 	const Token& returnType = tokens[start];
 
-	TypeBase* retType = CreateType(tokens, start);
+	TypeBase* retType = CreateType(tokens, start, nullptr);
 
 	if (retType == nullptr) {
 		Log::CompilerError(returnType, "Unexpected symbol \"%s\" expected a valid return type");
@@ -483,7 +483,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			offset--;
 		}
 
-		TypeBase* type = CreateType(tokens, start + offset);
+		TypeBase* type = CreateType(tokens, start + offset, nullptr);
 
 		if (type == nullptr) {
 			const Token& tmp = tokens[start + offset];
@@ -587,7 +587,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			break;
 		} else if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMat, TokenType::TypeVec)) {
 			//variable declaration
-			TypeBase* t = CreateType(tokens, i);
+			TypeBase* t = CreateType(tokens, i, nullptr);
 
 			const Token& name = tokens[i];
 
