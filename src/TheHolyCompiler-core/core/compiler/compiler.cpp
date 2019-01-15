@@ -1332,6 +1332,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 	ResultVariable result = {0};
 
+	if (expressions.GetCount() > 1) {
+		const Expression& e = expressions[1];
+		Log::CompilerError(e.parent, "Unexpected symbol \"%s\"", e.parent.string.str);
+	}
+
 	Expression e = expressions[0];
 
 	switch (e.type) {
