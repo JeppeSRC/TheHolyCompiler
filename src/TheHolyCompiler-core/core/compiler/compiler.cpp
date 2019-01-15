@@ -916,7 +916,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				tmpVariables.Add(v);
 
-				i += inf.len;
+				i += inf.len-1;
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
 				e.type = ExpressionType::Result;
 
