@@ -310,15 +310,6 @@ private:
 	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
 	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
 	
-	/*struct NameResult {
-		utils::String name;
-		TypeBase* type;
-		uint32 pointerId;
-		uint32 id;
-
-		bool isConstant;
-	};*/
-
 	struct ParseInfo {
 		uint64 start;
 		uint64 end;
