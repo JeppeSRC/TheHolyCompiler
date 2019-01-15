@@ -100,6 +100,9 @@ public:
 	String operator+(const String& string) const;
 	String operator+(const char* const string) const;
 
+	String& operator+=(const String& string);
+	String& operator+=(const char* const string);
+
 	bool operator==(const String& string) const;
 	bool operator==(const char* const string) const;
 };

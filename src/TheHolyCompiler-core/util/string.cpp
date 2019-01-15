@@ -376,6 +376,14 @@ String String::operator+(const char* const string) const {
 	return tmp;
 }
 
+String& String::operator+=(const String& string) {
+	return Append(string);
+}
+
+String& String::operator+=(const char* const string) {
+	return Append(string);
+}
+
 bool String::operator==(const String& string) const {
 	return operator==(string.str);
 }

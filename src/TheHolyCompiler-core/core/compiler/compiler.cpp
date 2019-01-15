@@ -346,15 +346,10 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	if (tmp.scope == VariableScope::Uniform) {
 		TypeStruct* str = CreateTypeStruct(tokens, start + offset++);
 
+		String name = str->typeString;
+		str->typeString += "_uniform_type";
 
-		for (uint64 start = 0; start < str->members.GetCount(); start++) {
-			if (!CheckGlobalName(str->members[start].name)) {
-				const Token& n = tokens[start + offset];
-				Log::CompilerError(n, "Redefinition of global variable \"%s\" in \"%s\"", str->members[start].name, n.string.str);
-			}
-		}
-
-		var = CreateGlobalVariable(str, tmp.scope, "_uniform_buf");
+		var = CreateGlobalVariable(str, tmp.scope, name);
 
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BINDING, &binding, 1));
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
