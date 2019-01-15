@@ -38,7 +38,7 @@ void main() {
 
     float res = dot(v1, v2);
 
-    pos = MVP * vec4(position, 1);
+    pos = Buffer0.MVP * vec4(position, 1);
 
     float a = 123.123;
 
