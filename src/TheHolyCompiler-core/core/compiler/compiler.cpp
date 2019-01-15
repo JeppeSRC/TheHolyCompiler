@@ -359,7 +359,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BINDING, &binding, 1));
 		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 	} else {
-		uint64 typeLocation = start + offset++;
+		TypePrimitive* type = CreateTypePrimitive(tokens, start + offset, nullptr);
 
 		const Token& name = tokens[start + offset++];
 
@@ -376,8 +376,6 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		if (semiColon.type != TokenType::SemiColon) {
 			Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
 		}
-
-		TypePrimitive* type = CreateTypePrimitive(tokens, typeLocation, nullptr);
 
 		var = CreateGlobalVariable(type, tmp.scope, name.string);
 
