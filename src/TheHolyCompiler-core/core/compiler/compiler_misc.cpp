@@ -760,9 +760,7 @@ Compiler::Variable* Compiler::GetVariable(const String& name, VariableStack* loc
 
 bool Compiler::CheckGlobalName(const String& name) const {
 	uint64 index = globalVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
-		if (curr->name == name) return true;
-
-		return false;
+		return curr->name == name;
 	});
 
 	return index == ~0;
