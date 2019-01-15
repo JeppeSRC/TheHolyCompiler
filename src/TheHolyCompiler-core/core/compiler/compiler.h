@@ -173,6 +173,7 @@ private: //Variable stuff
 		uint32 id;
 
 		bool isVariable;
+		bool isConstant;
 	};
 
 	utils::List<Variable*> globalVariables;

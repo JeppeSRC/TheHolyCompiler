@@ -1490,7 +1490,7 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
 	}
 
-	//TypeBase* type = CreateType(tokens, start, len);
+	TypeBase* type = CreateType(tokens, info->start, &info->len);
 
 	const Token& parenthesis = tokens[info->start + offset++];
 
