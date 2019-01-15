@@ -319,10 +319,16 @@ private:
 		bool isConstant;
 	};*/
 
-	Variable* ParseName(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables); //struct member selection, array subscripting and function calls
-	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, uint64 start, uint64* end, VariableStack* localVariables);
-	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables);
-	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables);
+	struct ParseInfo {
+		uint64 start;
+		uint64 end;
+		uint64 len;
+	};
+
+	Variable* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
+	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 
 	bool Process();
 

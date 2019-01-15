@@ -613,10 +613,12 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
 
 			if (next.type == TokenType::ParenthesisOpen) {
-				uint64 rem = 0;
-				ParseFunctionCall(tokens, i, &rem, localVariables);
+				ParseInfo inf;
+				inf.start = i;
 
-				tokens.Remove(i, i + rem - 1);
+				ParseFunctionCall(tokens, &inf, localVariables);
+
+				tokens.Remove(i, i + inf.len - 1);
 			} else if (index != ~0) {
 				TypeStruct* str = (TypeStruct*)typeDefinitions[index];
 				tokens.RemoveAt(i);
@@ -639,17 +641,18 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 					Log::CompilerError(assign, "Unexpected symbol \"%s\" expected \";\"", assign.string.str);
 				}
 			} else {
-				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i);
+				ParseInfo inf;
+				inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i);
 
-				if (end-- == ~0) {
+				if (inf.end-- == ~0) {
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
-				uint64 tmp = Utils::CompareEnums(tokens[i - 1].type, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement) ? i - 1 : i;
+				inf.start = Utils::CompareEnums(tokens[i - 1].type, CompareOperation::Or, TokenType::OperatorIncrement, TokenType::OperatorDecrement) ? i - 1 : i;
 
-				ParseExpression(tokens, tmp, &end, localVariables);
+				ParseExpression(tokens, &inf, localVariables);
 
-				i = end+1;
+				i = inf.end+1;
 			}
 		} else if (token.type == TokenType::ControlFlowReturn) {
 			const Token& next = tokens[i + 1];
@@ -669,13 +672,15 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 					Log::CompilerError(token, "Unexpected symbol \"%s\" expected \";\". Function has return type void", next.string.str);
 				}
 
-				uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, i+1);
+				ParseInfo inf;
+				inf.start = i + 1;
+				inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, inf.start);
 
-				if (end-- == ~0) {
+				if (inf.end-- == ~0) {
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
-				ResultVariable res = ParseExpression(tokens, i + 1, &end, localVariables);
+				ResultVariable res = ParseExpression(tokens, &inf, localVariables);
 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
@@ -735,13 +740,16 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
 	}
 
-	uint64 statementEnd = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+	ParseInfo inf;
+	inf.start = start + 2;
+	inf.end = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
-	if (statementEnd-- == ~0) {
+	if (inf.end-- == ~0) {
 		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
 	}
 
-	ResultVariable res = ParseExpression(tokens, start + 2, &statementEnd, localVariables);
+
+	ResultVariable res = ParseExpression(tokens, &inf, localVariables);
 
 	if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
 		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res.type->typeString.str);
@@ -765,7 +773,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 		}
 	}
 
-	tokens.Remove(start, statementEnd+1);
+	tokens.Remove(start, inf.end+1);
 
 	const Token& bracket = tokens[start];
 
@@ -776,10 +784,10 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 	
 }
 
-Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
+Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	uint64 offset = 0;
 
-	const Token& name = tokens[start + offset++];
+	const Token& name = tokens[info->start + offset++];
 
 	Variable* var = GetVariable(name.string, localVariables);
 	Variable* result;
@@ -788,7 +796,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable", name.string.str);
 	} 
 
-	Token op = tokens[start + offset++];
+	Token op = tokens[info->start + offset++];
 
 	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::BracketOpen)) {
 		List<uint32> accessIds;
@@ -802,7 +810,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 					Log::CompilerError(op, "Left of operator \".\" must be a struct");
 				}
 
-				const Token& member = tokens[start + offset++];
+				const Token& member = tokens[info->start + offset++];
 
 				if (member.type != TokenType::Name) {
 					Log::CompilerError(member, "Right of operator \".\" must be a valid name");
@@ -827,13 +835,15 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				TypeArray* arr = (TypeArray*)curr;
 
-				uint64 end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, start+offset);
+				ParseInfo inf;
+				inf.start = info->start+offset;
+				inf.end = tokens.Find<TokenType>(TokenType::BracketClose, CmpFunc, info->start+offset);
 
-				if (end-- == ~0) {
+				if (inf.end-- == ~0) {
 					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
 				}
 
-				ResultVariable index = ParseExpression(tokens, start + offset, &end, localVariables);
+				ResultVariable index = ParseExpression(tokens, &inf, localVariables);
 
 				if (index.type->type != Type::Int) {
 					Log::CompilerError(op, "Array index must be a (signed) integer scalar");
@@ -858,12 +868,12 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 
 				curr = arr->elementType;
 
-				offset = (end - start)+2;
+				offset = (inf.end - info->start)+2;
 			} else {
 				break;
 			}
 
-			op = tokens[start + offset++];
+			op = tokens[info->start + offset++];
 		}
 		
 		if (accessIds.GetCount() != 0) {
@@ -886,40 +896,44 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, uint64 start, uint6
 		result = var;
 	}
 
-	*len = offset-1;
-	
+	info->len = offset-1;
+
 	return result;
 }
 
-Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 start, uint64* end, VariableStack* localVariables) {
+Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	List<Expression> expressions;
 	List<Variable*> tmpVariables;
 
-
-	for (uint64 i = start; i <= *end; i++) {
+	for (uint64 i = info->start; i <= info->end; i++) {
 		const Token& t = tokens[i];
 		Expression e = {};
 
 		if (t.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
-				uint64 len = 0;
-				Variable* v = ParseName(tokens, i, &len, localVariables);
+				ParseInfo inf;
+				inf.start = i;
+
+				Variable* v = ParseName(tokens, &inf, localVariables);
 
 				e.type = ExpressionType::Variable;
 				e.variable = v;
-				e.parent = tokens[i + len - 1];
+				e.parent = tokens[i + inf.len - 1];
 
 				tmpVariables.Add(v);
 
-				i += len;
+				i += inf.len;
 			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
-				uint64 removed = 0;
 				e.type = ExpressionType::Result;
-				e.result = ParseFunctionCall(tokens, i, &removed, localVariables);
+
+				ParseInfo inf;
+				inf.start = i;
+
+				e.result = ParseFunctionCall(tokens, &inf, localVariables);
 				e.parent = tokens[i];
 
-				i += removed;
+				i += inf.len;
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string, localVariables);
@@ -939,7 +953,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 			e.operatorType = t.type;
 			e.parent = t;
 		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) { 
-			if (start == *end) {//Type for a cast
+			if (info->start == info->end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
 					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
@@ -948,11 +962,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 				e.type = ExpressionType::Type;
 				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 			} else { //Type constructor
-				uint64 rem = 0;
 				e.type = ExpressionType::Result;
-				e.result = ParseTypeConstructor(tokens, i, &rem, localVariables);
 
-				*end -= rem;
+				ParseInfo inf;
+				inf.start = i;
+
+				e.result = ParseTypeConstructor(tokens, &inf, localVariables);
+
+				info->end -= inf.len;
 			}
 
 			
@@ -960,17 +977,20 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
-			if (parenthesisClose > *end) {
+			if (parenthesisClose > info->end) {
 				Log::CompilerError(t, "\"(\" needs a closing \")\"");
 			}
 
-			uint64 tmp = parenthesisClose - 1;
-
 			e.type = ExpressionType::Result;
-			e.result = ParseExpression(tokens, i + 1, &tmp, localVariables);
+
+			ParseInfo inf;
+			inf.start = i + 1;
+			inf.end = parenthesisClose - 1;
+
+			e.result = ParseExpression(tokens, &inf, localVariables);
 			e.parent = t;
 
-			end -= parenthesisClose - 1 - tmp;
+			info->end -= parenthesisClose - 1 - inf.end;
 		}
 
 		expressions.Add(e);
@@ -1336,20 +1356,20 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, uint64 s
 	return result;
 }
 
-Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
-	const Token& functionName = tokens[start];
+Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+	const Token& functionName = tokens[info->start];
 
 	List<ResultVariable> parameterResults;
 
 	uint64 offset = 1;
 
-	const Token& parenthesisOpen = tokens[start + offset++];
+	const Token& parenthesisOpen = tokens[info->start + offset++];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
 	}
 
-	uint64 parenthesisClose = FindMatchingToken(tokens, start + offset - 1, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+	uint64 parenthesisClose = FindMatchingToken(tokens, info->start + offset - 1, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
 	if (parenthesisClose == ~0) {
 		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
@@ -1357,7 +1377,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 
 	bool moreParams = true;
 
-	offset += start;
+	offset += info->start;
 
 	do {
 		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
@@ -1367,14 +1387,19 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 			moreParams = false;
 		}
 
-		ResultVariable res = ParseExpression(tokens, offset, &end, localVariables);
+		ParseInfo inf;
+
+		inf.start = offset;
+		inf.end = end;
+
+		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
 
 		offset = end + 2;
 		
 		parameterResults.Add(res);
 	} while (moreParams);
 
-	*len = offset-start;
+	info->len = offset-info->start;
 
 	uint64 fOffset = 0;
 	
@@ -1463,8 +1488,8 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, uint64
 	return r;
 }
 
-Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uint64 start, uint64* len, VariableStack* localVariables) {
-	const Token& t = tokens[start];
+Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+	const Token& t = tokens[info->start];
 
 	uint64 offset = 0;
 
@@ -1472,15 +1497,15 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uin
 		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
 	}
 
-	TypeBase* type = CreateType(tokens, start, len);
+	//TypeBase* type = CreateType(tokens, start, len);
 
-	const Token& parenthesis = tokens[start + offset++];
+	const Token& parenthesis = tokens[info->start + offset++];
 
 	if (parenthesis.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesis, "Unexpected symbol \"%s\" expected  \"(\"", parenthesis.string.str);
 	}
 
-	uint64 pEnd = FindMatchingToken(tokens, start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+	uint64 pEnd = FindMatchingToken(tokens, info->start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
 	if (pEnd == ~0) {
 		Log::CompilerError(parenthesis, "\"(\" has no closing \")\"");
@@ -1489,6 +1514,10 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, uin
 	while (true) {
 
 	}
+
+	ResultVariable r;
+
+	return r;
 }
 
 bool Compiler::Process() {
