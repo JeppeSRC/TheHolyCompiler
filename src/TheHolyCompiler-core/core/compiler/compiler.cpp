@@ -1330,7 +1330,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
-	ResultVariable result;
+	ResultVariable result = {0};
 
 	Expression e = expressions[0];
 
@@ -1341,6 +1341,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			result.id = e.variable->variableId;
 			break;
 		case ExpressionType::Constant:
+			result.isConstant = true;
 		case ExpressionType::Result:
 			result = e.result;
 			break;
