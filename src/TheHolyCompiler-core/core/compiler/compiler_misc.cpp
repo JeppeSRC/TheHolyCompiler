@@ -762,14 +762,6 @@ bool Compiler::CheckGlobalName(const String& name) const {
 	uint64 index = globalVariables.Find<String>(name, [](Variable* const& curr, const String& name) -> bool {
 		if (curr->name == name) return true;
 
-		const TypeStruct* type = (const TypeStruct*)curr->type;
-
-		if (curr->name == "_uniform_buf") {
-			for (uint64 i = 0; i < type->members.GetCount(); i++) {
-				if (type->members[i].name == name) return true;
-			}
-		}
-
 		return false;
 	});
 
