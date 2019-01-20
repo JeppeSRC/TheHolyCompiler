@@ -1510,9 +1510,33 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		Log::CompilerError(parenthesis, "\"(\" has no closing \")\"");
 	}
 
-	while (true) {
+	bool moreParams = true;
 
-	}
+	List<ResultVariable> parameterResults;
+
+	do {
+		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
+
+		if (end-- > pEnd) {
+			end = pEnd - 1;
+			moreParams = false;
+		}
+
+		ParseInfo inf;
+
+		inf.start = offset;
+		inf.end = end;
+
+		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+
+		offset = end + 2;
+
+		parameterResults.Add(res);
+	} while (moreParams);
+
+	info->len = offset - info->start;
+
+
 
 	ResultVariable r;
 
