@@ -209,7 +209,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		}
 	}
 	
-	tokens.Remove(start, start + --offset);
+	tokens.Remove(start, start + offset-1);
 
 	if (len) *len = offset;
 
