@@ -30,7 +30,7 @@ struct Dank {
 void main() {
 
     vec3 v1;
-    vec3 v2;
+    vec3 v2 = vec3<uint32>(1, 1, 1);
 
     Dank d;
 
