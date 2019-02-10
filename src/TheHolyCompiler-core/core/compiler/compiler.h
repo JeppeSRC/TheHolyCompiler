@@ -257,6 +257,8 @@ private: //Constants
 
 	bool IsTypeComposite(const TypeBase* const type) const;
 
+private: //Composites
+
 private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;
@@ -265,6 +267,7 @@ private: //Misc
 
 private: //Expression parsing
 	enum class ExpressionType {
+		Undefined,
 		Variable,
 		Constant,
 		Result,
@@ -320,7 +323,6 @@ private:
 	Variable* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 
 	bool Process();
 

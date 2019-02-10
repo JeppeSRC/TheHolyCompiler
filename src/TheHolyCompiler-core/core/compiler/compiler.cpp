@@ -900,7 +900,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 	for (uint64 i = info->start; i <= info->end; i++) {
 		const Token& t = tokens[i];
-		Expression e = {};
+		Expression e = {ExpressionType::Undefined};
 
 		if (t.type == TokenType::Name) {
 			const Token& next = tokens[i + 1];
@@ -917,16 +917,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				tmpVariables.Add(v);
 
 				i += inf.len-1;
-			} else if (next.type == TokenType::ParenthesisOpen) { //FunctionCall
-				e.type = ExpressionType::Result;
-
-				ParseInfo inf;
-				inf.start = i;
-
-				e.result = ParseFunctionCall(tokens, &inf, localVariables);
-				e.parent = tokens[i];
-
-				i += inf.len;
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string, localVariables);
@@ -945,8 +935,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) { 
-			if (info->start == info->end) {//Type for a cast
+		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix && info->start == info->end) {
+			//if (info->start == info->end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
 					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
@@ -954,39 +944,51 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				e.type = ExpressionType::Type;
 				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
-			} else { //Type constructor
-				e.type = ExpressionType::Result;
+				e.parent = t;
+			//} 
 
-				ParseInfo inf;
-				inf.start = i;
-
-				e.result = ParseTypeConstructor(tokens, &inf, localVariables);
-
-				info->end -= inf.len;
-			}
-
-			
+		} else if (t.type == TokenType::Comma || t.type == TokenType::ParenthesisClose) {
+			e.type = ExpressionType::Constant;
+			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
+			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
+			bool justParentheses = false;
+
+			if (i > 0) {
+				const Token& tok = tokens[i - 1];
+				justParentheses = t.type >= TokenType::OperatorNegate && t.type <= TokenType::OperatorCompoundDiv;
+			}
+
+			ParseInfo inf;
+			
+			e.type = ExpressionType::Result;
+			e.parent = t;
+			
 			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
 			if (parenthesisClose > info->end) {
 				Log::CompilerError(t, "\"(\" needs a closing \")\"");
 			}
 
-			e.type = ExpressionType::Result;
+			if (justParentheses) {
+				inf.start = i + 1;
+				inf.end = --parenthesisClose;
 
-			ParseInfo inf;
-			inf.start = i + 1;
-			inf.end = parenthesisClose - 1;
+				e.result = ParseExpression(tokens, &inf, localVariables);
 
-			e.result = ParseExpression(tokens, &inf, localVariables);
-			e.parent = t;
+				info->end -= parenthesisClose - inf.end;
+			} else {
+				inf.start = i - 1;
+				inf.end = ++parenthesisClose;
 
-			info->end -= parenthesisClose - 1 - inf.end;
+				e.result = ParseFunctionCall(tokens, &inf, localVariables);
+
+				info->end -= parenthesisClose - inf.end;
+			}
 		}
 
-		expressions.Add(e);
+		if (e.type != ExpressionType::Undefined) expressions.Add(e);
 	}
 
 #pragma region precedence 1
@@ -1356,11 +1358,23 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 }
 
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
-	const Token& functionName = tokens[info->start];
+	Token functionName = tokens[info->start];
+	TypeBase* type = nullptr;
+
+	if (functionName.type == TokenType::OperatorGreater) {
+		uint64 len = 0;
+		info->start -= 3;
+
+		functionName = tokens[info->start];
+		type = CreateType(tokens, info->start, &len);
+		functionName.string = type->typeString;
+
+		info->end -= len;
+	}
 
 	List<ResultVariable> parameterResults;
 
-	uint64 offset = 1;
+	uint64 offset = 0;
 
 	const Token& parenthesisOpen = tokens[info->start + offset++];
 
@@ -1400,145 +1414,96 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 
 	info->len = offset-info->start;
 
-	uint64 fOffset = 0;
-	
-	List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
+	ResultVariable r;
 
-	if (!decls.GetCount()) {
-		Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
-	}
+	if (type == nullptr) {
+		uint64 fOffset = 0;
 	
+		List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
 
-	for (uint64 i = 0; i < decls.GetCount(); i++) {
-		if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
-			decls.RemoveAt(i--);
+		if (!decls.GetCount()) {
+			Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
 		}
-	}
+	
 
-	if (decls.GetCount() == 0) {
-		Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
-	}
+		for (uint64 i = 0; i < decls.GetCount(); i++) {
+			if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
+				decls.RemoveAt(i--);
+			}
+		}
 
-	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-		ResultVariable& res = parameterResults[i];
+		if (decls.GetCount() == 0) {
+			Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
+		}
 
-		for (uint64 j = 0; j < decls.GetCount(); j++) {
-			FunctionDeclaration* d = decls[j];
+		for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+			ResultVariable& res = parameterResults[i];
 
-			Variable* param = d->parameters[i];
-			TypeBase* dt = param->type;
+			for (uint64 j = 0; j < decls.GetCount(); j++) {
+				FunctionDeclaration* d = decls[j];
 
-			if (param->type->type == Type::Pointer) {
-				//pass by reference but argument is rvalue
-				if (!res.isVariable /*&& !param->isConstant*/) {
+				Variable* param = d->parameters[i];
+				TypeBase* dt = param->type;
+
+				if (param->type->type == Type::Pointer) {
+					//pass by reference but argument is rvalue
+					if (!res.isVariable /*&& !param->isConstant*/) {
+						if (decls.GetCount() == 1) {
+							Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
+						} else {
+							decls.RemoveAt(j--);
+							continue;
+						}
+					}
+				} else if (*dt != res.type) {
 					if (decls.GetCount() == 1) {
-						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
+						uint32 operandId = res.id;
+
+						if (res.isVariable) {
+							InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+							instructions.Add(load);
+
+							operandId = load->id;
+						}
+
+						TypeBase* tmp = res.type;
+						res = Cast(dt, res.type, operandId);
+
+						if (res.id == ~0) {
+							Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
+						} else {
+							Log::CompilerWarning(functionName, "Implicit conversion from \"%s\" to \"%s\"", tmp->typeString.str, dt->typeString.str);
+						}
 					} else {
 						decls.RemoveAt(j--);
 						continue;
 					}
 				}
-			} else if (*dt != res.type) {
-				if (decls.GetCount() == 1) {
-					uint32 operandId = res.id;
-
-					if (res.isVariable) {
-						InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
-						instructions.Add(load);
-
-						operandId = load->id;
-					}
-
-					TypeBase* tmp = res.type;
-					res = Cast(dt, res.type, operandId);
-
-					if (res.id == ~0) {
-						Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
-					} else {
-						Log::CompilerWarning(functionName, "Implicit conversion from \"%s\" to \"%s\"", tmp->typeString.str, dt->typeString.str);
-					}
-				} else {
-					decls.RemoveAt(j--);
-					continue;
-				}
 			}
 		}
-	}
 
-	FunctionDeclaration* decl = decls[0];
+		FunctionDeclaration* decl = decls[0];
 
-	uint32* ids = new uint32[parameterResults.GetCount()];
+		uint32* ids = new uint32[parameterResults.GetCount()];
 
-	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-		ids[i] = parameterResults[i].id;
-	}
-
-	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
-	instructions.Add(call);
-
-	delete[] ids;
-
-	ResultVariable r;
-
-	r.id = call->id;
-	r.type = decl->returnType;
-	r.isVariable = false;
-
-	return r;
-}
-
-Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
-	const Token& t = tokens[info->start];
-
-	uint64 offset = 0;
-
-	if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
-		Log::CompilerError(t, "\"%s\" is not a function, vector or matrix type", t.string.str);
-	}
-
-	TypeBase* type = CreateType(tokens, info->start, &info->len);
-
-	const Token& parenthesis = tokens[info->start + offset++];
-
-	if (parenthesis.type != TokenType::ParenthesisOpen) {
-		Log::CompilerError(parenthesis, "Unexpected symbol \"%s\" expected  \"(\"", parenthesis.string.str);
-	}
-
-	uint64 pEnd = FindMatchingToken(tokens, info->start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
-
-	if (pEnd == ~0) {
-		Log::CompilerError(parenthesis, "\"(\" has no closing \")\"");
-	}
-
-	bool moreParams = true;
-
-	List<ResultVariable> parameterResults;
-
-	do {
-		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
-
-		if (end-- > pEnd) {
-			end = pEnd - 1;
-			moreParams = false;
+		for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+			ids[i] = parameterResults[i].id;
 		}
 
-		ParseInfo inf;
+		InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
+		instructions.Add(call);
 
-		inf.start = offset;
-		inf.end = end;
+		delete[] ids;
 
-		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+		r.id = call->id;
+		r.type = decl->returnType;
+		r.isVariable = false;
+	} else if (Utils::CompareEnums(functionName.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
 
-		offset = end + 2;
+	} else {
+		Log::CompilerError(functionName, "%s is not a function", functionName.string.str);
+	}
 
-		parameterResults.Add(res);
-	} while (moreParams);
-
-	info->len = offset - info->start;
-
-
-
-	ResultVariable r;
 
 	return r;
 }
