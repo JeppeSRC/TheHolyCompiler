@@ -29,6 +29,7 @@ SOFTWARE.
 #include <core/spirvdefines.h>
 #include <core/spirvlimits.h>
 #include <core/thctypes.h>
+#include <core/compiler/idmanager.h>
 
 
 namespace thc {
@@ -44,7 +45,7 @@ enum class InstType {
 class InstBase {
 public:
 	InstType type;
-	uint32 id;
+	compiler::ID* id;
 	uint32 opCode;
 	mutable uint32 wordCount;
 	char* literalName;

@@ -84,7 +84,7 @@ void InstExt::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = resultTypeId;
-	words[2] = id;
+	words[2] = id->id;
 	words[3] = setId;
 	words[4] = opCode;
 	words[5] = operand0;
