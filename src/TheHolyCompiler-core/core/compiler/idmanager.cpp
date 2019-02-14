@@ -52,7 +52,7 @@ void IDManager::RemoveId(ID* id) {
 }
 
 uint32 IDManager::GetCount() {
-	return ids.GetCount();
+	return (uint32)ids.GetCount();
 }
 
 }
