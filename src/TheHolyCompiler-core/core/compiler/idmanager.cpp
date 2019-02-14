@@ -28,14 +28,31 @@ namespace thc {
 namespace core {
 namespace compiler {
 
-uint32 IDManager::count = 0;
+using namespace utils;
 
-uint32 IDManager::GetNewId() {
-	return ++count;
+List<ID*> IDManager::free;
+List<ID*> IDManager::ids;
+
+ID* IDManager::GetNewId() {
+	ID* newId = nullptr;
+
+	if (free.GetCount() != 0) {
+		newId = free.RemoveAt(0);
+	} else {
+		newId = new ID(GetCount());
+		ids.Add(newId);
+	}
+
+	return newId;
+}
+
+void IDManager::RemoveId(ID* id) {
+	free.Add(id);
+	ids.Remove(id);
 }
 
 uint32 IDManager::GetCount() {
-	return count;
+	return ids.GetCount();
 }
 
 }

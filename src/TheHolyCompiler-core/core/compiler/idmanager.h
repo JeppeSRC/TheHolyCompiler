@@ -24,17 +24,27 @@ SOFTWARE.
 
 #pragma once
 #include <core/thctypes.h>
+#include <util/list.h>
 
 namespace thc {
 namespace core {
 namespace compiler {
 
+class ID {
+public:
+	uint32 id;
+
+	ID(uint32 id) : id(id) { }
+};
+
 class IDManager {
 private:
-	static uint32 count;
+	static utils::List<ID*> free;
+	static utils::List<ID*> ids;
 
 public:
-	static uint32 GetNewId();
+	static ID* GetNewId();
+	static void RemoveId(ID* id);
 	static uint32 GetCount();
 };
 
