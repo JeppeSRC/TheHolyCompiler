@@ -1047,7 +1047,7 @@ ID* Compiler::CreateConstantS32(int32 value) {
 ID* Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	if (IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
-		return ~0;
+		return nullptr;
 	}
 
 	InstConstant* constant = new InstConstant(type->typeId, value);
