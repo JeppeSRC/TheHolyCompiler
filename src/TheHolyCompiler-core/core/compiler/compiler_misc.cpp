@@ -1137,7 +1137,7 @@ ID* Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const ui
 ID* Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
 	const TypeArray* arr = (const TypeArray*)type;
 
-	List<uint32> ids;
+	List<ID*> ids;
 
 	if (IsTypeComposite(type)) {
 		for (uint32 i = 0; i < arr->elementCount; i++) {
