@@ -119,7 +119,6 @@ private: //Type stuff
 	utils::List<instruction::InstBase*> types;
 	utils::List<instruction::InstBase*> instructions;
 
-	instruction::InstBase* GetInstFromID(uint32 id);
 	void CheckTypeExist(type::InstTypeBase** type); 
 	void CheckTypeExist(TypeBase** type);
 	void CheckConstantExist(instruction::InstBase** constant);

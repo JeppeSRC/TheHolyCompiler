@@ -43,20 +43,6 @@ bool Compiler::findStructFunc(TypeBase* const& curr, const String& name) {
 	return false;
 };
 
-InstBase* Compiler::GetInstFromID(uint32 id)  {
-	auto cmp = [](InstBase* const& curr, const uint32& id) -> bool {
-		return curr->id == id;
-	};
-
-	uint64 index = instructions.Find<uint32>(id, cmp);
-
-	if (index != ~0) {
-		return instructions[index];
-	}
-	
-	return nullptr;
-}
-
 void Compiler::CheckTypeExist(InstTypeBase** type) {
 	auto cmp = [](InstBase* const& curr, InstTypeBase* const& type) -> bool {
 		if (curr->type != InstType::Type) return false;
