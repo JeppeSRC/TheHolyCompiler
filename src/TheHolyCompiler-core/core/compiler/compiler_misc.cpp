@@ -1030,7 +1030,7 @@ bool Compiler::CheckParameterName(const List<Variable*>& params, const String& n
 	return params.Find<String>(name, cmp) == ~0;
 }
 
-uint32 Compiler::CreateConstantS32(int32 value) {
+ID* Compiler::CreateConstantS32(int32 value) {
 	TypePrimitive p;
 
 	p.type = Type::Int;

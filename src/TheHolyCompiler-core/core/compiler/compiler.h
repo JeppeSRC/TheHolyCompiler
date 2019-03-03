@@ -244,15 +244,15 @@ private: //Function stuff
 	static bool CheckParameterName(const utils::List<Variable*>& params, const utils::String& name); //return true if name is available
 
 private: //Constants
-	uint32 CreateConstantS32(int32 value);
-	uint32 CreateConstant(const TypeBase* const type, uint32 value);
-	uint32 CreateConstant(const TypeBase* const type, float32 value);
-	uint32 CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
-	uint32 CreateConstantComposite(const TypeBase* const type, const uint32** values);
-	uint32 CreateConstantCompositeVector(const TypeBase* const type, const uint32** values);
-	uint32 CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values);
-	uint32 CreateConstantCompositeArray( const TypeBase* const type, const uint32** values);
-	uint32 CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values);
+	ID* CreateConstantS32(int32 value);
+	ID* CreateConstant(const TypeBase* const type, uint32 value);
+	ID* CreateConstant(const TypeBase* const type, float32 value);
+	ID* CreateConstantComposite(const TypeBase* const type, const utils::List<uint32>& values);
+	ID* CreateConstantComposite(const TypeBase* const type, const uint32** values);
+	ID* CreateConstantCompositeVector(const TypeBase* const type, const uint32** values);
+	ID* CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values);
+	ID* CreateConstantCompositeArray( const TypeBase* const type, const uint32** values);
+	ID* CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values);
 
 	bool IsTypeComposite(const TypeBase* const type) const;
 
