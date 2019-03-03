@@ -819,7 +819,7 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	return var;
 }
 
-Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, uint32 operandId) {
+Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, ID* operandId) {
 	TypePrimitive* cType = (TypePrimitive*)castType;
 	TypePrimitive* type = (TypePrimitive*)currType;
 
