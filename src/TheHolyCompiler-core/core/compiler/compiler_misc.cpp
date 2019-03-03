@@ -345,7 +345,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
 	}
 
-	List<uint32> ids;
+	List<ID*> ids;
 
 	while (true) {
 		TypeBase* tmp = CreateType(tokens, start + offset, nullptr);
