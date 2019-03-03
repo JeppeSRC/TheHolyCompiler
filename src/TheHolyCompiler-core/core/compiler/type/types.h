@@ -106,9 +106,9 @@ public:
 class InstTypeVector : public InstTypeBase {
 public:
 	uint32 componentCount;
-	uint32 componentTypeId;
+	compiler::ID* componentTypeId;
 
-	InstTypeVector(uint32 compCount, uint32 compTypeId);
+	InstTypeVector(uint32 compCount, compiler::ID* compTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -118,9 +118,9 @@ public:
 class InstTypeMatrix : public InstTypeBase {
 public:
 	uint32 columnCount;
-	uint32 columnTypeId;
+	compiler::ID* columnTypeId;
 
-	InstTypeMatrix(uint32 columnCount, uint32 columnTypeId);
+	InstTypeMatrix(uint32 columnCount, compiler::ID* columnTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -130,9 +130,9 @@ public:
 class InstTypeArray : public InstTypeBase {
 public:
 	uint32 elementCount;
-	uint32 elementTypeId;
+	compiler::ID* elementTypeId;
 
-	InstTypeArray(uint32 elementCount, uint32 elementTypeId);
+	InstTypeArray(uint32 elementCount, compiler::ID* elementTypeId);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -142,9 +142,9 @@ public:
 class InstTypeStruct : public InstTypeBase {
 public:
 	uint32 memberCount;
-	uint32 memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
+	compiler::ID* memberTypeId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
-	InstTypeStruct(uint32 memberCount, uint32* memberTypeIds);
+	InstTypeStruct(uint32 memberCount, compiler::ID** memberTypeIds);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -154,9 +154,9 @@ public:
 class InstTypePointer : public InstTypeBase {
 public:
 	uint32 storageClass;
-	uint32 typeId;
+	compiler::ID* typeId;
 
-	InstTypePointer(uint32 storageClass, uint32 typeId);
+	InstTypePointer(uint32 storageClass, compiler::ID* typeId);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -165,11 +165,11 @@ public:
 
 class InstTypeFunction : public InstTypeBase {
 public:
-	uint32 returnTypeId;
+	compiler::ID* returnTypeId;
 	uint32 parameterCount;
-	uint32 parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
+	compiler::ID* parameterId[THC_LIMIT_FUNCTION_PARAMETERS];
 
-	InstTypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds);
+	InstTypeFunction(compiler::ID* returnTypeId, uint32 parameterCount, compiler::ID** parameterIds);
 
 	void GetInstWords(uint32* words) const override;
 
