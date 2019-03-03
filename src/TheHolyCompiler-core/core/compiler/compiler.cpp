@@ -792,7 +792,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 	Token op = tokens[info->start + offset++];
 
 	if (Utils::CompareEnums(op.type, CompareOperation::Or, TokenType::OperatorSelector, TokenType::BracketOpen)) {
-		List<uint32> accessIds;
+		List<ID*> accessIds;
 		
 		String n = name.string;
 		TypeBase* curr = var->type;
