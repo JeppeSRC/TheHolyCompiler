@@ -1118,7 +1118,7 @@ ID* Compiler::CreateConstantCompositeVector(const TypeBase* const type, const ui
 ID* Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values) {
 	const TypePrimitive* prim = (const TypePrimitive*)type;
 
-	List<uint32> ids;
+	List<ID*> ids;
 
 	TypePrimitive* tmp = (TypePrimitive*)type;
 	TypePrimitive* p = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, tmp->rows);
