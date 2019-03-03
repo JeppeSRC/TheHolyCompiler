@@ -40,7 +40,7 @@ private: //Type stuff
 		type::Type type; //Type
 		utils::String typeString; //Type as a string
 
-		uint32 typeId; //OpType id
+		ID* typeId; //OpType id
 
 		virtual bool operator==(const TypeBase* const other) const;
 		virtual bool operator!=(const TypeBase* const other) const;
@@ -162,15 +162,15 @@ private: //Variable stuff
 		utils::String name;
 
 		TypeBase* type;
-		uint32 typePointerId;
-		uint32 variableId;
+		ID* typePointerId;
+		ID* variableId;
 
 		bool isConstant;
 	};
 
 	struct ResultVariable {
 		TypeBase* type;
-		uint32 id;
+		ID* id;
 
 		bool isVariable;
 		bool isConstant;
@@ -188,11 +188,11 @@ private: //Variable stuff
 	
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name, VariableStack* localVariables);
 
-	ResultVariable Cast(TypeBase* cType, TypeBase* type, uint32 operandId);
-	ResultVariable Add(TypeBase* type, uint32 operand1, uint32 operand2);
-	ResultVariable Subtract(TypeBase* type, uint32 operand1, uint32 operand2);
-	ResultVariable Multiply(TypeBase* type, uint32 operand1, uint32 operand2);
-	ResultVariable Divide(TypeBase* type, uint32 operand1, uint32 operand2);
+	ResultVariable Cast(TypeBase* cType, TypeBase* type, ID* operandId);
+	ResultVariable Add(TypeBase* type, ID* operand1, ID* operand2);
+	ResultVariable Subtract(TypeBase* type, ID* operand1, ID* operand2);
+	ResultVariable Multiply(TypeBase* type, ID* operand1, ID* operand2);
+	ResultVariable Divide(TypeBase* type, ID* operand1, ID* operand2);
 
 private:
 	class VariableStack {
@@ -229,8 +229,8 @@ private: //Function stuff
 
 		bool defined;
 
-		uint32 typeId;
-		uint32 id;
+		ID* typeId;
+		ID* id;
 
 		utils::List<instruction::InstBase*> declInstructions;
 
