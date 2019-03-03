@@ -910,7 +910,7 @@ Compiler::ResultVariable Compiler::Add(TypeBase* type, ID* operand1, ID* operand
 	return res;
 }
 
-Compiler::ResultVariable Compiler::Subtract(TypeBase* type, uint32 operand1, uint32 operand2) {
+Compiler::ResultVariable Compiler::Subtract(TypeBase* type, ID* operand1, ID* operand2) {
 	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
 	TypePrimitive* t = (TypePrimitive*)type;
 
