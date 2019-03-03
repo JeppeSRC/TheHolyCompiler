@@ -77,7 +77,7 @@ void InstTypeArray::GetInstWords(uint32* words) const {
 
 	words[1] = id->id;
 	words[2] = elementTypeId->id;
-	words[3] = elementCount;
+	words[3] = elementCountId->id;
 }
 
 void InstTypeStruct::GetInstWords(uint32* words) const {

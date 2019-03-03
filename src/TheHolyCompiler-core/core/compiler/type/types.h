@@ -129,10 +129,10 @@ public:
 
 class InstTypeArray : public InstTypeBase {
 public:
-	uint32 elementCount;
+	compiler::ID* elementCountId;
 	compiler::ID* elementTypeId;
 
-	InstTypeArray(uint32 elementCount, compiler::ID* elementTypeId);
+	InstTypeArray(compiler::ID* elementCount, compiler::ID* elementTypeId);
 
 	void GetInstWords(uint32* words) const override;
 

@@ -69,7 +69,7 @@ InstTypeVector::InstTypeVector(uint32 compCount, compiler::ID* compTypeId) : Ins
 
 InstTypeMatrix::InstTypeMatrix(uint32 columnCount, compiler::ID* columnTypeId) : InstTypeBase(Type::Matrix, THC_SPIRV_OPCODE_OpTypeMatrix, 4, "OpTypeMatrix"), columnCount(columnCount), columnTypeId(columnTypeId) {}
 
-InstTypeArray::InstTypeArray(uint32 elementCount, compiler::ID* elementTypeId) : InstTypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCount(elementCount), elementTypeId(elementTypeId) {}
+InstTypeArray::InstTypeArray(compiler::ID* elementCountId, compiler::ID* elementTypeId) : InstTypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCountId(elementCountId), elementTypeId(elementTypeId) {}
 
 InstTypeStruct::InstTypeStruct(uint32 memberCount, compiler::ID** memberTypeIds) : InstTypeBase(Type::Struct, THC_SPIRV_OPCODE_OpTypeStruct, 2, "OpTypeStruct"), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount * sizeof(void*)); }
 
