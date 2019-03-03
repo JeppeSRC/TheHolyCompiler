@@ -1044,7 +1044,7 @@ ID* Compiler::CreateConstantS32(int32 value) {
 	return CreateConstant(&p, *(uint32*)&value);
 }
 
-uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
+ID* Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	if (IsTypeComposite(type)) {
 		Log::Error("Can't create Constant from a composite \"%s\"", type->typeString);
 		return ~0;
@@ -1057,17 +1057,17 @@ uint32 Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
 	return constant->id;
 }
 
-uint32 Compiler::CreateConstant(const TypeBase* const type, float32 value) {
+ID* Compiler::CreateConstant(const TypeBase* const type, float32 value) {
 	return CreateConstant(type, *(uint32*)&value);
 }
 
-uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const List<uint32>& values) {
+ID* Compiler::CreateConstantComposite(const TypeBase* const type, const List<uint32>& values) {
 	const uint32* v = values.GetData();
 
 	return CreateConstantComposite(type, &v);
 }
 
-uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const uint32** values) {
+ID* Compiler::CreateConstantComposite(const TypeBase* const type, const uint32** values) {
 	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create ConstantComposite from a non composite \"%s\"", type->typeString);
 		return ~0;
@@ -1094,7 +1094,7 @@ uint32 Compiler::CreateConstantComposite(const TypeBase* const type, const uint3
 	return id;
 }
 
-uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const uint32** values) {
+ID* Compiler::CreateConstantCompositeVector(const TypeBase* const type, const uint32** values) {
 	const TypePrimitive* prim = (const TypePrimitive*)type;
 
 	List<uint32> ids;
@@ -1115,7 +1115,7 @@ uint32 Compiler::CreateConstantCompositeVector(const TypeBase* const type, const
 	return composite->id;
 }
 
-uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values) {
+ID* Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const uint32** values) {
 	const TypePrimitive* prim = (const TypePrimitive*)type;
 
 	List<uint32> ids;
@@ -1134,7 +1134,7 @@ uint32 Compiler::CreateConstantCompositeMatrix(const TypeBase* const type, const
 	return composite->id;
 }
 
-uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
+ID* Compiler::CreateConstantCompositeArray(const TypeBase* const type, const uint32** values) {
 	const TypeArray* arr = (const TypeArray*)type;
 
 	List<uint32> ids;
@@ -1158,10 +1158,10 @@ uint32 Compiler::CreateConstantCompositeArray(const TypeBase* const type, const 
 	return composite->id;
 }
 
-uint32 Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
+ID* Compiler::CreateConstantCompositeStruct(const TypeBase* const type, const uint32** values) {
 	const TypeStruct* str = (const TypeStruct*)type;
 
-	List<uint32> ids;
+	List<ID*> ids;
 
 	for (uint64 i = 0; i < str->members.GetCount(); i++) {
 		const TypeBase* member = str->members[i].type;
