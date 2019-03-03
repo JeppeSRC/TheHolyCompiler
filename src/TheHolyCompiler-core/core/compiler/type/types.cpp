@@ -65,17 +65,17 @@ InstTypeInt::InstTypeInt(uint32 bits, uint32 sign) : InstTypeBase(Type::Int, THC
 
 InstTypeFloat::InstTypeFloat(uint32 bits) : InstTypeBase(Type::Float, THC_SPIRV_OPCODE_OpTypeFloat, 3, "OpTypeFloat"), bits(bits) { }
 
-InstTypeVector::InstTypeVector(uint32 compCount, uint32 compTypeId) : InstTypeBase(Type::Vector, THC_SPIRV_OPCODE_OpTypeVector, 4, "OpTypeVector"), componentCount(compCount), componentTypeId(compTypeId) {}
+InstTypeVector::InstTypeVector(uint32 compCount, compiler::ID* compTypeId) : InstTypeBase(Type::Vector, THC_SPIRV_OPCODE_OpTypeVector, 4, "OpTypeVector"), componentCount(compCount), componentTypeId(compTypeId) {}
 
-InstTypeMatrix::InstTypeMatrix(uint32 columnCount, uint32 columnTypeId) : InstTypeBase(Type::Matrix, THC_SPIRV_OPCODE_OpTypeMatrix, 4, "OpTypeMatrix"), columnCount(columnCount), columnTypeId(columnTypeId) {}
+InstTypeMatrix::InstTypeMatrix(uint32 columnCount, compiler::ID* columnTypeId) : InstTypeBase(Type::Matrix, THC_SPIRV_OPCODE_OpTypeMatrix, 4, "OpTypeMatrix"), columnCount(columnCount), columnTypeId(columnTypeId) {}
 
-InstTypeArray::InstTypeArray(uint32 elementCount, uint32 elementTypeId) : InstTypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCount(elementCount), elementTypeId(elementTypeId) {}
+InstTypeArray::InstTypeArray(uint32 elementCount, compiler::ID* elementTypeId) : InstTypeBase(Type::Array, THC_SPIRV_OPCODE_OpTypeArray, 4, "OpTypeArray"), elementCount(elementCount), elementTypeId(elementTypeId) {}
 
-InstTypeStruct::InstTypeStruct(uint32 memberCount, uint32* memberTypeIds) : InstTypeBase(Type::Struct, THC_SPIRV_OPCODE_OpTypeStruct, 2, "OpTypeStruct"), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount << 2); }
+InstTypeStruct::InstTypeStruct(uint32 memberCount, compiler::ID** memberTypeIds) : InstTypeBase(Type::Struct, THC_SPIRV_OPCODE_OpTypeStruct, 2, "OpTypeStruct"), memberCount(memberCount) { memcpy(memberTypeId, memberTypeIds, memberCount * sizeof(void*)); }
 
-InstTypePointer::InstTypePointer(uint32 storageClass, uint32 typeId) : InstTypeBase(Type::Pointer, THC_SPIRV_OPCODE_OpTypePointer, 4, "OpTypePointer"), storageClass(storageClass), typeId(typeId) {}
+InstTypePointer::InstTypePointer(uint32 storageClass, compiler::ID* typeId) : InstTypeBase(Type::Pointer, THC_SPIRV_OPCODE_OpTypePointer, 4, "OpTypePointer"), storageClass(storageClass), typeId(typeId) {}
 
-InstTypeFunction::InstTypeFunction(uint32 returnTypeId, uint32 parameterCount, uint32* parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount << 2); }
+InstTypeFunction::InstTypeFunction(compiler::ID* returnTypeId, uint32 parameterCount, compiler::ID** parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount * sizeof(void*)); }
 
 bool InstTypeVoid::operator==(const InstTypeBase* type) const {
 	return this->type == type->type;

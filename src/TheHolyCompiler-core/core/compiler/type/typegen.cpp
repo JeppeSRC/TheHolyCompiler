@@ -32,19 +32,19 @@ namespace type {
 void InstTypeVoid::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
+	words[1] = id->id;
 }
 
 void InstTypeBool::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
+	words[1] = id->id;
 }
 
 void InstTypeInt::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
+	words[1] = id->id;
 	words[2] = bits;
 	words[3] = sign;
 }
@@ -52,31 +52,31 @@ void InstTypeInt::GetInstWords(uint32* words) const {
 void InstTypeFloat::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
+	words[1] = id->id;
 	words[2] = bits;
 }
 
 void InstTypeVector::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
-	words[2] = componentTypeId;
+	words[1] = id->id;
+	words[2] = componentTypeId->id;
 	words[3] = componentCount;
 }
 
 void InstTypeMatrix::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
-	words[2] = columnTypeId;
+	words[1] = id->id;
+	words[2] = columnTypeId->id;
 	words[3] = columnCount;
 }
 
 void InstTypeArray::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
-	words[2] = elementTypeId;
+	words[1] = id->id;
+	words[2] = elementTypeId->id;
 	words[3] = elementCount;
 }
 
@@ -84,25 +84,31 @@ void InstTypeStruct::GetInstWords(uint32* words) const {
 	wordCount += memberCount;
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
-	memcpy(words+2, memberTypeId, memberCount << 2);
+	words[1] = id->id;
+
+	for (uint32 i = 0; i < memberCount; i++) {
+		words[i + 2] = memberTypeId[i]->id;
+	}
 }
 
 void InstTypePointer::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
+	words[1] = id->id;
 	words[2] = storageClass;
-	words[3] = typeId;
+	words[3] = typeId->id;
 }
 
 void InstTypeFunction::GetInstWords(uint32* words) const {
 	wordCount += parameterCount;
 	InstBase::GetInstWords(words);
 
-	words[1] = id;
-	words[2] = returnTypeId;
-	memcpy(words+3, parameterId, parameterCount << 2);
+	words[1] = id->id;
+	words[2] = returnTypeId->id;
+	
+	for (uint32 i = 0; i < parameterCount; i++) {
+		words[i + 3] = parameterId[i]->id;
+	}
 }
 
 }
