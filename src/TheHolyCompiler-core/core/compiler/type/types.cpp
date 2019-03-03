@@ -117,7 +117,7 @@ bool InstTypeArray::operator==(const InstTypeBase* type) const {
 	if (this->type != type->type) return false;
 	InstTypeArray* t = (InstTypeArray*)type;
 
-	return elementCount == t->elementCount && elementTypeId == t->elementTypeId;
+	return elementCountId == t->elementCountId && elementTypeId == t->elementTypeId;
 }
 
 bool InstTypeStruct::operator==(const InstTypeBase* type) const {
