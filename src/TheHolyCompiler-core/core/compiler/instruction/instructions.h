@@ -68,19 +68,19 @@ public:
 
 class InstUndef : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 
-	InstUndef(uint32 resultTypeId);
+	InstUndef(compiler::ID* resultTypeId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSizeOf : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 pointerId;
+	compiler::ID* resultTypeId;
+	compiler::ID* pointerId;
 
-	InstSizeOf(uint32 resultTypeId, uint32 pointerId);
+	InstSizeOf(compiler::ID* resultTypeId, compiler::ID* pointerId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -102,10 +102,10 @@ class InstSource : public InstBase {
 public:
 	uint32 sourceLanguage;
 	uint32 version;
-	uint32 fileNameId;
+	compiler::ID* fileNameId;
 	char* source;
 
-	InstSource(uint32 sourceLanguage, uint32 version, uint32 fileNameId, const char* const source);
+	InstSource(uint32 sourceLanguage, uint32 version, compiler::ID* fileNameId, const char* const source);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -121,10 +121,10 @@ public:
 
 class InstName : public InstBase {
 public:
-	uint32 targetId;
+	compiler::ID* targetId;
 	char* name;
 
-	InstName(uint32 targetId, const char* const name);
+	InstName(compiler::ID* targetId, const char* const name);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -132,11 +132,11 @@ public:
 
 class InstMemberName : public InstBase {
 public:
-	uint32 typeId;
+	compiler::ID* typeId;
 	uint32 member;
 	char* name;
 
-	InstMemberName(uint32 typeId, uint32 member, const char* const name);
+	InstMemberName(compiler::ID* typeId, uint32 member, const char* const name);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -153,11 +153,11 @@ public:
 
 class InstLine : public InstBase {
 public:
-	uint32 fileNameId;
+	compiler::ID* fileNameId;
 	uint32 line;
 	uint32 column;
 
-	InstLine(uint32 fileNameId, uint32 line, uint32 column);
+	InstLine(compiler::ID* fileNameId, uint32 line, uint32 column);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -176,25 +176,25 @@ public:
 
 class InstDecorate : public InstBase {
 public:
-	uint32 targetId;
+	compiler::ID* targetId;
 	uint32 decoration;
 	uint32 numDecorationLiterals;
 	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstDecorate(uint32 targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
+	InstDecorate(compiler::ID* targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstMemberDecorate : public InstBase {
 public:
-	uint32 structId;
+	compiler::ID* structId;
 	uint32 member;
 	uint32 decoration;
 	uint32 numDecorationLiterals;
 	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstMemberDecorate(uint32 structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
+	InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -208,11 +208,11 @@ public:
 
 class InstGroupDecorate : public InstBase {
 public:
-	uint32 groupId;
+	compiler::ID* groupId;
 	uint32 numTargets;
 	uint32 targets[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstGroupDecorate(uint32 groupId, uint32* targets, uint32 numTargets);
+	InstGroupDecorate(compiler::ID* groupId, uint32* targets, uint32 numTargets);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -266,24 +266,24 @@ public:
 class InstEntryPoint : public InstBase {
 public:
 	uint32 executionModel;
-	uint32 entryPointId;
+	compiler::ID* entryPointId;
 	char* entryPointName;
 	uint32 inoutVariableCount;
 	uint32 inoutVariables[THC_LIMIT_GLOBAL_VARIABLES];
 
-	InstEntryPoint(uint32 executionModel, uint32 entryPointId, const char* const entryPointName, uint32 inoutVariableCount, uint32* inoutVariables);
+	InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, uint32* inoutVariables);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstExecutionMode : public InstBase {
 public:
-	uint32 entryPointId;
+	compiler::ID* entryPointId;
 	uint32 mode;
 	uint32 extraOperandCount;
 	uint32 extraOperand[256];
 
-	InstExecutionMode(uint32 entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands);
+	InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands);
 
 	void GetInstWords(uint32* words) const;
 };
@@ -308,7 +308,7 @@ public:
 
 class InstConstant : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 valueCount;
 	uint32* values;
 
@@ -317,9 +317,9 @@ public:
 		float32 f32;
 	};
 
-	InstConstant(uint32 resultTypeId, uint32 valueCount, void* values);
-	InstConstant(uint32 resultTypeId, uint32 value);
-	InstConstant(uint32 resultTypeId, float32 value);
+	InstConstant(compiler::ID* resultTypeId, uint32 valueCount, void* values);
+	InstConstant(compiler::ID* resultTypeId, uint32 value);
+	InstConstant(compiler::ID* resultTypeId, float32 value);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -328,11 +328,11 @@ public:
 
 class InstConstantComposite : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 constituentCount;
 	uint32* constituents;
 
-	InstConstantComposite(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
+	InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -347,33 +347,33 @@ public:
 
 class InstVariable : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 storageClass;
 	uint32 initializer;
 
-	InstVariable(uint32 resultTypeId, uint32 storageClass, uint32 initializer);
+	InstVariable(compiler::ID* resultTypeId, uint32 storageClass, uint32 initializer);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLoad : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 pointerId;
+	compiler::ID* resultTypeId;
+	compiler::ID* pointerId;
 	uint32 memoryAccess;
 
-	InstLoad(uint32 resultTypeId, uint32 pointerId, uint32 memoryAccess);
+	InstLoad(compiler::ID* resultTypeId, compiler::ID* pointerId, uint32 memoryAccess);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstStore : public InstBase {
 public:
-	uint32 pointerId;
-	uint32 objectId;
+	compiler::ID* pointerId;
+	compiler::ID* objectId;
 	uint32 memoryAccess;
 
-	InstStore(uint32 pointerId, uint32 objectId, uint32 memoryAccess);
+	InstStore(compiler::ID* pointerId, compiler::ID* objectId, uint32 memoryAccess);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -381,47 +381,47 @@ public:
 
 class InstCopyMemory : public InstBase {
 public:
-	uint32 targetId;
-	uint32 sourceId;
+	compiler::ID* targetId;
+	compiler::ID* sourceId;
 	uint32 memoryAccess;
 
-	InstCopyMemory(uint32 targetId, uint32 sourceId, uint32 memoryAccess);
+	InstCopyMemory(compiler::ID* targetId, compiler::ID* sourceId, uint32 memoryAccess);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstCopyMemorySized : public InstBase {
 public:
-	uint32 targetId;
-	uint32 sourceId;
-	uint32 sizeId;
+	compiler::ID* targetId;
+	compiler::ID* sourceId;
+	compiler::ID* sizeId;
 	uint32 memoryAccess;
 
-	InstCopyMemorySized(uint32 targetId, uint32 sourceId, uint32 sizeId, uint32 memoryAccess);
+	InstCopyMemorySized(compiler::ID* targetId, compiler::ID* sourceId, compiler::ID* sizeId, uint32 memoryAccess);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstAccessChain : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 baseId;
+	compiler::ID* resultTypeId;
+	compiler::ID* baseId;
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_INDEXES];
 
-	InstAccessChain(uint32 resultTypeId, uint32 baseId, uint32 indexCount, uint32* indices);
+	InstAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstInBoundsAccessChain : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 baseId;
+	compiler::ID* resultTypeId;
+	compiler::ID* baseId;
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_INDEXES];
 
-	InstInBoundsAccessChain(uint32 resultTypeId, uint32 baseId, uint32 indexCount, uint32* indices);
+	InstInBoundsAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -434,20 +434,20 @@ public:
 
 class InstFunction : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 functionControl;
-	uint32 functionTypeId;
+	compiler::ID* functionTypeId;
 
-	InstFunction(uint32 resultTypeId, uint32 functionControl, uint32 functionTypeId);
+	InstFunction(compiler::ID* resultTypeId, uint32 functionControl, compiler::ID* functionTypeId);
 
 	void GetInstWords(uint32* words) const override;
 }; 
 
 class InstFunctionParameter : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 
-	InstFunctionParameter(uint32 resultTypeId);
+	InstFunctionParameter(compiler::ID* resultTypeId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -461,12 +461,12 @@ public:
 
 class InstFunctionCall : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 functionId;
+	compiler::ID* resultTypeId;
+	compiler::ID* functionId;
 	uint32 argumentCount;
 	uint32 argument[THC_LIMIT_OPFUNCTIONCALL_ARGUMENTS];
 
-	InstFunctionCall(uint32 resultTypeId, uint32 functionId, uint32 argumentCount, uint32* arguments);
+	InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, uint32* arguments);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -483,70 +483,70 @@ public:
 
 class InstConvertFToU : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertFToU(uint32 resultTypeId, uint32 valueId);
+	InstConvertFToU(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertFToS : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertFToS(uint32 resultTypeId, uint32 valueId);
+	InstConvertFToS(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertSToF : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertSToF(uint32 resultTypeId, uint32 valueId);
+	InstConvertSToF(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertUToF : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertUToF(uint32 resultTypeId, uint32 valueId);
+	InstConvertUToF(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUConvert : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstUConvert(uint32 resultTypeId, uint32 valueId);
+	InstUConvert(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSConvert : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstSConvert(uint32 resultTypeId, uint32 valueId);
+	InstSConvert(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFConvert : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstFConvert(uint32 resultTypeId, uint32 valueId);
+	InstFConvert(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -555,20 +555,20 @@ public:
 
 class InstConvertPtrToU : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertPtrToU(uint32 resultTypeId, uint32 valueId);
+	InstConvertPtrToU(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstConvertUToPtr : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 valueId;
+	compiler::ID* resultTypeId;
+	compiler::ID* valueId;
 
-	InstConvertUToPtr(uint32 resultTypeId, uint32 valueId);
+	InstConvertUToPtr(compiler::ID* resultTypeId, compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -581,92 +581,92 @@ public:
 
 class InstVectorExtractDynamic : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
-	uint32 indexId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
+	compiler::ID* indexId;
 
-	InstVectorExtractDynamic(uint32 resultTypeId, uint32 vectorId, uint32 indexId);
+	InstVectorExtractDynamic(compiler::ID* resultTypeId, compiler::ID* vectorId, compiler::ID* indexId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorInsertDynamic : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
-	uint32 componentId;
-	uint32 indexId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
+	compiler::ID* componentId;
+	compiler::ID* indexId;
 
-	InstVectorInsertDynamic(uint32 resultTypeId, uint32 vectorId, uint32 componentId, uint32 indexId);
+	InstVectorInsertDynamic(compiler::ID* resultTypeId, compiler::ID* vectorId, compiler::ID* componentId, compiler::ID* indexId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorShuffle : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vector1Id;
-	uint32 vector2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* vector1Id;
+	compiler::ID* vector2Id;
 	uint32 componentCount;
 	uint32 component[4];
 
-	InstVectorShuffle(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id, uint32 componentCount, uint32* components);
+	InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, uint32* components);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeConstruct: public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 constituentCount;
 	uint32 constituent[512];
 
-	InstCompositeConstruct(uint32 resultTypeId, uint32 constituentCount, uint32* constituents);
+	InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeExtract : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 compositeId;
+	compiler::ID* resultTypeId;
+	compiler::ID* compositeId;
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeExtract(uint32 resultTypeId, uint32 compositeId, uint32 indexCount, uint32* indices);
+	InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstCompositeInsert : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 objectId;
-	uint32 compositeId;
+	compiler::ID* resultTypeId;
+	compiler::ID* objectId;
+	compiler::ID* compositeId;
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeInsert(uint32 resultTypeId, uint32 objectId, uint32 compositeId, uint32 indexCount, uint32* indices);
+	InstCompositeInsert(compiler::ID* resultTypeId, compiler::ID* objectId, compiler::ID* compositeId, uint32 indexCount, uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstCopyObject : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstCopyObject(uint32 resultTypeId, uint32 operandId);
+	InstCopyObject(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstTranspose : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 matrixId;
+	compiler::ID* resultTypeId;
+	compiler::ID* matrixId;
 
-	InstTranspose(uint32 resultTypeId, uint32 operandId);
+	InstTranspose(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -677,295 +677,295 @@ public:
 
 class InstSNegate : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstSNegate(uint32 resultTypeId, uint32 operandId);
+	InstSNegate(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFNegate : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstFNegate(uint32 resultTypeId, uint32 operandId);
+	InstFNegate(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIAdd : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstIAdd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstIAdd(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFAdd : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFAdd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFAdd(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstISub : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstISub(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstISub(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFSub : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFSub(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFSub(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIMul : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstIMul(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstIMul(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFMul : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFMul(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFMul(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUDiv : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstUDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstUDiv(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSDiv : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSDiv(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFDiv : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFDiv(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFDiv(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUMod : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstUMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstUMod(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSRem : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSRem(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSRem(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSMod : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSMod(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFRem : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFRem(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFRem(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFMod : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFMod(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFMod(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorTimesScalar : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
-	uint32 scalarId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
+	compiler::ID* scalarId;
 
-	InstVectorTimesScalar(uint32 resultTypeId, uint32 vectorId, uint32 scalarId);
+	InstVectorTimesScalar(compiler::ID* resultTypeId, compiler::ID* vectorId, compiler::ID* scalarId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesScalar : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 matrixId;
-	uint32 scalarId;
+	compiler::ID* resultTypeId;
+	compiler::ID* matrixId;
+	compiler::ID* scalarId;
 
-	InstMatrixTimesScalar(uint32 resultTypeId, uint32 matrixId, uint32 scalarId);
+	InstMatrixTimesScalar(compiler::ID* resultTypeId, compiler::ID* matrixId, compiler::ID* scalarId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstVectorTimesMatrix : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
-	uint32 matrixId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
+	compiler::ID* matrixId;
 
-	InstVectorTimesMatrix(uint32 resultTypeId, uint32 vectorId, uint32 matrixId);
+	InstVectorTimesMatrix(compiler::ID* resultTypeId, compiler::ID* vectorId, compiler::ID* matrixId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesVector: public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 matrixId;
-	uint32 vectorId;
+	compiler::ID* resultTypeId;
+	compiler::ID* matrixId;
+	compiler::ID* vectorId;
 
-	InstMatrixTimesVector(uint32 resultTypeId, uint32 matrixId, uint32 vectorId);
+	InstMatrixTimesVector(compiler::ID* resultTypeId, compiler::ID* matrixId, compiler::ID* vectorId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstMatrixTimesMatrix : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 matrix1Id;
-	uint32 matrix2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* matrix1Id;
+	compiler::ID* matrix2Id;
 
-	InstMatrixTimesMatrix(uint32 resultTypeId, uint32 matrix1Id, uint32 matrix2Id);
+	InstMatrixTimesMatrix(compiler::ID* resultTypeId, compiler::ID* matrix1Id, compiler::ID* matrix2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstOuterProduct : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vector1Id;
-	uint32 vector2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* vector1Id;
+	compiler::ID* vector2Id;
 
-	InstOuterProduct(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id);
+	InstOuterProduct(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstDot : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vector1Id;
-	uint32 vector2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* vector1Id;
+	compiler::ID* vector2Id;
 
-	InstDot(uint32 resultTypeId, uint32 vector1Id, uint32 vector2Id);
+	InstDot(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIAddCarry: public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstIAddCarry(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstIAddCarry(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstISubBorrow : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstISubBorrow(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstISubBorrow(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUMulExtended : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstUMulExtended(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstUMulExtended(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSMulExtended : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSMulExtended(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSMulExtended(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -976,86 +976,86 @@ public:
 
 class InstShiftRightLogical : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 baseId;
-	uint32 shiftId;
+	compiler::ID* resultTypeId;
+	compiler::ID* baseId;
+	compiler::ID* shiftId;
 
-	InstShiftRightLogical(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
+	InstShiftRightLogical(compiler::ID* resultTypeId, compiler::ID* baseId, compiler::ID* shiftId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstShiftRightArithmetic : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 baseId;
-	uint32 shiftId;
+	compiler::ID* resultTypeId;
+	compiler::ID* baseId;
+	compiler::ID* shiftId;
 
-	InstShiftRightArithmetic(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
+	InstShiftRightArithmetic(compiler::ID* resultTypeId, compiler::ID* baseId, compiler::ID* shiftId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstShiftLeftLogical : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 baseId;
-	uint32 shiftId;
+	compiler::ID* resultTypeId;
+	compiler::ID* baseId;
+	compiler::ID* shiftId;
 
-	InstShiftLeftLogical(uint32 resultTypeId, uint32 baseId, uint32 shiftId);
+	InstShiftLeftLogical(compiler::ID* resultTypeId, compiler::ID* baseId, compiler::ID* shiftId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseOr: public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstBitwiseOr(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstBitwiseOr(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseXor : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstBitwiseXor(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstBitwiseXor(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitwiseAnd : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstBitwiseAnd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstBitwiseAnd(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstNot : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstNot(uint32 resultTypeId, uint32 operandId);
+	InstNot(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstBitReverse : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
 
-	InstBitReverse(uint32 resultTypeId, uint32 operand1Id);
+	InstBitReverse(compiler::ID* resultTypeId, compiler::ID* operand1Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1068,40 +1068,40 @@ public:
 
 class InstAny : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
 
-	InstAny(uint32 resultTypeId, uint32 vectorId);
+	InstAny(compiler::ID* resultTypeId, compiler::ID* vectorId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstAll : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 vectorId;
+	compiler::ID* resultTypeId;
+	compiler::ID* vectorId;
 
-	InstAll(uint32 resultTypeId, uint32 vectorId);
+	InstAll(compiler::ID* resultTypeId, compiler::ID* vectorId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIsNan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstIsNan(uint32 resultTypeId, uint32 operandId);
+	InstIsNan(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIsInf : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstIsInf(uint32 resultTypeId, uint32 operandId);
+	InstIsInf(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1109,77 +1109,77 @@ public:
 
 class InstLogicalEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstLogicalEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstLogicalEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalNotEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstLogicalNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstLogicalNotEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalOr: public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstLogicalOr(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstLogicalOr(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalAnd : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstLogicalAnd(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstLogicalAnd(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLogicalNot : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operandId;
+	compiler::ID* resultTypeId;
+	compiler::ID* operandId;
 
-	InstLogicalNot(uint32 resultTypeId, uint32 operandId);
+	InstLogicalNot(compiler::ID* resultTypeId, compiler::ID* operandId);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSelect : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 conditionId;
-	uint32 object1Id;
-	uint32 object2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* conditionId;
+	compiler::ID* object1Id;
+	compiler::ID* object2Id;
 
-	InstSelect(uint32 resultTypeId, uint32 conditionId, uint32 object1Id, uint32 object2Id);
+	InstSelect(compiler::ID* resultTypeId, compiler::ID* conditionId, compiler::ID* object1Id, compiler::ID* object2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstIEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstIEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstIEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1187,22 +1187,22 @@ public:
 
 class InstINotEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstINotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstINotEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUGreaterThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstUGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstUGreaterThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1210,44 +1210,44 @@ public:
 
 class InstSGreaterThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSGreaterThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstUGreaterThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstUGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstUGreaterThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSGreaterThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSGreaterThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstULessThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstULessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstULessThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1255,165 +1255,165 @@ public:
 
 class InstSLessThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSLessThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstULessThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstULessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstULessThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSLessThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstSLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstSLessThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdNotEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdNotEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordNotEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordNotEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordNotEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdLessThan: public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdLessThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordLessThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordLessThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordLessThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdGreaterThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdGreaterThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordGreaterThan : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordGreaterThan(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordGreaterThan(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdLessThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdLessThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordLessThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordLessThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordLessThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFOrdGreaterThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFOrdGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFOrdGreaterThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstFUnordGreaterThanEqual : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 operand1Id;
-	uint32 operand2Id;
+	compiler::ID* resultTypeId;
+	compiler::ID* operand1Id;
+	compiler::ID* operand2Id;
 
-	InstFUnordGreaterThanEqual(uint32 resultTypeId, uint32 operand1Id, uint32 operand2Id);
+	InstFUnordGreaterThanEqual(compiler::ID* resultTypeId, compiler::ID* operand1Id, compiler::ID* operand2Id);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1434,33 +1434,33 @@ typedef unsigned long long PhiPair;
 
 class InstPhi : public InstBase {
 public:
-	uint32 resultTypeId;
+	compiler::ID* resultTypeId;
 	uint32 pairCount;
 	PhiPair pairs[32];
 
-	InstPhi(uint32 resultTypeId, uint32 pairCount, PhiPair* pairs);
+	InstPhi(compiler::ID* resultTypeId, uint32 pairCount, PhiPair* pairs);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstLoopMerge : public InstBase {
 public:
-	uint32 mergeBlockId;
-	uint32 continueTargetId;
+	compiler::ID* mergeBlockId;
+	compiler::ID* continueTargetId;
 	uint32 loopControl;
 	//TODO: parameters when needed
 
-	InstLoopMerge(uint32 mergeBlockId, uint32 continueTargetId, uint32 loopControl);
+	InstLoopMerge(compiler::ID* mergeBlockId, compiler::ID* continueTargetId, uint32 loopControl);
 
 	void GetInstWords(uint32* words) const override;
 };
 
 class InstSelectionMerge: public InstBase {
 public:
-	uint32 mergeBlockId;
+	compiler::ID* mergeBlockId;
 	uint32 selectionControl;
 
-	InstSelectionMerge(uint32 mergeBlockId, uint32 selectionControl);
+	InstSelectionMerge(compiler::ID* mergeBlockId, uint32 selectionControl);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1484,13 +1484,13 @@ public:
 
 class InstBranchConditional : public InstBase {
 public:
-	uint32 conditionId;
-	uint32 trueLabelId;
-	uint32 falseLabelId;
+	compiler::ID* conditionId;
+	compiler::ID* trueLabelId;
+	compiler::ID* falseLabelId;
 	uint32 trueWeight;
 	uint32 falseWeight;
 
-	InstBranchConditional(uint32 conditionId, uint32 trueLabelId, uint32 falseLabelId, uint32 trueWeight, uint32 falseWeight);
+	InstBranchConditional(compiler::ID* conditionId, compiler::ID* trueLabelId, compiler::ID* falseLabelId, uint32 trueWeight, uint32 falseWeight);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1499,12 +1499,12 @@ typedef unsigned long long SwitchPair;
 
 class InstSwitch : public InstBase {
 public:
-	uint32 selectorId;
-	uint32 defaultId;
+	compiler::ID* selectorId;
+	compiler::ID* defaultId;
 	uint32 pairCount;
 	SwitchPair pairs[THC_LIMIT_OPSWITCH_PAIRS];
 
-	InstSwitch(uint32 selectorId, uint32 defaultId);
+	InstSwitch(compiler::ID* selectorId, compiler::ID* defaultId);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1523,9 +1523,9 @@ public:
 
 class InstReturnValue : public InstBase {
 public:
-	uint32 valueId;
+	compiler::ID* valueId;
 
-	InstReturnValue(uint32 valueId);
+	InstReturnValue(compiler::ID* valueId);
 
 	void GetInstWords(uint32* words) const override;
 };
