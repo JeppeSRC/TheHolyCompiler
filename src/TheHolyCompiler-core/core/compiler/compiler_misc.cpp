@@ -114,13 +114,13 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		var->sign = 0;
 		var->rows = 0;
 		var->columns = 0;
-		var->typeId = ~0;
+		var->typeId = nullptr;
 
 		CheckTypeExist((TypeBase**)&var);
 
 		tokens.RemoveAt(start);
 
-		if (var->typeId != ~0) {
+		if (var->typeId != nullptr) {
 			return var;
 		}
 
@@ -211,11 +211,11 @@ Compiler::TypePrimitive* Compiler::CreateTypeBool() {
 	var->sign = 0;
 	var->rows = 0;
 	var->columns = 0;
-	var->typeId = ~0;
+	var->typeId = nullptr;
 
 	CheckTypeExist((TypeBase**)&var);
 
-	if (var->typeId != ~0) {
+	if (var->typeId != nullptr) {
 		return var;
 	}
 
@@ -240,11 +240,11 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bi
 	var->sign = sign;
 	var->rows = 0;
 	var->columns = 0;
-	var->typeId = ~0;
+	var->typeId = nullptr;
 
 	CheckTypeExist((TypeBase**)&var);
 
-	if (var->typeId != ~0) {
+	if (var->typeId != nullptr) {
 		return var;
 	}
 
@@ -278,11 +278,11 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveVector(Type componentType,
 	vec->sign = sign;
 	vec->rows = rows;
 	vec->columns = 0;
-	vec->typeId = ~0;
+	vec->typeId = nullptr;
 
 	CheckTypeExist((TypeBase**)&vec);
 
-	if (vec->typeId != ~0) {
+	if (vec->typeId != nullptr) {
 		return vec;
 	}
 	
@@ -307,11 +307,11 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimtiveMatrix(Type componentType, 
 	mat->sign = sign;
 	mat->rows = rows;
 	mat->columns = columns;
-	mat->typeId = ~0;
+	mat->typeId = nullptr;
 
 	CheckTypeExist((TypeBase**)&mat);
 
-	if (mat->typeId != ~0) {
+	if (mat->typeId != nullptr) {
 		return mat;
 	}
 
@@ -467,13 +467,13 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 	var->type = Type::Array;
 	var->typeString = GetTypeString(var->elementType) + "[" + count.string + "]";
 	var->elementCount = (uint32)count.value;
-	var->typeId = ~0;
+	var->typeId = nullptr;
 
 	CheckTypeExist((TypeBase**)&var);
 
 	tokens.Remove(start, start + offset-1);
 
-	if (var->typeId != ~0) {
+	if (var->typeId != nullptr) {
 		return var;
 	}
 
@@ -758,11 +758,11 @@ Compiler::TypePointer* Compiler::CreateTypePointer(const TypeBase* const type, V
 	p->type = Type::Pointer;
 	p->baseType = (TypeBase*)type;
 	p->storageClass = ScopeToStorageClass(scope);
-	p->typeId = ~0;
+	p->typeId = nullptr;
 	
 	CheckTypeExist((TypeBase**)&p);
 
-	if (p->typeId != ~0) {
+	if (p->typeId != nullptr) {
 		return p;
 	}
 
@@ -824,7 +824,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	TypePrimitive* type = (TypePrimitive*)currType;
 
 	ResultVariable res;
-	res.id = ~0;
+	res.id = nullptr;
 
 	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 		return res;
@@ -899,7 +899,7 @@ Compiler::ResultVariable Compiler::Add(TypeBase* type, uint32 operand1, uint32 o
 	} else if (t->componentType == Type::Float) {
 		operation = new InstFAdd(type->typeId, operand1, operand2);
 	} else {
-		res.id = ~0;
+		res.id = nullptr;
 		return res;
 	}
 
@@ -926,7 +926,7 @@ Compiler::ResultVariable Compiler::Subtract(TypeBase* type, uint32 operand1, uin
 	} else if (t->componentType == Type::Float) {
 		operation = new InstFSub(type->typeId, operand1, operand2);
 	} else {
-		res.id = ~0;
+		res.id = nullptr;
 		return res;
 	}
 
@@ -953,7 +953,7 @@ Compiler::ResultVariable Compiler::Multiply(TypeBase* type, uint32 operand1, uin
 	} else if (t->componentType == Type::Float) {
 		operation = new InstFMul(type->typeId, operand1, operand2);
 	} else {
-		res.id = ~0;
+		res.id = nullptr;
 		return res;
 	}
 
@@ -984,7 +984,7 @@ Compiler::ResultVariable Compiler::Divide(TypeBase* type, uint32 operand1, uint3
 	} else if (t->componentType == Type::Float) {
 		operation = new InstFDiv(type->typeId, operand1, operand2);
 	} else {
-		res.id = ~0;
+		res.id = nullptr;
 		return res;
 	}
 
@@ -1039,7 +1039,7 @@ uint32 Compiler::CreateConstantS32(int32 value) {
 	p.sign = 1;
 	p.rows = 0;
 	p.columns = 0;
-	p.typeId = ~0;
+	p.typeId = nullptr;
 
 	return CreateConstant(&p, *(uint32*)&value);
 }
