@@ -1070,10 +1070,10 @@ ID* Compiler::CreateConstantComposite(const TypeBase* const type, const List<uin
 ID* Compiler::CreateConstantComposite(const TypeBase* const type, const uint32** values) {
 	if (!IsTypeComposite(type)) {
 		Log::Error("Can't create ConstantComposite from a non composite \"%s\"", type->typeString);
-		return ~0;
+		return nullptr;
 	}
 
-	uint32 id;
+	ID* id;
 
 	switch (type->type) {
 		case Type::Vector:
