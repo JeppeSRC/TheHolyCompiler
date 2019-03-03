@@ -210,9 +210,9 @@ class InstGroupDecorate : public InstBase {
 public:
 	compiler::ID* groupId;
 	uint32 numTargets;
-	uint32 targets[THC_LIMIT_DECORATIONS_PER_TARGET];
+	compiler::ID* targetId[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstGroupDecorate(compiler::ID* groupId, uint32* targets, uint32 numTargets);
+	InstGroupDecorate(compiler::ID* groupId, compiler::ID** targets, uint32 numTargets);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -269,9 +269,9 @@ public:
 	compiler::ID* entryPointId;
 	char* entryPointName;
 	uint32 inoutVariableCount;
-	uint32 inoutVariables[THC_LIMIT_GLOBAL_VARIABLES];
+	compiler::ID* inoutVariableId[THC_LIMIT_GLOBAL_VARIABLES];
 
-	InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, uint32* inoutVariables);
+	InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, compiler::ID** inoutVariableIds);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -330,9 +330,9 @@ class InstConstantComposite : public InstBase {
 public:
 	compiler::ID* resultTypeId;
 	uint32 constituentCount;
-	uint32* constituents;
+	compiler::ID* constituentId[THC_LIMIT_OPTYPESTRUCT_MEMBERS];
 
-	InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents);
+	InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds);
 
 	void GetInstWords(uint32* words) const override;
 
@@ -407,9 +407,9 @@ public:
 	compiler::ID* resultTypeId;
 	compiler::ID* baseId;
 	uint32 indexCount;
-	uint32 index[THC_LIMIT_INDEXES];
+	compiler::ID* indexId[THC_LIMIT_INDEXES];
 
-	InstAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices);
+	InstAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, compiler::ID** indexIds);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -419,9 +419,9 @@ public:
 	compiler::ID* resultTypeId;
 	compiler::ID* baseId;
 	uint32 indexCount;
-	uint32 index[THC_LIMIT_INDEXES];
+	compiler::ID* indexId[THC_LIMIT_INDEXES];
 
-	InstInBoundsAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices);
+	InstInBoundsAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, compiler::ID** indexIds);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -464,9 +464,9 @@ public:
 	compiler::ID* resultTypeId;
 	compiler::ID* functionId;
 	uint32 argumentCount;
-	uint32 argument[THC_LIMIT_OPFUNCTIONCALL_ARGUMENTS];
+	compiler::ID* argumentId[THC_LIMIT_OPFUNCTIONCALL_ARGUMENTS];
 
-	InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, uint32* arguments);
+	InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, compiler::ID** argumentIds);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -619,9 +619,9 @@ class InstCompositeConstruct: public InstBase {
 public:
 	compiler::ID* resultTypeId;
 	uint32 constituentCount;
-	uint32 constituent[512];
+	compiler::ID* constituentId[512];
 
-	InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents);
+	InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -1495,16 +1495,19 @@ public:
 	void GetInstWords(uint32* words) const override;
 };
 
-typedef unsigned long long SwitchPair;
+struct SwitchPair {
+	uint32 litteral;
+	compiler::ID* labelId;
+};
 
 class InstSwitch : public InstBase {
 public:
 	compiler::ID* selectorId;
 	compiler::ID* defaultId;
 	uint32 pairCount;
-	SwitchPair pairs[THC_LIMIT_OPSWITCH_PAIRS];
+	SwitchPair pair[THC_LIMIT_OPSWITCH_PAIRS];
 
-	InstSwitch(compiler::ID* selectorId, compiler::ID* defaultId);
+	InstSwitch(compiler::ID* selectorId, compiler::ID* defaultId, SwitchPair* pairs);
 
 	void GetInstWords(uint32* words) const override;
 };

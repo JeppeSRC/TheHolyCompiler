@@ -76,7 +76,7 @@ InstMemberDecorate::InstMemberDecorate(compiler::ID* structId, uint32 member, ui
 
 InstDecorationGroup::InstDecorationGroup() : InstBase(THC_SPIRV_OPCODE_OpDecorateGroup, 2, "OpDecorationGroup", true) { }
 
-InstGroupDecorate::InstGroupDecorate(compiler::ID* groupId, uint32* targets, uint32 numTargets) : InstBase(THC_SPIRV_OPCODE_OpGroupDecorate, 1, "OpGroupDecorate"), groupId(groupId), numTargets(numTargets) { memcpy(this->targets, targets, numTargets << 2); }
+InstGroupDecorate::InstGroupDecorate(compiler::ID* groupId, compiler::ID** targetIds, uint32 numTargets) : InstBase(THC_SPIRV_OPCODE_OpGroupDecorate, 1, "OpGroupDecorate"), groupId(groupId), numTargets(numTargets) { memcpy(targetId, targetIds, numTargets * sizeof(void*)); }
 
 InstExtension::InstExtension(const char* const extension) : InstBase(THC_SPIRV_OPCODE_OpExtension, 1, "OpExtension") { Utils::CopyString(this->extension, extension); }
 
@@ -84,7 +84,7 @@ InstExtInstImport::InstExtInstImport(const char* const extensionSet) : InstBase(
 
 InstMemoryModel::InstMemoryModel(uint32 addressingModel, uint32 memoryModel) : InstBase(THC_SPIRV_OPCODE_OpMemoryModel, 3, "OpMemoryModel") {}
 
-InstEntryPoint::InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, uint32* inoutVariables) : InstBase(THC_SPIRV_OPCODE_OpEntryPoint, 3, "OpEntryPoint"), executionModel(executionModel), entryPointId(entryPointId), inoutVariableCount(inoutVariableCount){ Utils::CopyString(this->entryPointName, entryPointName); memcpy(this->inoutVariables, inoutVariables, inoutVariableCount << 2); }
+InstEntryPoint::InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, compiler::ID** inoutVariableIds) : InstBase(THC_SPIRV_OPCODE_OpEntryPoint, 3, "OpEntryPoint"), executionModel(executionModel), entryPointId(entryPointId), inoutVariableCount(inoutVariableCount){ Utils::CopyString(this->entryPointName, entryPointName); memcpy(inoutVariableId, inoutVariableIds, inoutVariableCount * sizeof(void*)); }
 
 InstExecutionMode::InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands) : InstBase(THC_SPIRV_OPCODE_OpExecutionMode, 3, "OpExecutionMode"), entryPointId(entryPointId), mode(mode), extraOperandCount(extraOperandCount) { memcpy(this->extraOperand, extraOperand, extraOperandCount << 2); }
 
@@ -96,7 +96,7 @@ InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 value) : InstBase(
 
 InstConstant::InstConstant(compiler::ID* resultTypeId, float32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), f32(value) {}
 
-InstConstantComposite::InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { this->constituents = new uint32[constituentCount];  memcpy(this->constituents, constituents, constituentCount << 2); }
+InstConstantComposite::InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(constituentId, constituentIds, constituentCount * sizeof(void*)); }
 
 InstVariable::InstVariable(compiler::ID* resultTypeId, uint32 storageClass, uint32 initializer) : InstBase(THC_SPIRV_OPCODE_OpVariable, 4, "OpVariable", true), resultTypeId(resultTypeId), storageClass(storageClass), initializer(initializer) { }
 
@@ -108,9 +108,9 @@ InstCopyMemory::InstCopyMemory(compiler::ID* targetId, compiler::ID* sourceId, u
 
 InstCopyMemorySized::InstCopyMemorySized(compiler::ID* targetId, compiler::ID* sourceId, compiler::ID* sizeId, uint32 memoryAccess) : InstBase(THC_SPIRV_OPCODE_OpCopyMemorySized, 4, "OpCopyMemorySized"), targetId(targetId), sourceId(sourceId), sizeId(sizeId), memoryAccess(memoryAccess) { }
 
-InstAccessChain::InstAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpAccessChain, 4, "OpAccessChain", true), resultTypeId(resultTypeId), baseId(baseId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
+InstAccessChain::InstAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, compiler::ID** indexIds) : InstBase(THC_SPIRV_OPCODE_OpAccessChain, 4, "OpAccessChain", true), resultTypeId(resultTypeId), baseId(baseId), indexCount(indexCount) { memcpy(indexId, indexIds, indexCount * sizeof(void*)); }
 
-InstInBoundsAccessChain::InstInBoundsAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpInBoundsAccessChain, 4, "OpInBoundsAccessChain", true), resultTypeId(resultTypeId), baseId(baseId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
+InstInBoundsAccessChain::InstInBoundsAccessChain(compiler::ID* resultTypeId, compiler::ID* baseId, uint32 indexCount, compiler::ID** indexIds) : InstBase(THC_SPIRV_OPCODE_OpInBoundsAccessChain, 4, "OpInBoundsAccessChain", true), resultTypeId(resultTypeId), baseId(baseId), indexCount(indexCount) { memcpy(indexId, indexIds, indexCount * sizeof(void*)); }
 
 InstFunction::InstFunction(compiler::ID* resultTypeId, uint32 functionControl, compiler::ID* functionTypeId) : InstBase(THC_SPIRV_OPCODE_OpFunction, 5, "OpFunction", true), resultTypeId(resultTypeId), functionControl(functionControl), functionTypeId(functionTypeId) { }
 
@@ -118,7 +118,7 @@ InstFunctionParameter::InstFunctionParameter(compiler::ID* resultTypeId) : InstB
 
 InstFunctionEnd::InstFunctionEnd() : InstBase(THC_SPIRV_OPCODE_OpFunctionEnd, 1, "OpFunctionEnd") { }
 
-InstFunctionCall::InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, uint32* arguments) : InstBase(THC_SPIRV_OPCODE_OpFunctionCall, 4, "OpFunctionCall", true), resultTypeId(resultTypeId), functionId(functionId), argumentCount(argumentCount) { memcpy(this->argument, arguments, argumentCount << 2); }
+InstFunctionCall::InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, compiler::ID** argumentIds) : InstBase(THC_SPIRV_OPCODE_OpFunctionCall, 4, "OpFunctionCall", true), resultTypeId(resultTypeId), functionId(functionId), argumentCount(argumentCount) { memcpy(argumentId, argumentIds, argumentCount * sizeof(void*)); }
 
 InstConvertFToU::InstConvertFToU(compiler::ID* resultTypeId, compiler::ID* valueId) : InstBase(THC_SPIRV_OPCODE_OpConvertFToU, 4, "OpConvertFToU", true), resultTypeId(resultTypeId), valueId(valueId) { }
 
@@ -144,7 +144,7 @@ InstVectorInsertDynamic::InstVectorInsertDynamic(compiler::ID* resultTypeId, com
 
 InstVectorShuffle::InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, uint32* components) : InstBase(THC_SPIRV_OPCODE_OpVectorShuffle, 5, "OpVectorShuffle", true), resultTypeId(resultTypeId), vector1Id(vector1Id), vector2Id(vector2Id), componentCount(componentCount) { memcpy(this->component, components, componentCount << 2); }
 
-InstCompositeConstruct::InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, uint32* constituents) : InstBase(THC_SPIRV_OPCODE_OpCompositeConstruct, 3, "OpCompositeConstruct", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(this->constituent, constituents, constituentCount << 2); }
+InstCompositeConstruct::InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds) : InstBase(THC_SPIRV_OPCODE_OpCompositeConstruct, 3, "OpCompositeConstruct", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(constituentId, constituentIds, constituentCount * sizeof(void*)); }
 
 InstCompositeExtract::InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpCompositeExtract, 4, "OpCompositeExtract", true), resultTypeId(resultTypeId), compositeId(compositeId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
 
@@ -300,7 +300,7 @@ InstBranch::InstBranch(uint32 targetLabelId) : InstBase(THC_SPIRV_OPCODE_OpBranc
 
 InstBranchConditional::InstBranchConditional(compiler::ID* conditionId, compiler::ID* trueLabelId, compiler::ID* falseLabelId, uint32 trueWeight, uint32 falseWeight) : InstBase(THC_SPIRV_OPCODE_OpBranchConditional, 6, "OpBranchConditional"), conditionId(conditionId), trueLabelId(trueLabelId), falseLabelId(falseLabelId), trueWeight(trueWeight), falseWeight(falseWeight) {}
 
-InstSwitch::InstSwitch(compiler::ID* selectorId, compiler::ID* defaultId) : InstBase(THC_SPIRV_OPCODE_OpSwitch, 3, "OpSwitch"), selectorId(selectorId), defaultId(defaultId), pairCount(pairCount) { memcpy(this->pairs, pairs, pairCount << 3); }
+InstSwitch::InstSwitch(compiler::ID* selectorId, compiler::ID* defaultId, SwitchPair* pairs) : InstBase(THC_SPIRV_OPCODE_OpSwitch, 3, "OpSwitch"), selectorId(selectorId), defaultId(defaultId), pairCount(pairCount) { memcpy(pair, pairs, pairCount * sizeof(SwitchPair)); }
 
 InstKill::InstKill() : InstBase(THC_SPIRV_OPCODE_OpKill, 1, "OpKill") {}
 
@@ -338,7 +338,7 @@ bool InstConstantComposite::operator==(const InstBase* const inst) const {
 
 	if (resultTypeId == c->resultTypeId && constituentCount == c->constituentCount) {
 		for (uint32 i = 0; i < constituentCount; i++) {
-			if (constituents[i] != c->constituents[i]) return false;
+			if (constituentId[i] != c->constituentId[i]) return false;
 		}
 
 		return true;

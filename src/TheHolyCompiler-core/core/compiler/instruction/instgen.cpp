@@ -145,7 +145,10 @@ void InstGroupDecorate::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = groupId->id;
-	memcpy(words+2, targets, numTargets << 2);
+
+	for (uint32 i = 0; i < numTargets; i++) {
+		words[i+2] = targetId[i]->id;
+	}
 }
 
 void InstExtension::GetInstWords(uint32* words) const {
@@ -185,7 +188,9 @@ void InstEntryPoint::GetInstWords(uint32* words) const {
 	
 	uint32 offset = ((uint32)len >> 4) + ((uint32)len % 4 ? 1 : 0) + 3;
 
-	memcpy(words+offset, inoutVariables, inoutVariableCount << 2);
+	for (uint32 i = 0; i < inoutVariableCount; i++) {
+		words[i+offset] = inoutVariableId[i]->id;
+	}
 }
 
 void InstExecutionMode::GetInstWords(uint32* words) const {
@@ -225,7 +230,9 @@ void InstConstantComposite::GetInstWords(uint32* words) const {
 	words[1] = resultTypeId->id;
 	words[2] = id->id;
 
-	memcpy(words+3, constituents, constituentCount << 2);
+	for (uint32 i = 0; i < constituentCount; i++) {
+		words[i + 3] = constituentId[i]->id;
+	}
 }
 
 void InstVariable::GetInstWords(uint32* words) const {
@@ -284,7 +291,9 @@ void InstAccessChain::GetInstWords(uint32* words) const {
 	words[2] = id->id;
 	words[3] = baseId->id;
 
-	memcpy(words+4, index, indexCount << 2);
+	for (uint32 i = 0; i < indexCount; i++) {
+		words[i + 4] = indexId[i]->id;
+	}
 }
 
 void InstInBoundsAccessChain::GetInstWords(uint32* words) const {
@@ -295,7 +304,9 @@ void InstInBoundsAccessChain::GetInstWords(uint32* words) const {
 	words[2] = id->id;
 	words[3] = baseId->id;
 
-	memcpy(words+4, index, indexCount << 2);
+	for (uint32 i = 0; i < indexCount; i++) {
+		words[i + 4] = indexId[i]->id;
+	}
 }
 
 void InstFunction::GetInstWords(uint32* words) const {
@@ -322,7 +333,9 @@ void InstFunctionCall::GetInstWords(uint32* words) const {
 	words[2] = id->id;
 	words[3] = functionId->id;
 
-	memcpy(words+4, argument, argumentCount << 2);
+	for (uint32 i = 0; i < argumentCount; i++) {
+		words[i + 4] = argumentId[i]->id;
+	}
 }
 
 void InstConvertFToU::GetInstWords(uint32* words) const {
@@ -435,7 +448,9 @@ void InstCompositeConstruct::GetInstWords(uint32* words) const {
 	words[1] = resultTypeId->id;
 	words[2] = id->id;
 
-	memcpy(words+3, constituent, constituentCount << 2);
+	for (uint32 i = 0; i < constituentCount; i++) {
+		words[i + 3] = constituentId[i]->id;
+	}
 }
 
 void InstCompositeExtract::GetInstWords(uint32* words) const {
@@ -1122,13 +1137,16 @@ void InstBranchConditional::GetInstWords(uint32* words) const {
 }
 
 void InstSwitch::GetInstWords(uint32* words) const {
-	wordCount += pairCount;
+	wordCount += pairCount * 2;
 	InstBase::GetInstWords(words);
 
 	words[1] = selectorId->id;
 	words[2] = defaultId->id;
 
-	memcpy(words+3, pairs, pairCount << 3);
+	for (uint32 i = 0; i < pairCount; i++) {
+		words[i * 2 + 3] = pair[i].litteral;
+		words[i * 2 + 4] = pair[i].labelId->id;
+	}
 }
 
 void InstReturnValue::GetInstWords(uint32* words) const {
