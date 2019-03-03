@@ -1097,7 +1097,7 @@ ID* Compiler::CreateConstantComposite(const TypeBase* const type, const uint32**
 ID* Compiler::CreateConstantCompositeVector(const TypeBase* const type, const uint32** values) {
 	const TypePrimitive* prim = (const TypePrimitive*)type;
 
-	List<uint32> ids;
+	List<ID*> ids;
 
 	TypePrimitive* tmp = (TypePrimitive*)type;
 	TypePrimitive* p = CreateTypePrimitiveScalar(tmp->componentType, tmp->bits, tmp->sign);
