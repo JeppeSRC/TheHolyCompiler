@@ -35,16 +35,16 @@ namespace instruction {
 
 class InstExt : public InstBase {
 public:
-	uint32 resultTypeId;
-	uint32 setId;
+	compiler::ID* resultTypeId;
+	compiler::ID* setId;
 	uint32 opCode;
 
-	uint32 operand0;
-	uint32 operand1;
-	uint32 operand2;
+	compiler::ID* operand0;
+	compiler::ID* operand1;
+	compiler::ID* operand2;
 
 
-	InstExt(uint32 wordCount, const char* const literalName, uint32 resultTypeId, uint32 setId, uint32 opCode, uint32 operand0, uint32 operand1 = 0, uint32 operand2 = 0);
+	InstExt(uint32 wordCount, const char* const literalName, compiler::ID* resultTypeId, compiler::ID* setId, uint32 opCode, compiler::ID* operand0, compiler::ID* operand1 = 0, compiler::ID* operand2 = 0);
 
 	virtual void GetInstWords(uint32* words) const override;
 };
@@ -53,258 +53,258 @@ public:
 
 class InstExtRound: public InstExt {
 public:
-	InstExtRound(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtRound(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtRoundEven : public InstExt {
 public:
-	InstExtRoundEven(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtRoundEven(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtTrunc : public InstExt {
 public:
-	InstExtTrunc(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtTrunc(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 
 class InstExtFAbs : public InstExt {
 public:
-	InstExtFAbs(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtFAbs(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtSAbs : public InstExt {
 public:
-	InstExtSAbs(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtSAbs(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtFSign : public InstExt {
 public:
-	InstExtFSign(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtFSign(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtSSign : public InstExt {
 public:
-	InstExtSSign(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtSSign(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtFloor : public InstExt {
 public:
-	InstExtFloor(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtFloor(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtCeil : public InstExt {
 public:
-	InstExtCeil(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtCeil(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtFract : public InstExt {
 public:
-	InstExtFract(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtFract(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtRadians : public InstExt {
 public:
-	InstExtRadians(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtRadians(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtDegrees : public InstExt {
 public:
-	InstExtDegrees(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtDegrees(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtSin : public InstExt {
 public:
-	InstExtSin(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtSin(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtCos : public InstExt {
 public:
-	InstExtCos(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtCos(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtTan : public InstExt {
 public:
-	InstExtTan(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtTan(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtASin : public InstExt {
 public:
-	InstExtASin(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtASin(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtACos : public InstExt {
 public:
-	InstExtACos(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtACos(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtATan : public InstExt {
 public:
-	InstExtATan(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtATan(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtSinh : public InstExt {
 public:
-	InstExtSinh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtSinh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtCosh : public InstExt {
 public:
-	InstExtCosh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtCosh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtTanh : public InstExt {
 public:
-	InstExtTanh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtTanh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtASinh : public InstExt {
 public:
-	InstExtASinh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtASinh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtACosh : public InstExt {
 public:
-	InstExtACosh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtACosh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtATanh : public InstExt {
 public:
-	InstExtATanh(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtATanh(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtATan2 : public InstExt {
 public:
-	InstExtATan2(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtATan2(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtPow : public InstExt {
 public:
-	InstExtPow(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtPow(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtExp : public InstExt {
 public:
-	InstExtExp(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtExp(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtLog : public InstExt {
 public:
-	InstExtLog(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtLog(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtExp2 : public InstExt {
 public:
-	InstExtExp2(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtExp2(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtLog2 : public InstExt {
 public:
-	InstExtLog2(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtLog2(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtSqrt  : public InstExt {
 public:
-	InstExtSqrt (uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtSqrt (compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtInvSqrt : public InstExt {
 public:
-	InstExtInvSqrt(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtInvSqrt(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtDeterminant : public InstExt {
 public:
-	InstExtDeterminant(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtDeterminant(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtMatInv : public InstExt {
 public:
-	InstExtMatInv(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtMatInv(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtModf : public InstExt {
 public:
-	InstExtModf(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 iId);
+	InstExtModf(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* iId);
 };
 
 class InstExtFMin : public InstExt {
 public:
-	InstExtFMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtFMin(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtUMin : public InstExt {
 public:
-	InstExtUMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtUMin(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtSMin : public InstExt {
 public:
-	InstExtSMin(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtSMin(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtFMax : public InstExt {
 public:
-	InstExtFMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtFMax(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtUMax : public InstExt {
 public:
-	InstExtUMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtUMax(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtSMax : public InstExt {
 public:
-	InstExtSMax(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtSMax(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtFClamp : public InstExt {
 public:
-	InstExtFClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
+	InstExtFClamp(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* minValId, compiler::ID* maxValId);
 };
 
 class InstExtUClamp : public InstExt {
 public:
-	InstExtUClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
+	InstExtUClamp(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* minValId, compiler::ID* maxValId);
 };
 
 class InstExtSClamp : public InstExt {
 public:
-	InstExtSClamp(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 minValId, uint32 maxValId);
+	InstExtSClamp(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* minValId, compiler::ID* maxValId);
 };
 
 class InstExtFMix : public InstExt {
 public:
-	InstExtFMix(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId, uint32 aId);
+	InstExtFMix(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId, compiler::ID* aId);
 };
 
 class InstExtFma : public InstExt {
 public:
-	InstExtFma(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId, uint32 aId);
+	InstExtFma(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId, compiler::ID* aId);
 };
 
 class InstExtLength : public InstExt {
 public:
-	InstExtLength(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtLength(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtDistance : public InstExt {
 public:
-	InstExtDistance(uint32 resultTypeId, uint32 setId, uint32 p0Id, uint32 p1Id);
+	InstExtDistance(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* p0Id, compiler::ID* p1Id);
 };
 
 class InstExtCross : public InstExt {
 public:
-	InstExtCross(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtCross(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 class InstExtNormalize : public InstExt {
 public:
-	InstExtNormalize(uint32 resultTypeId, uint32 setId, uint32 xId);
+	InstExtNormalize(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId);
 };
 
 class InstExtReflect : public InstExt {
 public:
-	InstExtReflect(uint32 resultTypeId, uint32 setId, uint32 xId, uint32 yId);
+	InstExtReflect(compiler::ID* resultTypeId, compiler::ID* setId, compiler::ID* xId, compiler::ID* yId);
 };
 
 }
