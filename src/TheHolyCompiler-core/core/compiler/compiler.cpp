@@ -1066,7 +1066,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* type = nullptr;
 
-			uint32 operandId;
+			ID* operandId;
 
 			if (right.type == ExpressionType::Variable) {
 				type = (TypePrimitive*)right.variable->type;
@@ -1101,7 +1101,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				right.type = ExpressionType::Result;
 				right.result = Cast(e.castType, type, operandId);
 
-				if (right.result.id == ~0) {
+				if (right.result.id == nullptr) {
 					Log::CompilerError(e.parent, "The only castable types are scalar integers or floats");
 				}
 
@@ -1162,7 +1162,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			uint32 operandId = ~0;
+			ID* operandId = nullptr;
 
 			if (right.type == ExpressionType::Variable) {
 				const Variable* var = right.variable;
@@ -1223,7 +1223,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			Expression& right = expressions[i + 1];
 
-			uint32 operandId = ~0;
+			ID* operandId = nullptr;
 
 			TypePrimitive* type = nullptr;
 
@@ -1257,7 +1257,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			InstBase* operation = nullptr;
 
-			uint32 constantId = ~0;
+			ID* constantId = nullptr;
 
 			if (type->type != Type::Bool) {
 				type = CreateTypeBool();
@@ -1290,7 +1290,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			uint32 operandId = ~0;
+			ID* operandId = nullptr;
 
 			if (right.type == ExpressionType::Variable) {
 				const Variable* var = right.variable;
@@ -1457,7 +1457,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 					}
 				} else if (*dt != res.type) {
 					if (decls.GetCount() == 1) {
-						uint32 operandId = res.id;
+						ID* operandId = res.id;
 
 						if (res.isVariable) {
 							InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
@@ -1469,7 +1469,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 						TypeBase* tmp = res.type;
 						res = Cast(dt, res.type, operandId);
 
-						if (res.id == ~0) {
+						if (res.id == nullptr) {
 							Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
 						} else {
 							Log::CompilerWarning(functionName, "Implicit conversion from \"%s\" to \"%s\"", tmp->typeString.str, dt->typeString.str);
@@ -1484,7 +1484,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 
 		FunctionDeclaration* decl = decls[0];
 
-		uint32* ids = new uint32[parameterResults.GetCount()];
+		ID** ids = new ID*[parameterResults.GetCount()];
 
 		for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
 			ids[i] = parameterResults[i].id;
