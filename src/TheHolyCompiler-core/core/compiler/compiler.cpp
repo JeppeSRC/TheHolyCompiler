@@ -678,7 +678,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
 
-				uint32 operandId;
+				ID* operandId;
 
 				if (res.isVariable) {
 					InstLoad* load = new InstLoad(type->typeId, res.id, 0);
@@ -692,7 +692,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				if (*type != retType) {
 					ResultVariable tmp = Cast(retType, type, operandId);
 
-					if (tmp.id == ~0) {
+					if (tmp.id == nullptr) {
 						Log::CompilerError(next, "No suitable conversion between return type(%s) and \"%s\"", retType->typeString.str, type->typeString.str);
 					} else {
 						Log::CompilerWarning(next, "Implicit conversion from \"%s\" to return type(%s)", type->typeString.str, retType->typeString.str);
@@ -759,7 +759,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 		TypeBase* tmp = res.type;
 		res = Cast(CreateTypeBool(), res.type, res.id);
 
-		if (res.id == ~0) {
+		if (res.id == nullptr) {
 			Log::CompilerError(tokens[start+2], "No suitable conversion between \"bool\" and \"%s\"", tmp->typeString.str);
 		} else {
 			Log::CompilerWarning(tokens[start + 2], "Implicit conversion from \"%s\" to \"bool\"", tmp->typeString.str);
