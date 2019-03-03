@@ -1010,7 +1010,7 @@ utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(co
 }
 
 void Compiler::CreateFunctionType(FunctionDeclaration* decl) {
-	List<uint32> ids;
+	List<ID*> ids;
 	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
 		ids.Add(decl->parameters[i]->type->typeId);
 	}
