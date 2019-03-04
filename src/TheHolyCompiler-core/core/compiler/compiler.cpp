@@ -936,7 +936,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			e.operatorType = t.type;
 			e.parent = t;
 		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix && info->start == info->end) {
-			//if (info->start == info->end) {//Type for a cast
+			if (info->start == info->end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
 					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
@@ -945,7 +945,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				e.type = ExpressionType::Type;
 				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 				e.parent = t;
-			//} 
+			} else {
+
+			}
 
 		} else if (t.type == TokenType::Comma || t.type == TokenType::ParenthesisClose) {
 			e.type = ExpressionType::Constant;
@@ -953,13 +955,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
-			bool justParentheses = false;
-
-			if (i > 0) {
-				const Token& tok = tokens[i - 1];
-				justParentheses = t.type >= TokenType::OperatorNegate && t.type <= TokenType::OperatorCompoundDiv;
-			}
-
 			ParseInfo inf;
 			
 			e.type = ExpressionType::Result;
@@ -971,21 +966,21 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(t, "\"(\" needs a closing \")\"");
 			}
 
-			if (justParentheses) {
-				inf.start = i + 1;
-				inf.end = --parenthesisClose;
+			bool isFunction = i > 0 ? tokens[i-1].type == TokenType::Name : false;
 
-				e.result = ParseExpression(tokens, &inf, localVariables);
-
-				info->end -= parenthesisClose - inf.end;
-			} else {
+			if (isFunction) {
 				inf.start = i - 1;
 				inf.end = ++parenthesisClose;
 
 				e.result = ParseFunctionCall(tokens, &inf, localVariables);
+			}else {
+				inf.start = i + 1;
+				inf.end = --parenthesisClose;
 
-				info->end -= parenthesisClose - inf.end;
+				e.result = ParseExpression(tokens, &inf, localVariables);
 			}
+
+			info->end -= parenthesisClose - inf.end;
 		}
 
 		if (e.type != ExpressionType::Undefined) expressions.Add(e);
