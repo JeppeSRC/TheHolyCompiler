@@ -946,7 +946,35 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 				e.parent = t;
 			} else {
+				uint64 parenthesisOpen = ~0;
+				uint64 parenthesisClose = ~0;
 
+				for (uint64 j = 1; j <= 4; j++) {
+					if (tokens[i + j].type == TokenType::ParenthesisOpen) {
+						parenthesisOpen = i+j;
+						parenthesisClose = FindMatchingToken(tokens, parenthesisOpen, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+						if (parenthesisClose == ~0) {
+							Log::CompilerError(tokens[parenthesisOpen], "\"(\" needs a closing \")\"");
+						}
+
+						break;
+					}
+				}
+
+				if (parenthesisOpen == ~0) {
+					Log::CompilerError(t, "Unexpected symbol \"%s\", did you mean to construct a type? If so you're missing the parentheses");
+				}
+
+				ParseInfo inf;
+
+				inf.start = i;
+				inf.end = parenthesisClose;
+
+				e.type = ExpressionType::Result;
+				e.result = ParseFunctionCall(tokens, &inf, localVariables);
+
+				info->end -= parenthesisClose - inf.end;
 			}
 
 		} else if (t.type == TokenType::Comma || t.type == TokenType::ParenthesisClose) {
