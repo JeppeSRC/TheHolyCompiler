@@ -1083,28 +1083,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
+			ID* operandId = GetExpressionOperandId(&right, &type);
 
-			ID* operandId;
-
-			if (right.type == ExpressionType::Variable) {
-				type = (TypePrimitive*)right.variable->type;
-
-				InstLoad* load = new InstLoad(type->typeId, right.variable->variableId, 0);
-				instructions.Add(load);
-
-				operandId = load->id;
-			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				type = (TypePrimitive*)right.result.type;
-
-				if (right.result.isVariable) {
-					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
-					instructions.Add(load);
-
-					operandId = load->id;
-				} else {
-					operandId = right.result.id;
-				}
-			} else {
+			
+			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
 			}
 
@@ -1180,29 +1162,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = nullptr;
+			ID* operandId = GetExpressionOperandId(&right, &type);
 
-			if (right.type == ExpressionType::Variable) {
-				const Variable* var = right.variable;
-				
-				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
-				instructions.Add(load);
-
-				operandId = load->id;
-
-				type = (TypePrimitive*)var->type;
-			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				type = (TypePrimitive*)right.result.type;
-
-				if (right.result.isVariable) {
-					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
-					instructions.Add(load);
-
-					operandId = load->id;
-				} else {
-					operandId = right.result.id;
-				}
-			} else {
+			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
 			}
 
@@ -1243,31 +1205,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			Expression& right = expressions[i + 1];
 
-			ID* operandId = nullptr;
-
 			TypePrimitive* type = nullptr;
+			ID* operandId = GetExpressionOperandId(&right, &type);
 
-			if (right.type == ExpressionType::Variable) {
-				const Variable* var = right.variable;
-				type = (TypePrimitive*)var->type;
-
-				InstLoad* load = new InstLoad(type->typeId, var->variableId, 0);
-				instructions.Add(load);
-
-				operandId = load->id;
-
-			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				type = (TypePrimitive*)right.result.type;
-
-				if (right.result.isVariable) {
-					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
-					instructions.Add(load);
-
-					operandId = load->id;
-				} else {
-					operandId = right.result.id;
-				}
-			} else {
+			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a variable or value");
 			}
 
@@ -1310,29 +1251,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = nullptr;
+			ID* operandId = GetExpressionOperandId(&right, &type);
 
-			if (right.type == ExpressionType::Variable) {
-				const Variable* var = right.variable;
-
-				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
-				instructions.Add(load);
-
-				operandId = load->id;
-
-				type = (TypePrimitive*)var->type;
-			} else if (right.type == ExpressionType::Result || right.type == ExpressionType::Constant) {
-				type = (TypePrimitive*)right.result.type;
-
-				if (right.result.isVariable) {
-					InstLoad* load = new InstLoad(type->typeId, right.result.id, 0);
-					instructions.Add(load);
-
-					operandId = load->id;
-				} else {
-					operandId = right.result.id;
-				}
-			} else {
+			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
 			}
 
