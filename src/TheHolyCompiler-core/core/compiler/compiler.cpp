@@ -1376,6 +1376,54 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 4
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (e.operatorType == TokenType::OperatorAdd || e.operatorType == TokenType::OperatorSub) {
+			bool add = e.operatorType == TokenType::OperatorAdd;
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			ResultVariable ret = { 0 };
+
+			if (*lType == rType) {
+				if (Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+					if (add) {
+						ret = Add(lType, lOperandId, rOperandId);
+					} else {
+						ret = Subtract(lType, lOperandId, rOperandId);
+					}
+				}  else {
+					Log::CompilerError(e.parent, "Invalid types, cannot add or subtract types");
+				}
+			}
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	ResultVariable result = {0};
 
 	if (expressions.GetCount() > 1) {
