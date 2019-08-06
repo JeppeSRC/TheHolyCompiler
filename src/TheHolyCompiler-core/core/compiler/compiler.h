@@ -323,7 +323,7 @@ private: //Misc
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
-	ID* GetExpressionOperandID(const Expression* e, TypePrimitive** type);
+	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type);
 
 public:
 	bool Process();
