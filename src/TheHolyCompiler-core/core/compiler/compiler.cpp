@@ -1275,6 +1275,107 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 3
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (e.operatorType == TokenType::OperatorMul || e.operatorType == TokenType::OperatorDiv) {
+			bool mul = e.operatorType == TokenType::OperatorMul;
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			InstBase* instruction = nullptr;
+			ResultVariable ret = {0};
+
+			if (*lType == rType) {
+				if (Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+					if (mul) {
+						ret = Multiply(lType, lOperandId, rOperandId);
+					} else {
+						ret = Divide(lType, lOperandId, rOperandId);
+					}
+				} else if (lType->type == Type::Matrix) {
+					if (mul) {
+						instruction = new InstMatrixTimesMatrix(lType->typeId, lOperandId, rOperandId);
+						ret.type = lType;
+						ret.id = instruction->id;
+					} else {
+						Log::CompilerError(e.parent, "Cannot divide 2 matrices");
+					}
+				} else {
+					Log::CompilerError(e.parent, "Invalid type, cannot multiply or divide type");
+				}
+			} else {
+				if (lType->type == Type::Vector && mul) {
+					if (rType->type == Type::Int || rType->type == Type::Float) {
+						if (lType->componentType != rType->type || lType->bits != rType->bits) {
+							Log::CompilerError(e.parent, "Scalar must match component type");
+						}
+
+						instruction = new InstVectorTimesScalar(lType->typeId, lOperandId, rOperandId);
+						ret.type = lType;
+						ret.id = instruction->id;
+					} else if (rType->type == Type::Matrix) {
+						if (lType->componentType != rType->componentType || lType->bits != rType->bits || lType->rows != rType->columns) {
+							Log::CompilerError(e.parent, "Component types must match");
+						}
+
+						instruction = new InstVectorTimesMatrix(lType->typeId, lOperandId, rOperandId);
+						ret.type = lType;
+						ret.id = instruction->id;
+					} else {
+						Log::CompilerError(e.parent, "Type missmatch");
+					}
+				} else if (lType->type == Type::Matrix && mul) {
+					if (rType->type == Type::Int || rType->type == Type::Float) {
+						if (lType->componentType != rType->type || lType->bits != rType->bits) {
+							Log::CompilerError(e.parent, "Scalar must match component type");
+						}
+
+						instruction = new InstMatrixTimesScalar(lType->typeId, lOperandId, rOperandId);
+						ret.type = lType;
+						ret.id = instruction->id;
+					} else if (rType->type == Type::Vector) {
+						if (lType->componentType != rType->componentType || lType->bits != rType->bits || lType->columns != rType->rows) {
+							Log::CompilerError(e.parent, "Component types must match");
+						}
+
+						instruction = new InstMatrixTimesVector(lType->typeId, lOperandId, rOperandId);
+						ret.type = lType;
+						ret.id = instruction->id;
+					} else {
+						Log::CompilerError(e.parent, "Type missmatch");
+					}
+				}
+			}
+
+			if (!instruction) instructions.Add(instruction);
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+			
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	ResultVariable result = {0};
 
 	if (expressions.GetCount() > 1) {

@@ -1281,7 +1281,7 @@ uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, Toke
 	return ~0;
 }
 
-ID* Compiler::GetExpressionOperandID(const Expression* e, TypePrimitive** type) {
+ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type) {
 	ID* id = nullptr;
 
 	if (e->type == ExpressionType::Variable) {
