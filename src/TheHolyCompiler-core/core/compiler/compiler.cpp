@@ -977,11 +977,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				info->end -= parenthesisClose - inf.end;
 			}
 
-		} else if (t.type == TokenType::Comma || t.type == TokenType::ParenthesisClose) {
-			e.type = ExpressionType::Constant;
-			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
-			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
-			e.parent = t;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			ParseInfo inf;
 			
@@ -1239,6 +1234,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			right.result.isVariable = false;
 			right.result.type = type;
 			right.result.id = operation->id;
+
+			expressions.RemoveAt(i);
 		} else if (e.operatorType == TokenType::OperatorLogicalNot) {
 			if (i >= expressions.GetCount() - 1) {
 				Log::CompilerError(e.parent, "No right hand operand");
@@ -1350,6 +1347,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			right.result.isVariable = false;
 			right.result.type = type;
 			right.result.id = operation->id;
+
+			expressions.RemoveAt(i);
 		}
 	}
 
