@@ -258,11 +258,6 @@ private: //Constants
 
 private: //Composites
 
-private: //Misc
-	bool IsCharAllowedInName(const char c, bool first = true) const;
-	bool IsCharWhitespace(const char c) const;
-	void ProcessName(parsing::Token& t) const;
-	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 
 private: //Expression parsing
 	enum class ExpressionType {
@@ -323,10 +318,16 @@ private:
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 
+private: //Misc
+	bool IsCharAllowedInName(const char c, bool first = true) const;
+	bool IsCharWhitespace(const char c) const;
+	void ProcessName(parsing::Token& t) const;
+	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
+
+public:
 	bool Process();
 
 	Compiler(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
-public:
 	static bool Run(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
 	static bool Run(const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
 
