@@ -1317,7 +1317,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerError(e.parent, "Cannot divide 2 matrices");
 					}
 				} else {
-					Log::CompilerError(e.parent, "Invalid type, cannot multiply or divide type");
+					Log::CompilerError(e.parent, "Invalid types, cannot multiply or divide types");
 				}
 			} else {
 				if (lType->type == Type::Vector && mul) {
