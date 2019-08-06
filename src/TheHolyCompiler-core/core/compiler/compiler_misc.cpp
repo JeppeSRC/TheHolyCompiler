@@ -1281,6 +1281,31 @@ uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, Toke
 	return ~0;
 }
 
+ID* Compiler::GetExpressionOperandID(const Expression* e, TypePrimitive** type) {
+	ID* id = nullptr;
+
+	if (e->type == ExpressionType::Variable) {
+		InstLoad* load = new InstLoad(e->variable->type->typeId, e->variable->variableId, 0);
+		instructions.Add(load);
+
+		id = load->id;
+		*type = (TypePrimitive*)e->variable->type;
+	} else if (e->type == ExpressionType::Result || e->type == ExpressionType::Constant) {
+		if (e->result.isVariable) {
+			InstLoad* load = new InstLoad(e->result.type->typeId, e->result.id, 0);
+			instructions.Add(load);
+
+			id = load->id;
+			*type = (TypePrimitive*)e->variable->type;
+		} else {
+			id = e->result.id;
+			*type = (TypePrimitive*)e->result.type;
+		}
+	}
+
+	return id;
+}
+
 void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	if (decl->declInstructions.GetCount() != 0) {
 		return;
