@@ -1424,6 +1424,59 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 5
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (e.operatorType == TokenType::OperatorRightShift || e.operatorType == TokenType::OperatorLeftShift) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+
+			if (*lType != rType) {
+				Log::CompilerError(e.parent, "Type missmatch, types must be eaqual");
+			}
+
+			InstBase* instruction = nullptr;
+			ResultVariable ret = { 0 };
+
+
+			if (e.operatorType == TokenType::OperatorRightShift) {
+				instruction = new InstShiftRightLogical(lType->typeId, lOperandId, rOperandId);
+			} else {
+				instruction = new InstShiftLeftLogical(lType->typeId, lOperandId, rOperandId);
+			}
+
+			instructions.Add(instruction);
+
+			ret.type = lType;
+			ret.id = instruction->id;
+			
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	ResultVariable result = {0};
 
 	if (expressions.GetCount() > 1) {
