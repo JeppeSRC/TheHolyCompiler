@@ -97,9 +97,9 @@ List<Token> Compiler::Tokenize() {
 			} else if (c0 == '|' && c1 == '|') {
 				tokens.Emplace(TokenType::OperatorLogicalOr, "||", l, ++j);
 			} else if (c0 == '=' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorLogicalEqual, "==", l, ++j);
+				tokens.Emplace(TokenType::OperatorEqual, "==", l, ++j);
 			} else if (c0 == '!' && c1 == '=') {
-				tokens.Emplace(TokenType::OperatorLogicalNotEqual, "!=", l, ++j);
+				tokens.Emplace(TokenType::OperatorNotEqual, "!=", l, ++j);
 			} else if (c0 == '+') {
 				tokens.Emplace(TokenType::OperatorAdd, "+", l, j+1);
 			} else if (c0 == '*') {
@@ -1599,6 +1599,132 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						break;
 					case TokenType::OperatorGreaterEqual:
 						instruction = lType->sign ? new InstSGreaterThanEqual(retTypeId, lId, rId) : (InstBase*)new InstUGreaterThanEqual(retTypeId, lId, rId);
+						break;
+				}
+			}
+
+			if (convInst) instructions.Add(convInst);
+			instructions.Add(instruction);
+
+			ret.id = instruction->id;
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+	
+#pragma region precedence 7
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorEqual, TokenType::OperatorNotEqual)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			InstBase* instruction = nullptr;
+			InstBase* convInst = nullptr;
+			ResultVariable ret = { 0 };
+
+			if (!Utils::CompareEnums(left.type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(right.type, CompareOperation::Or, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
+			}
+
+			ID* lId = lOperandId;
+			ID* rId = rOperandId;
+
+			bool floatCmp = false;
+
+			if (lType->type == Type::Float) {
+				if (rType->type == Type::Float) { // Float
+					if (lType->bits > rType->bits) {
+						convInst = new InstFConvert(lType->typeId, rOperandId);
+						rId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+					} else if (lType->bits < rType->bits) {
+						convInst = new InstFConvert(rType->typeId, lOperandId);
+						lId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+					}
+				} else { // Int
+					if (rType->sign) {
+						convInst = new InstConvertSToF(lType->typeId, rOperandId);
+						rId = convInst->id;
+					} else {
+						convInst = new InstConvertUToF(lType->typeId, rOperandId);
+						rId = convInst->id;
+					}
+
+					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+				}
+
+				floatCmp = true;
+			} else { //Int
+				if (rType->type == Type::Int) {
+					TypePrimitive* tmp = nullptr;
+
+					if (lType->bits > rType->bits) {
+						convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 1))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 0))->typeId, rOperandId);
+						rId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
+					} else if (lType->bits < rType->bits) {
+						convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 1))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 0))->typeId, lOperandId);
+						lId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
+					}
+				} else { // Float
+					if (lType->sign) {
+						convInst = new InstConvertSToF(rType->typeId, lOperandId);
+						lId = convInst->id;
+					} else {
+						convInst = new InstConvertUToF(rType->typeId, lOperandId);
+						lId = convInst->id;
+					}
+
+					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+
+					floatCmp = true;
+				}
+			}
+
+			ret.type = CreateTypeBool();
+			ID* retTypeId = ret.type->typeId;
+
+			if (floatCmp) {
+				switch (e.operatorType) {
+					case TokenType::OperatorEqual:
+						instruction = new InstFOrdEqual(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorNotEqual:
+						instruction = new InstFOrdNotEqual(retTypeId, lId, rId);
+						break;
+				}
+			} else {
+				switch (e.operatorType) {
+					case TokenType::OperatorEqual:
+						instruction = new InstIEqual(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorNotEqual:
+						instruction = new InstINotEqual(retTypeId, lId, rId);
 						break;
 				}
 			}
