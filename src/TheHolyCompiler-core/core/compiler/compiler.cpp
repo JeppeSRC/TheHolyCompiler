@@ -1509,7 +1509,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			InstBase* convInst = nullptr;
 			ResultVariable ret = { 0 };
 
-			if (!Utils::CompareEnums(left.type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(right.type, CompareOperation::Or, Type::Int, Type::Float)) {
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
 			}
 
@@ -1651,7 +1651,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			InstBase* convInst = nullptr;
 			ResultVariable ret = { 0 };
 
-			if (!Utils::CompareEnums(left.type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(right.type, CompareOperation::Or, Type::Int, Type::Float)) {
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
 			}
 
