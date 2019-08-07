@@ -1254,7 +1254,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* operandId = GetExpressionOperandId(&right, &type);
 
 			if (operandId == nullptr) {
-				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
+				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer");
 			}
 
 			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Vector)) {
