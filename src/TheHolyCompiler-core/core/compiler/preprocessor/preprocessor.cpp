@@ -517,7 +517,7 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 	for (uint64 i = start; i <= end; i++) {
 		Token& token = tokens[i];
 
-		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorLogicalEqual, TokenType::OperatorLogicalNotEqual)) {
+		if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::OperatorEqual, TokenType::OperatorNotEqual)) {
 			if (i == end || i == start) {
 				Log::CompilerError(line, token.column, "Operator \"%s\" requires both a left-hand and a right-hand operand", token.string.str);
 			}
@@ -534,10 +534,10 @@ bool PreProcessor::ProcessStatement(uint64 start, uint64 end, List<Token>& token
 			}
 
 			switch (token.type) {
-				case TokenType::OperatorLogicalEqual:
+				case TokenType::OperatorEqual:
 					leftOperand.value = leftOperand.value == rightOperand.value ? 1 : 0;
 					break;
-				case TokenType::OperatorLogicalNotEqual:
+				case TokenType::OperatorNotEqual:
 					leftOperand.value = leftOperand.value != rightOperand.value ? 1 : 0;
 					break;
 			}
@@ -724,9 +724,9 @@ List<Token> PreProcessor::TokenizeStatement(const String& code, const Line& line
 		} else if (code[i] == '|' && code[i+1] == '|') {
 			tokens.Emplace(TokenType::OperatorLogicalOr, "||", ++i);
 		} else if (code[i] == '=' && code[i+1] == '=') {
-			tokens.Emplace(TokenType::OperatorLogicalEqual, "==", ++i);
+			tokens.Emplace(TokenType::OperatorEqual, "==", ++i);
 		} else if (code[i] == '!' && code[i+1] == '=') {
-			tokens.Emplace(TokenType::OperatorLogicalNotEqual, "!=", ++i);
+			tokens.Emplace(TokenType::OperatorNotEqual, "!=", ++i);
 		} else if (code[i] == '>' && code[i+1] == '=') {
 			tokens.Emplace(TokenType::OperatorGreaterEqual, ">=", ++i);
 		} else if (code[i] == '<' && code[i+1] == '=') {
