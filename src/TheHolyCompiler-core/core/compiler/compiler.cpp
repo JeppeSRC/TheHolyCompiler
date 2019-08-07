@@ -1779,10 +1779,20 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int");
 			}
 
-			//TODO: check matching bith width
+			ID* rId = rOperandId;
 
-			InstBase* inst = new InstBitwiseAnd(lType->typeId, lOperandId, rOperandId);
+			InstBase* conv = nullptr;
 
+			if (lType->bits != rType->bits) {
+				conv = rType->sign ? new InstSConvert(lType->typeId, rOperandId) : (InstBase*)new InstUConvert(lType->typeId, rOperandId);
+				rId = conv->id;
+				Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+			}
+			
+
+			InstBase* inst = new InstBitwiseAnd(lType->typeId, lOperandId, rId);
+
+			if (conv) instructions.Add(conv);
 			instructions.Add(inst);
 
 			ret.type = lType;
