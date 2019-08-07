@@ -1477,6 +1477,148 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 6
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLess, TokenType::OperatorLessEqual, TokenType::OperatorGreater, TokenType::OperatorGreaterEqual)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			InstBase* instruction = nullptr;
+			InstBase* convInst = nullptr;
+			ResultVariable ret = { 0 };
+
+			if (!Utils::CompareEnums(left.type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(right.type, CompareOperation::Or, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
+			}
+
+			ID* lId = lOperandId;
+			ID* rId = rOperandId;
+
+			bool floatCmp = false;
+			
+			if (lType->type == Type::Float) {
+				if (rType->type == Type::Float) { // Float
+					if (lType->bits > rType->bits) {
+						convInst = new InstFConvert(lType->typeId, rOperandId);
+						rId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+					} else if (lType->bits < rType->bits) {
+						convInst = new InstFConvert(rType->typeId, lOperandId);
+						lId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+					}
+				} else { // Int
+					if (rType->sign) {
+						convInst = new InstConvertSToF(lType->typeId, rOperandId);
+						rId = convInst->id;
+					} else {
+						convInst = new InstConvertUToF(lType->typeId, rOperandId);
+						rId = convInst->id;
+					}
+
+					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+				}
+
+				floatCmp = true;
+			} else { //Int
+				if (rType->type == Type::Int) {
+					if (lType->sign != rType->sign) {
+						Log::CompilerWarning(right.parent, "Sign missmatch");
+					}
+
+					TypePrimitive* tmp = nullptr;
+
+					if (lType->bits > rType->bits) {
+						convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 1))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 0))->typeId, rOperandId);
+						rId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
+					} else if (lType->bits < rType->bits) {
+						convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 1))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 0))->typeId, lOperandId);
+						lId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
+					}
+				} else { // Float
+					if (lType->sign) {
+						convInst = new InstConvertSToF(rType->typeId, lOperandId);
+						lId = convInst->id;
+					} else {
+						convInst = new InstConvertUToF(rType->typeId, lOperandId);
+						lId = convInst->id;
+					}
+
+					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+
+					floatCmp = true;
+				}
+			}
+
+			ret.type = CreateTypeBool();
+			ID* retTypeId = ret.type->typeId;
+
+			if (floatCmp) {
+				switch (e.operatorType) {
+					case TokenType::OperatorLess:
+						instruction = new InstFOrdLessThan(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorLessEqual:
+						instruction = new InstFOrdLessThanEqual(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorGreater:
+						instruction = new InstFOrdGreaterThan(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorGreaterEqual:
+						instruction = new InstFOrdGreaterThanEqual(retTypeId, lId, rId);
+						break;
+				}
+			} else {
+				switch (e.operatorType) {
+					case TokenType::OperatorLess:
+						instruction = lType->sign ? new InstSLessThan(retTypeId, lId, rId) : (InstBase*)new InstULessThan(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorLessEqual:
+						instruction = lType->sign ? new InstSLessThanEqual(retTypeId, lId, rId) : (InstBase*)new InstULessThanEqual(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorGreater:
+						instruction = lType->sign ? new InstSGreaterThan(retTypeId, lId, rId) : (InstBase*)new InstUGreaterThan(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorGreaterEqual:
+						instruction = lType->sign ? new InstSGreaterThanEqual(retTypeId, lId, rId) : (InstBase*)new InstUGreaterThanEqual(retTypeId, lId, rId);
+						break;
+				}
+			}
+
+			if (convInst) instructions.Add(convInst);
+			instructions.Add(instruction);
+
+			ret.id = instruction->id;
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	ResultVariable result = {0};
 
 	if (expressions.GetCount() > 1) {
