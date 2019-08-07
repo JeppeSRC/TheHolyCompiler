@@ -1141,8 +1141,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						break;
 				}
 				
+				InstStore* store = new InstStore(var->variableId, operation->id, 0);
+
 				instructions.Add(load);
 				instructions.Add(operation);
+				instructions.Add(store);
 
 				right.type = ExpressionType::Result;
 				right.result.isVariable = false;
