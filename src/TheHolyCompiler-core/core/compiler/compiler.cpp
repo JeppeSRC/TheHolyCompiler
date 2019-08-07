@@ -897,6 +897,8 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	List<Expression> expressions;
 	List<Variable*> tmpVariables;
+	List<InstBase*> postIncrements;
+
 
 	for (uint64 i = info->start; i <= info->end; i++) {
 		const Token& t = tokens[i];
@@ -1054,7 +1056,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				instructions.Add(load);
 				instructions.Add(operation);
-				instructions.Add(store);
+
+				postIncrements.Add(store);
 
 				left.type = ExpressionType::Result;
 				left.result.isVariable = false;
@@ -1747,6 +1750,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 	}
 
 #pragma endregion
+
+
+	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};
 
