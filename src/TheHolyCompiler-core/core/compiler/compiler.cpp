@@ -924,6 +924,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				e.constant.isConstant = true;
 				e.constant.type = CreateTypeBool();
 				e.constant.id = CreateConstantBool(t.string == "true");
+				e.parent = t;
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string, localVariables);
