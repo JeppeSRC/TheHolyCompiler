@@ -1808,7 +1808,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
-	#pragma region precedence 8
+#pragma region precedence 8
 
 	for (uint64 i = 0; i < expressions.GetCount(); i++) {
 		const Expression& e = expressions[i];
@@ -2003,7 +2003,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ResultVariable ret = { 0 };
 
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float)) {
 
+			}
 
 
 			left.type == ExpressionType::Result;
