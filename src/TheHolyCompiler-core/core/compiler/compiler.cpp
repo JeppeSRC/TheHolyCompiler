@@ -1808,6 +1808,63 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+	#pragma region precedence 8
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorBitwiseAnd)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			ResultVariable ret = { 0 };
+
+			if (lType->type != Type::Int || rType->type != Type::Int) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of type int");
+			}
+
+			ID* rId = rOperandId;
+
+			InstBase* conv = nullptr;
+
+			if (lType->bits != rType->bits) {
+				conv = rType->sign ? new InstSConvert(lType->typeId, rOperandId) : (InstBase*)new InstUConvert(lType->typeId, rOperandId);
+				rId = conv->id;
+				Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+			}
+			
+			InstBase* inst = new InstBitwiseAnd(lType->typeId, lOperandId, rId);
+
+			if (conv) instructions.Add(conv);
+			instructions.Add(inst);
+
+			ret.type = lType;
+			ret.id = inst->id;
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};
