@@ -1979,6 +1979,44 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 11
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLogicalAnd)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			ResultVariable ret = { 0 };
+
+
+
+
+			left.type == ExpressionType::Result;
+			left.result = ret;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};

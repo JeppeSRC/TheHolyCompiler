@@ -826,7 +826,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	ResultVariable res;
 	res.id = nullptr;
 
-	if (!Utils::CompareEnums(castType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 		return res;
 	}
 
