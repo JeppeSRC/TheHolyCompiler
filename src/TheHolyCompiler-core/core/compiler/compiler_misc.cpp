@@ -1049,17 +1049,11 @@ ID* Compiler::CreateConstantBool(bool value) {
 }
 
 ID* Compiler::CreateConstantS32(int32 value) {
-	TypePrimitive p;
+	TypeBase* type = CreateTypePrimitiveScalar(Type::Int, 32, 1);
 
-	p.type = Type::Int;
-	p.componentType = Type::Int;
-	p.bits = 32;
-	p.sign = 1;
-	p.rows = 0;
-	p.columns = 0;
-	p.typeId = nullptr;
+	CheckTypeExist(&type);
 
-	return CreateConstant(&p, *(uint32*)&value);
+	return CreateConstant(type, *(uint32*)&value);
 }
 
 ID* Compiler::CreateConstant(const TypeBase* const type, uint32 value) {
