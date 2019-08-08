@@ -103,7 +103,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 
 	const Token& token = tokens[start + offset++];
 
-	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVector, TokenType::TypeMatrix, TokenType::TypeVoid)) {
+	if (!Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeVector, TokenType::TypeMatrix, TokenType::TypeVoid)) {
 		Log::CompilerError(token, "Unexpecet symbol \"%s\" expected a valid type", token.string.str);
 	} else if (token.type == TokenType::TypeVoid) {
 		TypePrimitive* var = new TypePrimitive;
@@ -116,7 +116,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		var->columns = 0;
 		var->typeId = nullptr;
 
-		CheckTypeExist((TypeBase**)&var);
+		CheckTypeExist((TypeBase * *)& var);
 
 		tokens.RemoveAt(start);
 
@@ -165,23 +165,25 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		tmpVar.bits = token.bits;
 		tmpVar.sign = token.sign;
 	}
-	
+
 
 	tmpVar.type = ConvertToType(token.type);
 	tmpVar.rows = token.rows;
 	tmpVar.columns = token.columns;
-	
+
 	uint64 index = typeDefinitions.Find<TypePrimitive*>(&tmpVar, [](TypeBase* const& curr, TypePrimitive* const& other) -> bool {
 		return *curr == other;
-	});
+		});
 
 	TypePrimitive* var = nullptr;
 
 	if (index != ~0) {
 		var = (TypePrimitive*)typeDefinitions[index];
 	} else {
-
 		switch (tmpVar.type) {
+			case Type::Bool:
+				var = CreateTypeBool();
+				break;
 			case Type::Int:
 			case Type::Float:
 				var = CreateTypePrimitiveScalar(tmpVar.type, tmpVar.bits, tmpVar.sign);
@@ -1030,6 +1032,22 @@ bool Compiler::CheckParameterName(const List<Variable*>& params, const String& n
 	return params.Find<String>(name, cmp) == ~0;
 }
 
+ID* Compiler::CreateConstantBool(bool value) {
+	InstBase* base = nullptr;
+
+	ID* type = CreateTypeBool()->typeId;
+
+	if (value) {
+		base = new InstConstantTrue(type);
+	} else {
+		base = new InstConstantFalse(type);
+	}
+
+	CheckConstantExist(&base);
+
+	return base->id;
+}
+
 ID* Compiler::CreateConstantS32(int32 value) {
 	TypePrimitive p;
 
@@ -1225,7 +1243,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"uniform",  TokenType::DataUniform, 0, 0, 0, 0},
 
 		{"void", TokenType::TypeVoid, 0, 0, 0, 0},
-		{"bool", TokenType::TypeInt, 8, 0, 0, 0},
+		{"bool", TokenType::TypeBool, 0, 0, 0, 0},
 		{"byte", TokenType::TypeInt, 8, 0, 0, 0},
 
 		{"uint8",  TokenType::TypeInt, 8,  0, 0, 0},

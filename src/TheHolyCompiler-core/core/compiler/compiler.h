@@ -244,6 +244,7 @@ private: //Function stuff
 	static bool CheckParameterName(const utils::List<Variable*>& params, const utils::String& name); //return true if name is available
 
 private: //Constants
+	ID* CreateConstantBool(bool value);
 	ID* CreateConstantS32(int32 value);
 	ID* CreateConstant(const TypeBase* const type, uint32 value);
 	ID* CreateConstant(const TypeBase* const type, float32 value);

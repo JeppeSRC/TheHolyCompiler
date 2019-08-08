@@ -303,8 +303,27 @@ public:
 
 #pragma region constant creation
 
-//TODO: Boolean constants, OpConstatnTrue and OpConstantFalse
+class InstConstantTrue : public InstBase {
+public:
+	compiler::ID* resultTypeId;
 
+	InstConstantTrue(compiler::ID* resultTypeId);
+
+	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstBase* const inst) const override;
+};
+
+class InstConstantFalse : public InstBase {
+public:
+	compiler::ID* resultTypeId;
+
+	InstConstantFalse(compiler::ID* resultTypeId);
+
+	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstBase* const inst) const override;
+};
 
 class InstConstant : public InstBase {
 public:

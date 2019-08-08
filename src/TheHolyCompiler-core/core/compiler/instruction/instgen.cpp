@@ -209,6 +209,20 @@ void InstCapability::GetInstWords(uint32* words) const {
 	words[1] = capability;
 }
 
+void InstConstantTrue::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = resultTypeId->id;
+	words[2] = id->id;
+}
+
+void InstConstantFalse::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = resultTypeId->id;
+	words[2] = id->id;
+}
+
 void InstConstant::GetInstWords(uint32* words) const {
 	wordCount += valueCount;
 	InstBase::GetInstWords(words);

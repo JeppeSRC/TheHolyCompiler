@@ -90,6 +90,10 @@ InstExecutionMode::InstExecutionMode(compiler::ID* entryPointId, uint32 mode, ui
 
 InstCapability::InstCapability(uint32 capability) : InstBase(THC_SPIRV_OPCODE_OpCapability, 2, "OpCapability"), capability(capability) { }
 
+InstConstantTrue::InstConstantTrue(compiler::ID* resultTypeId) : InstBase(THC_SPIRV_OPCODE_OpConstantTrue, 3, "OpConstantTrue", true), resultTypeId(resultTypeId) {}
+
+InstConstantFalse::InstConstantFalse(compiler::ID* resultTypeId) : InstBase(THC_SPIRV_OPCODE_OpConstantFalse, 3, "OpConstantFalse", true), resultTypeId(resultTypeId) {}
+
 InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 valueCount, void* values) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(valueCount), u32(0) { memcpy(this->values, values, valueCount << 2); }
 
 InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), u32(value) { }
@@ -308,6 +312,13 @@ InstReturn::InstReturn() : InstBase(THC_SPIRV_OPCODE_OpReturn, 1, "OpReturn") {}
 
 InstReturnValue::InstReturnValue(compiler::ID* valueId) : InstBase(THC_SPIRV_OPCODE_OpReturnValue, 2, "OpReturnValue"), valueId(valueId) {}
 
+bool InstConstantTrue::operator==(const InstBase* const inst) const {
+	return inst->opCode == THC_SPIRV_OPCODE_OpConstantTrue;
+}
+
+bool InstConstantFalse::operator==(const InstBase* const inst) const {
+	return inst->opCode == THC_SPIRV_OPCODE_OpConstantFalse;
+}
 
 bool InstConstant::operator==(const InstBase* const inst) const {
 	if (inst->opCode != this->opCode) {

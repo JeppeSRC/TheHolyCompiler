@@ -919,6 +919,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				tmpVariables.Add(v);
 
 				i += inf.len-1;
+			} else if (t.string == "false" || t.string == "true") {
+				e.type = ExpressionType::Constant;
+				e.constant.isConstant = true;
+				e.constant.type = CreateTypeBool();
+				e.constant.id = CreateConstantBool(t.string == "true");
 			} else { //Normal variable
 				e.type = ExpressionType::Variable;
 				e.variable = GetVariable(t.string, localVariables);
@@ -1211,14 +1216,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			Expression& right = expressions[i + 1];
 
-			TypePrimitive* type = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &type);
+			TypePrimitive* rType = nullptr;
+			ID* operandId = GetExpressionOperandId(&right, &rType);
 
 			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a variable or value");
 			}
 
-			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+			if (!Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer, float or a bool result from an expression");
 			}
 
@@ -1226,26 +1231,31 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ID* constantId = nullptr;
 
-			if (type->type != Type::Bool) {
-				type = CreateTypeBool();
+			if (rType->type == Type::Int) {
+				constantId = CreateConstant(rType, 0U);
 			} else {
-				float tmp = 0.0f;
-				constantId = CreateConstant(type, type->type == Type::Float ? *(uint32*)&tmp : 0);
+				constantId = CreateConstant(rType, 0.0f);
 			}
 			
-
-			if (type->type == Type::Bool) {
-				operation = new InstLogicalNot(type->typeId, operandId);
-			} else if (type->type == Type::Int) {
-				operation = new InstINotEqual(type->typeId, operandId, constantId);
-			} else if (type->type == Type::Float) {
-				operation = new InstFOrdNotEqual(type->typeId, operandId, constantId);
-			} 
+			right.result.type = CreateTypeBool();
+			ID* retTypeId = right.result.type->typeId;
+			
+			switch (rType->type) {
+				case Type::Bool:
+					operation = new InstLogicalNot(retTypeId, operandId);
+					break;
+				case Type::Int:
+					operation = new InstINotEqual(retTypeId, operandId, constantId);
+					break;
+				case Type::Float:
+					operation = new InstFOrdNotEqual(retTypeId, operandId, constantId);
+					break;
+			}
+			
 
 			instructions.Add(operation);
 
 			right.result.isVariable = false;
-			right.result.type = type;
 			right.result.id = operation->id;
 
 			expressions.RemoveAt(i);
@@ -1651,14 +1661,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			InstBase* convInst = nullptr;
 			ResultVariable ret = { 0 };
 
-			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Int, Type::Float)) {
-				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of type int, float or bool");
 			}
 
 			ID* lId = lOperandId;
 			ID* rId = rOperandId;
 
-			bool floatCmp = false;
+			uint8 cmpType = 0;
 
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
@@ -1671,7 +1681,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						lId = convInst->id;
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
 					}
-				} else { // Int
+				} else if (rType->type == Type::Int) { // Int
 					if (rType->sign) {
 						convInst = new InstConvertSToF(lType->typeId, rOperandId);
 						rId = convInst->id;
@@ -1681,10 +1691,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					}
 
 					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+				} else {
+					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", lType->typeString.str);
 				}
 
-				floatCmp = true;
-			} else { //Int
+				cmpType = 1;
+			} else if (lType->type == Type::Int) { //Int
 				if (rType->type == Type::Int) {
 					TypePrimitive* tmp = nullptr;
 
@@ -1697,7 +1709,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						lId = convInst->id;
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
-				} else { // Float
+				} else if (rType->type == Type::Float) { // Float
 					if (lType->sign) {
 						convInst = new InstConvertSToF(rType->typeId, lOperandId);
 						lId = convInst->id;
@@ -1708,14 +1720,22 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
 
-					floatCmp = true;
+					cmpType = 1;
+				} else {
+					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", lType->typeString.str);
 				}
+			} else {
+				if (rType->type != Type::Bool) {
+					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", rType->typeString.str);
+				}
+
+				cmpType = 2;
 			}
 
 			ret.type = CreateTypeBool();
 			ID* retTypeId = ret.type->typeId;
 
-			if (floatCmp) {
+			if (cmpType == 1) {
 				switch (e.operatorType) {
 					case TokenType::OperatorEqual:
 						instruction = new InstFOrdEqual(retTypeId, lId, rId);
@@ -1724,13 +1744,22 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						instruction = new InstFOrdNotEqual(retTypeId, lId, rId);
 						break;
 				}
-			} else {
+			} else if (cmpType == 0) {
 				switch (e.operatorType) {
 					case TokenType::OperatorEqual:
 						instruction = new InstIEqual(retTypeId, lId, rId);
 						break;
 					case TokenType::OperatorNotEqual:
 						instruction = new InstINotEqual(retTypeId, lId, rId);
+						break;
+				}
+			} else {
+				switch (e.operatorType) {
+					case TokenType::OperatorEqual:
+						instruction = new InstLogicalEqual(retTypeId, lId, rId);
+						break;
+					case TokenType::OperatorNotEqual:
+						instruction = new InstLogicalNotEqual(retTypeId, lId, rId);
 						break;
 				}
 			}
