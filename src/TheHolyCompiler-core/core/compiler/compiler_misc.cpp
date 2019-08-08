@@ -868,7 +868,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 		if (type->type == Type::Int) { //Int
 			operation = new InstINotEqual(castType->typeId, operandId, CreateConstant(type, 0U));
 		} else if (type->type == Type::Float) { //Float
-			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0U));
+			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0.0F));
 		}
 	}
 
