@@ -28,6 +28,7 @@ struct Dank {
 };
 
 void main() {
+    bool tmp = false;
 
     vec3 v1;
     vec3 v2 = vec3<uint32>(1, 1, 1);
