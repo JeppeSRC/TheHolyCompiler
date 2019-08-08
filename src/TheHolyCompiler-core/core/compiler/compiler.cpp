@@ -2033,9 +2033,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ResultVariable ret = { 0 };
 
-			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float)) {
-
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
 			}
+
 
 
 			left.type == ExpressionType::Result;
