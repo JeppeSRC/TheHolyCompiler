@@ -1789,7 +1789,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
 			}
 			
-
 			InstBase* inst = new InstBitwiseAnd(lType->typeId, lOperandId, rId);
 
 			if (conv) instructions.Add(conv);
