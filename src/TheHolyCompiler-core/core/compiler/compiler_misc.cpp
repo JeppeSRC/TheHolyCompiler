@@ -885,15 +885,14 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 		}
 	}
 
-	if (operation) {
-		instructions.Add(operation);
-		res.id = operation->id;
-	} else {
-		res.id = operandId;
-	}
+	if (t) Log::CompilerWarning(*t, "Implicit conversion from %s to %s", type->typeString.str, cType->typeString.str);
+
+	instructions.Add(operation);
+	res.id = operation->id;
 
 	res.isVariable = false;
 	res.type = castType;
+	res.isConstant = false;
 
 	return res;
 }
