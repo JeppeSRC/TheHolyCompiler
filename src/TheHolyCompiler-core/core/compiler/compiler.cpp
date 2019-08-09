@@ -1464,18 +1464,23 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* rOperandId = GetExpressionOperandId(&right, &rType);
 
 
-			if (*lType != rType) {
-				Log::CompilerError(e.parent, "Type missmatch, types must be eaqual");
+			if (lType->type != Type::Int && rType->type != Type::Int) {
+				Log::CompilerError(e.parent, "Operands must be integers");
 			}
 
 			InstBase* instruction = nullptr;
 			ResultVariable ret = { 0 };
 
+			ID* rId = rOperandId;
+
+			if (lType->bits != rType->bits) {
+				rId = Cast(lType, rType, rOperandId).id;
+			}
 
 			if (e.operatorType == TokenType::OperatorRightShift) {
-				instruction = new InstShiftRightLogical(lType->typeId, lOperandId, rOperandId);
+				instruction = new InstShiftRightLogical(lType->typeId, lOperandId, rId);
 			} else {
-				instruction = new InstShiftLeftLogical(lType->typeId, lOperandId, rOperandId);
+				instruction = new InstShiftLeftLogical(lType->typeId, lOperandId, rId);
 			}
 
 			instructions.Add(instruction);
