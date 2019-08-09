@@ -828,14 +828,16 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	ResultVariable res;
 	res.id = nullptr;
 
-	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector)) {
 		return res;
+	} else if (cType->type == Type::Vector) {
+		if (type->type == Type::Vector && cType->rows != type->rows) return res;
 	}
 
 	InstBase* operation = nullptr;
 
-	if (cType->type == Type::Int) {
-		if (type->type == Type::Int) {
+	if (cType->componentType == Type::Int) {
+		if (type->componentType == Type::Int) {
 			if (cType->bits != type->bits) {
 				if (cType->sign) {
 					operation = new InstSConvert(cType->typeId, operandId);
@@ -843,7 +845,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 					operation = new InstUConvert(cType->typeId, operandId);
 				}
 			}
-		} else if (type->type == Type::Float) { //Float
+		} else if (type->componentType == Type::Float) { //Float
 			if (cType->sign) {
 				operation = new InstConvertFToS(cType->typeId, operandId);
 			} else {
@@ -852,10 +854,10 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 		} else { // Bool
 			return res;
 		}
-	} else if (cType->type == Type::Float) { //Float
-		if (type->type == Type::Float) {
+	} else if (cType->componentType == Type::Float) { //Float
+		if (type->componentType == Type::Float) {
 			operation = new InstFConvert(cType->typeId, operandId);
-		} else if (type->type == Type::Int) { //Int
+		} else if (type->componentType == Type::Int) { //Int
 			if (type->sign) {
 				operation = new InstConvertSToF(cType->typeId, operandId);
 			} else {
@@ -869,6 +871,8 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 			operation = new InstINotEqual(castType->typeId, operandId, CreateConstant(type, 0U));
 		} else if (type->type == Type::Float) { //Float
 			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0.0F));
+		} else {
+			return res;
 		}
 	}
 
