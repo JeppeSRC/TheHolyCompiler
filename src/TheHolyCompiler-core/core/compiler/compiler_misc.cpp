@@ -821,7 +821,9 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	return var;
 }
 
-Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, ID* operandId) {
+#define CAST_ERROR if (t) Log::CompilerError(*t, "No conversion available from %s to %s", type->typeString.str, cType->typeString.str);
+
+Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, ID* operandId, const Token* t) {
 	TypePrimitive* cType = (TypePrimitive*)castType;
 	TypePrimitive* type = (TypePrimitive*)currType;
 
@@ -829,9 +831,13 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	res.id = nullptr;
 
 	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector)) {
+		CAST_ERROR;
 		return res;
 	} else if (cType->type == Type::Vector) {
-		if (type->type == Type::Vector && cType->rows != type->rows) return res;
+		if (type->type == Type::Vector && cType->rows != type->rows) {
+			CAST_ERROR;
+			return res;
+		}
 	}
 
 	InstBase* operation = nullptr;
@@ -852,6 +858,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 				operation = new InstConvertFToU(cType->typeId, operandId);
 			}
 		} else { // Bool
+			CAST_ERROR;
 			return res;
 		}
 	} else if (cType->componentType == Type::Float) { //Float
@@ -864,6 +871,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 				operation = new InstConvertUToF(cType->typeId, operandId);
 			}
 		} else { //Bool
+			CAST_ERROR;
 			return res;
 		}
 	} else { //Bool
@@ -872,6 +880,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 		} else if (type->type == Type::Float) { //Float
 			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0.0F));
 		} else {
+			CAST_ERROR;
 			return res;
 		}
 	}
