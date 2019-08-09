@@ -1532,24 +1532,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						convInst = new InstFConvert(lType->typeId, rOperandId);
-						rId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+						rId = Cast(lType, rType, rOperandId).id;
 					} else if (lType->bits < rType->bits) {
-						convInst = new InstFConvert(rType->typeId, lOperandId);
-						lId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+						lId = Cast(rType, lType, lOperandId).id;
 					}
 				} else { // Int
-					if (rType->sign) {
-						convInst = new InstConvertSToF(lType->typeId, rOperandId);
-						rId = convInst->id;
-					} else {
-						convInst = new InstConvertUToF(lType->typeId, rOperandId);
-						rId = convInst->id;
-					}
-
-					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+					rId = Cast(lType, rType, rOperandId).id;
 				}
 
 				floatCmp = true;
@@ -1571,15 +1559,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else { // Float
-					if (lType->sign) {
-						convInst = new InstConvertSToF(rType->typeId, lOperandId);
-						lId = convInst->id;
-					} else {
-						convInst = new InstConvertUToF(rType->typeId, lOperandId);
-						lId = convInst->id;
-					}
-
-					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+					lId = Cast(rType, lType, lOperandId).id;
 
 					floatCmp = true;
 				}
