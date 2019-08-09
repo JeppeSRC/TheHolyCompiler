@@ -1674,24 +1674,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						convInst = new InstFConvert(lType->typeId, rOperandId);
-						rId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+						rId = Cast(lType, rType, rOperandId).id;
 					} else if (lType->bits < rType->bits) {
-						convInst = new InstFConvert(rType->typeId, lOperandId);
-						lId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+						lId = Cast(rType, lType, rOperandId).id;
 					}
 				} else if (rType->type == Type::Int) { // Int
-					if (rType->sign) {
-						convInst = new InstConvertSToF(lType->typeId, rOperandId);
-						rId = convInst->id;
-					} else {
-						convInst = new InstConvertUToF(lType->typeId, rOperandId);
-						rId = convInst->id;
-					}
-
-					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, lType->typeString.str);
+					rId = Cast(lType, rType, rOperandId).id;
 				} else {
 					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", lType->typeString.str);
 				}
@@ -1711,15 +1699,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else if (rType->type == Type::Float) { // Float
-					if (lType->sign) {
-						convInst = new InstConvertSToF(rType->typeId, lOperandId);
-						lId = convInst->id;
-					} else {
-						convInst = new InstConvertUToF(rType->typeId, lOperandId);
-						lId = convInst->id;
-					}
-
-					Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, rType->typeString.str);
+					rId = Cast(lType, rType, rOperandId).id;
 
 					cmpType = 1;
 				} else {
