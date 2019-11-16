@@ -1417,17 +1417,82 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* rOperandId = GetExpressionOperandId(&right, &rType);
 
 			ResultVariable ret = { 0 };
+			
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+				Log::CompilerError(e.parent, "Operands must be scalar or vector of type integer or float");
+			}
 
-			if (*lType == rType) {
-				if (Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
-					if (add) {
-						ret = Add(lType, lOperandId, rOperandId);
-					} else {
-						ret = Subtract(lType, lOperandId, rOperandId);
+			ID* rId = rOperandId;
+			ID* lId = lOperandId;
+
+			InstBase* instruction = nullptr;
+			InstBase* convInst = nullptr;
+
+			if (lType->type == Type::Int) {
+				if (rType->type == Type::Int) {
+					TypePrimitive* tmp = nullptr;
+
+					if (lType->bits > rType->bits) {
+						convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 1))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 0))->typeId, rOperandId);
+						rId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
+					} else if (lType->bits < rType->bits) {
+						convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 1))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 0))->typeId, lOperandId);
+						lId = convInst->id;
+						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
-				}  else {
-					Log::CompilerError(e.parent, "Invalid types, cannot add or subtract types");
+
+					ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
+					instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
+
+				} else if (rType->type == Type::Float) {
+					lId = Cast(rType, lType, lOperandId).id;
+
+					instruction = add ? new InstFAdd(rType->typeId, lId, rId) : (InstBase*)new InstFSub(rType->typeId, lId, rId);
+				} else {
+					Log::CompilerError(right.parent, "Can't add %s to %s", rType->typeString.str, lType->typeString.str);
 				}
+			} else if (lType->type == Type::Float) {
+				if (rType->type == Type::Float) {
+					if (lType->bits > rType->bits) {
+						rId = Cast(lType, rType, rOperandId).id;
+					} else if (rType->bits > lType->bits) {
+						lId = Cast(rType, lType, lOperandId).id;
+					}
+				} else if (rType->type == Type::Int) {
+					rId = Cast(lType, rType, rOperandId).id;
+				} else {
+					Log::CompilerError(right.parent, "Can't add %s to %s", rType->typeString.str, lType->typeString.str);
+				}
+
+				ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
+				instruction = add ? new InstFAdd(typeId, lId, rId) : (InstBase*)new InstFSub(typeId, lId, rId);
+			} else if (lType->type == Type::Vector) {
+				if (rType->type != Type::Vector) {
+					Log::CompilerError(right.parent, "Right operand must be a vector");
+				} else if (rType->rows != lType->rows) {
+					Log::CompilerError(e.parent, "Operands must have matching amount of rows");
+				}
+
+				if (lType->componentType == Type::Int) {
+					if (rType->componentType == Type::Int) {
+						TypePrimitive* tmp = nullptr;
+
+						if (lType->bits > rType->bits) {
+							convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, lType->bits, 1, lType->rows))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, lType->bits, 0, lType->rows))->typeId, rOperandId);
+							rId = convInst->id;
+							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
+						} else if (lType->bits < rType->bits) {
+							convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 1, lType->rows))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 0), lType->rows)->typeId, lOperandId);
+							lId = convInst->id;
+							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
+						}
+
+						ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
+						instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
+					}
+				}
+
 			}
 
 			left.type == ExpressionType::Result;
