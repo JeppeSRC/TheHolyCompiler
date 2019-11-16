@@ -1455,7 +1455,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			} else if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) {
 					if (lType->bits > rType->bits) {
-						rId = Cast(lType, rType, rOperandId).id;
+						rId = Cast(lType, rType, rOperandId, &right.parent).id;
 					} else if (rType->bits > lType->bits) {
 						lId = Cast(rType, lType, lOperandId).id;
 					}
@@ -1494,6 +1494,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				}
 
 			}
+
+			if (convInst) instructions.Add(convInst);
+			instructions.Add(instruction);
 
 			left.type == ExpressionType::Result;
 			left.result = ret;
