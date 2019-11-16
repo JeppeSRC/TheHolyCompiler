@@ -1446,9 +1446,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
 
 				} else if (rType->type == Type::Float) {
-					lId = Cast(rType, lType, lOperandId).id;
+					rId = Cast(lType, rType, rOperandId, &right.parent).id;
 
-					instruction = add ? new InstFAdd(rType->typeId, lId, rId) : (InstBase*)new InstFSub(rType->typeId, lId, rId);
+					instruction = add ? new InstIAdd(lType->typeId, lId, rId) : (InstBase*)new InstISub(lType->typeId, lId, rId);
 				} else {
 					Log::CompilerError(right.parent, "Can't add %s to %s", rType->typeString.str, lType->typeString.str);
 				}
