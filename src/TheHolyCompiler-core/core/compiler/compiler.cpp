@@ -1483,14 +1483,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 							rId = convInst->id;
 							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
 						} else if (lType->bits < rType->bits) {
-							convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 1, lType->rows))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 0), lType->rows)->typeId, lOperandId);
+							convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 1, lType->rows))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 0, lType->rows))->typeId, lOperandId);
 							lId = convInst->id;
 							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 						}
 
 						ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
 						instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
-					}
+					} 
 				}
 
 			}
