@@ -1026,7 +1026,7 @@ Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeB
 		} else if (rType->componentType == Type::Float) {
 			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
 
-			instruction = new InstFSub(rType->typeId, tmp.id, operand2);
+			instruction = new InstFSub((lType = rType)->typeId, tmp.id, operand2); //
 		}
 	} else if (lType->componentType == Type::Float) {
 		if (rType->componentType == Type::Float) {
@@ -1054,7 +1054,7 @@ Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeB
 
 	ResultVariable ret;
 	ret.id = instruction->id;
-	ret.type = rType;
+	ret.type = lType;
 	ret.isConstant = false;
 	ret.isVariable = false;
 
@@ -1062,11 +1062,301 @@ Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeB
 }
 
 Compiler::ResultVariable Compiler::Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
-	
+	if (!Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
+		Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
+	}
+
+	TypePrimitive* lType = (TypePrimitive*)type1;
+	TypePrimitive* rType = (TypePrimitive*)type2;
+
+	InstBase* instruction = nullptr;
+
+	if (lType->type == Type::Matrix) {
+		if (*lType == rType) {
+			instruction = new InstMatrixTimesMatrix(lType->typeId, operand1, operand2);
+		} else if (rType->type == Type::Vector && lType->columns == rType->rows) {
+			if (lType->componentType != rType->componentType || lType->bits != rType->bits) {
+				ResultVariable tmp = ImplicitCast(CreateTypePrimitiveVector(lType->componentType, lType->bits, lType->sign, lType->columns), rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			}
+
+			instruction = new InstMatrixTimesVector(rType->typeId, operand1, operand2);
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (lType->type == Type::Vector) {
+		if (rType->type == Type::Vector) {
+			if (lType->componentType == Type::Int) {
+				if (rType->componentType == Type::Int) {
+					if (lType->bits > rType->bits) {
+						ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+						rType = (TypePrimitive*)tmp.type;
+						operand2 = tmp.id;
+					} else if (rType->bits > lType->bits) {
+						ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+						lType = (TypePrimitive*)tmp.type;
+						operand1 = tmp.id;
+					}
+
+					instruction = new InstIMul(lType->typeId, operand1, operand2);
+				} else if (rType->componentType == Type::Float) {
+					ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+					instruction = new InstFMul((lType = rType)->typeId, tmp.id, operand2);
+				}
+			} else if (lType->componentType == Type::Float) {
+				if (rType->componentType == Type::Float) {
+					if (lType->bits > rType->bits) {
+						ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+						rType = (TypePrimitive*)tmp.type;
+						operand2 = tmp.id;
+					} else if (rType->bits > lType->bits) {
+						ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+						lType = (TypePrimitive*)tmp.type;
+						operand1 = tmp.id;
+					}
+
+					instruction = new InstFMul(lType->typeId, operand1, operand2);
+				} else if (rType->componentType == Type::Int) {
+					ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+					instruction = new InstFMul(lType->typeId, operand1, tmp.id);
+				}
+			}
+		} else if (rType->type == Type::Matrix && lType->rows == rType->columns) {
+			if (lType->componentType != rType->componentType || lType->bits != rType->bits) {
+				ResultVariable tmp = ImplicitCast(CreateTypePrimitiveVector(rType->componentType, rType->bits, rType->sign, rType->columns), lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstVectorTimesMatrix(lType->typeId, operand1, operand2);
+		} else if (rType->type == Type::Int) {
+			if (lType->componentType == Type::Int) {
+				if (lType->bits > rType->bits) {
+					ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+					rType = (TypePrimitive*)tmp.type;
+					operand2 = tmp.id;
+				} else if (rType->bits > lType->bits) {
+					ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+					lType = (TypePrimitive*)tmp.type;
+					operand1 = tmp.id;
+				}
+
+				instruction = new InstVectorTimesScalar(lType->typeId, operand1, operand2);
+			} else if (lType->componentType == Type::Float) {
+				ResultVariable tmp = ImplicitCast(CreateTypePrimitiveScalar(Type::Float, lType->bits, lType->sign), rType, operand2, t);
+
+				instruction = new InstVectorTimesScalar(lType->typeId, operand1, tmp.id);
+			}
+		} else if (rType->type == Type::Float) {
+			if (lType->componentType == Type::Int) {
+				ResultVariable tmp = ImplicitCast(CreateTypePrimitiveVector(Type::Float, rType->bits, rType->sign, lType->rows), lType, operand1, t);
+
+				instruction = new InstVectorTimesScalar((lType = (TypePrimitive*)tmp.type)->typeId, tmp.id, operand2);
+			} else if (lType->componentType == Type::Float) {
+				if (lType->bits > rType->bits) {
+					ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+					rType = (TypePrimitive*)tmp.type;
+					operand2 = tmp.id;
+				} else if (rType->bits > lType->bits) {
+					ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+					lType = (TypePrimitive*)tmp.type;
+					operand1 = tmp.id;
+				}
+
+				instruction = new InstVectorTimesScalar(lType->typeId, operand1, operand2);
+			}
+		}
+	} else if (lType->type == Type::Int) {
+		if (rType->type == Type::Int) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstIMul(lType->typeId, operand1, operand2);
+		} else if (rType->type == Type::Float) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFMul((lType = rType)->typeId, tmp.id, operand2);
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (lType->type == Type::Float) {
+		if (rType->type == Type::Float) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstFMul(lType->typeId, operand1, operand2);
+		} else if (rType->type == Type::Int) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFMul((lType = rType)->typeId, tmp.id, operand2);
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
+		}
+	}
+
+	instructions.Add(instruction);
+
+	ResultVariable ret;
+	ret.id = instruction->id;
+	ret.type = lType;
+	ret.isConstant = false;
+	ret.isVariable = false;
+
+	return ret;
 }
 
 Compiler::ResultVariable Compiler::Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
-	
+	if (!Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector) || !Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+		Log::CompilerError(*t, "Invalid operands %s / %s", type1->typeString.str, type2->typeString.str);
+	}
+
+	TypePrimitive* lType = (TypePrimitive*)type1;
+	TypePrimitive* rType = (TypePrimitive*)type2;
+
+	InstBase* instruction = nullptr;
+
+	if (lType->type == Type::Vector) {
+		if (rType->type == Type::Vector) {
+			if (lType->componentType == Type::Int) {
+				if (rType->componentType == Type::Int) {
+					if (lType->bits > rType->bits) {
+						ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+						rType = (TypePrimitive*)tmp.type;
+						operand2 = tmp.id;
+					} else if (rType->bits > lType->bits) {
+						ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+						lType = (TypePrimitive*)tmp.type;
+						operand1 = tmp.id;
+					}
+
+					if (lType->sign) {
+						instruction = new InstUDiv(lType->typeId, operand1, operand2);
+					} else {
+						instruction = new InstSDiv(lType->typeId, operand1, operand2);
+					}
+					
+				} else if (rType->componentType == Type::Float) {
+					ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+					instruction = new InstFDiv((lType = rType)->typeId, tmp.id, operand2);
+				}
+			} else if (lType->componentType == Type::Float) {
+				if (rType->componentType == Type::Float) {
+					if (lType->bits > rType->bits) {
+						ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+						rType = (TypePrimitive*)tmp.type;
+						operand2 = tmp.id;
+					} else if (rType->bits > lType->bits) {
+						ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+						lType = (TypePrimitive*)tmp.type;
+						operand1 = tmp.id;
+					}
+
+					instruction = new InstFDiv(lType->typeId, operand1, operand2);
+				} else if (rType->componentType == Type::Int) {
+					ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+					instruction = new InstFDiv(lType->typeId, operand1, tmp.id);
+				}
+			}
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s / %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (lType->type == Type::Int) {
+		if (rType->type == Type::Int) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			if (lType->sign) {
+				instruction = new InstUDiv(lType->typeId, operand1, operand2);
+			} else {
+				instruction = new InstSDiv(lType->typeId, operand1, operand2);
+			}
+
+		} else if (rType->type == Type::Float) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFDiv((lType = rType)->typeId, tmp.id, operand2);
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (lType->type == Type::Float) {
+		if (rType->type == Type::Float) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstFDiv(lType->typeId, operand1, operand2);
+		} else if (rType->type == Type::Int) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFDiv((lType = rType)->typeId, tmp.id, operand2);
+		} else {
+			Log::CompilerError(*t, "Invalid operands %s / %s", type1->typeString.str, type2->typeString.str);
+		}
+	}
+
+	instructions.Add(instruction);
+
+	ResultVariable ret;
+	ret.id = instruction->id;
+	ret.type = lType;
+	ret.isConstant = false;
+	ret.isVariable = false;
+
+	return ret;
 }
 
 utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
