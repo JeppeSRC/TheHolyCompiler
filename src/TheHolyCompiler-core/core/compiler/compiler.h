@@ -126,12 +126,15 @@ private: //Type stuff
 	inline void CheckConstantExist(instruction::InstConstantComposite** constant) { CheckConstantExist((instruction::InstBase**)constant); }
 	
 
-	//start is the index of the type
 	TypePrimitive* CreateTypeBool();
+	//start is the index of the type
 	TypePrimitive* CreateTypePrimitive(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 	TypePrimitive* CreateTypePrimitiveScalar(type::Type type, uint8 bits, uint8 sign);
 	TypePrimitive* CreateTypePrimitiveVector(type::Type componentType, uint8 bits, uint8 sign, uint8 rows);
 	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
+
+	TypePrimitive* ModifyTypePrimitiveBitWidth(TypePrimitive* base, uint8 bits);
+
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
 	//start is start of type

@@ -329,6 +329,20 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimtiveMatrix(Type componentType, 
 	return mat;
 }
 
+Compiler::TypePrimitive* Compiler::ModifyTypePrimitiveBitWidth(TypePrimitive* base, uint8 bits) {
+	THC_ASSERT(Utils::CompareEnums(base->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
+
+	switch (base->type) {
+		case Type::Int:
+		case Type::Float:
+			return CreateTypePrimitiveScalar(base->type, bits, base->sign);
+		case Type::Vector:
+			return CreateTypePrimitiveVector(base->componentType, bits, base->sign, base->rows);
+	}
+
+	return nullptr;
+}
+
 Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
 	TypeStruct* var = new TypeStruct;
 
@@ -844,12 +858,10 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 
 	if (cType->componentType == Type::Int) {
 		if (type->componentType == Type::Int) {
-			if (cType->bits != type->bits) {
-				if (cType->sign) {
-					operation = new InstSConvert(cType->typeId, operandId);
-				} else {
-					operation = new InstUConvert(cType->typeId, operandId);
-				}
+			if (cType->sign) {
+				operation = new InstSConvert(cType->typeId, operandId);
+			} else {
+				operation = new InstUConvert(cType->typeId, operandId);
 			}
 		} else if (type->componentType == Type::Float) { //Float
 			if (cType->sign) {
@@ -907,23 +919,153 @@ Compiler::ResultVariable Compiler::ImplicitCast(TypeBase* castType, TypeBase* cu
 	return ret;
 }
 
-Compiler::ResultVariable Compiler::Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+Compiler::ResultVariable Compiler::Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
 	if (!Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector) || !Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
-		Log::CompilerError(*parent, "Invalid operands. %s + %s", type1->typeString.str, type2->typeString.str);
+		Log::CompilerError(*t, "Invalid operands %s + %s", type1->typeString.str, type2->typeString.str);
 	}
 
+	TypePrimitive* lType = (TypePrimitive*)type1;
+	TypePrimitive* rType = (TypePrimitive*)type2;
 
+	if (lType->type == Type::Vector) {
+		if (rType->type == Type::Vector && lType->rows != rType->rows) {
+			Log::CompilerError(*t, "Invalid operands %s + %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (rType->type == Type::Vector) {
+		Log::CompilerError(*t, "Invalid operands %s + %s", type1->typeString.str, type2->typeString.str);
+	}
+
+	InstBase* instruction = nullptr;
+
+	if (lType->componentType == Type::Int) {
+		if (rType->componentType == Type::Int) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstIAdd(lType->typeId, operand1, operand2);
+		} else if (rType->componentType == Type::Float) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFAdd(rType->typeId, tmp.id, operand2);
+		}
+	} else if (lType->componentType == Type::Float) {
+		if (rType->componentType == Type::Float) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstFAdd(lType->typeId, operand1, operand2);
+		} else if (rType->componentType == Type::Int) {
+			ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+			instruction = new InstFAdd(lType->typeId, operand1, tmp.id);
+		}
+	}
+
+	instructions.Add(instruction);
+
+	ResultVariable ret;
+	ret.id = instruction->id;
+	ret.type = rType;
+	ret.isConstant = false;
+	ret.isVariable = false;
+	
+	return ret;
 }
 
-Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
+	if (!Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector) || !Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+		Log::CompilerError(*t, "Invalid operands %s - %s", type1->typeString.str, type2->typeString.str);
+	}
+
+	TypePrimitive* lType = (TypePrimitive*)type1;
+	TypePrimitive* rType = (TypePrimitive*)type2;
+
+	if (lType->type == Type::Vector) {
+		if (rType->type == Type::Vector && lType->rows != rType->rows) {
+			Log::CompilerError(*t, "Invalid operands %s - %s", type1->typeString.str, type2->typeString.str);
+		}
+	} else if (rType->type == Type::Vector) {
+		Log::CompilerError(*t, "Invalid operands %s - %s", type1->typeString.str, type2->typeString.str);
+	}
+
+	InstBase* instruction = nullptr;
+
+	if (lType->componentType == Type::Int) {
+		if (rType->componentType == Type::Int) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(rType, lType->bits), rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(ModifyTypePrimitiveBitWidth(lType, rType->bits), lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstISub(lType->typeId, operand1, operand2);
+		} else if (rType->componentType == Type::Float) {
+			ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+			instruction = new InstFSub(rType->typeId, tmp.id, operand2);
+		}
+	} else if (lType->componentType == Type::Float) {
+		if (rType->componentType == Type::Float) {
+			if (lType->bits > rType->bits) {
+				ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+				rType = (TypePrimitive*)tmp.type;
+				operand2 = tmp.id;
+			} else if (rType->bits > lType->bits) {
+				ResultVariable tmp = ImplicitCast(rType, lType, operand1, t);
+
+				lType = (TypePrimitive*)tmp.type;
+				operand1 = tmp.id;
+			}
+
+			instruction = new InstFSub(lType->typeId, operand1, operand2);
+		} else if (rType->componentType == Type::Int) {
+			ResultVariable tmp = ImplicitCast(lType, rType, operand2, t);
+
+			instruction = new InstFSub(lType->typeId, operand1, tmp.id);
+		}
+	}
+
+	instructions.Add(instruction);
+
+	ResultVariable ret;
+	ret.id = instruction->id;
+	ret.type = rType;
+	ret.isConstant = false;
+	ret.isVariable = false;
+
+	return ret;
+}
+
+Compiler::ResultVariable Compiler::Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
 	
 }
 
-Compiler::ResultVariable Compiler::Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
-	
-}
-
-Compiler::ResultVariable Compiler::Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+Compiler::ResultVariable Compiler::Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* t) {
 	
 }
 
