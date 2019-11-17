@@ -190,12 +190,12 @@ private: //Variable stuff
 	
 	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name, VariableStack* localVariables);
 
-	ResultVariable Cast(TypeBase* cType, TypeBase* type, ID* operandId, const Token* t);
-	ResultVariable ImplicitCast(TypeBase* cType, TypeBase* type, ID* operandId, const Token* t);
-	ResultVariable Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent);
-	ResultVariable Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent);
-	ResultVariable Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent);
-	ResultVariable Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent);
+	ResultVariable Cast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
+	ResultVariable ImplicitCast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
+	ResultVariable Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	ResultVariable Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	ResultVariable Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	ResultVariable Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
 
 private:
 	class VariableStack {

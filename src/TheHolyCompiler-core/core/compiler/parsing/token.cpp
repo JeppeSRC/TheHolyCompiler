@@ -47,17 +47,21 @@ bool operator<=(TokenType left, TokenType right) {
 	return int(left) <= int(right);
 }
 
-
-Token::Token(TokenType type, const String& string, uint64 column) : type(type), string(string), column(column) { }
-Token::Token(TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), string(string), column(column) { }
-Token::Token(TokenType type, const String& string, const Line& line, uint64 column) : type(type), string(string), line(line), column(column) { }
-Token::Token(TokenType type, uint64 value, const String& string, const Line& line, uint64 column) : type(type), value(value), string(string), line(line), column(column) { }
-Token::Token(const Token& other) : type(other.type), value(other.value), valueType(other.valueType), string(other.string), line(other.line), column(other.column) { }
-Token::Token(const Token* other) : type(other->type), value(other->value), valueType(other->valueType), string(other->string), line(other->line), column(other->column) { }
-Token::Token(Token&& other) {
+Token::Token() : type(TokenType::None), value(0), valueType(TokenType::None), bits(0), sign(0), rows(0), columns(0), string(""), column(0) {}
+Token::Token(TokenType type, const String& string, uint64 column) : type(type), value(0), valueType(TokenType::None), bits(0), sign(0), rows(0), columns(0), string(string), column(column) { }
+Token::Token(TokenType type, uint64 value, const String& string, uint64 column) : type(type), value(value), valueType(TokenType::None), bits(0), sign(0), rows(0), columns(0), string(string), column(column) { }
+Token::Token(TokenType type, const String& string, const Line& line, uint64 column) : type(type), value(0), valueType(TokenType::None), bits(0), sign(0), rows(0), columns(0), string(string), line(line), column(column) { }
+Token::Token(TokenType type, uint64 value, const String& string, const Line& line, uint64 column) : type(type), value(value), valueType(TokenType::None), bits(0), sign(0), rows(0), columns(0), string(string), line(line), column(column) { }
+Token::Token(const Token& other) : type(other.type), value(other.value), valueType(other.valueType), bits(0), sign(0), rows(0), columns(0), string(other.string), line(other.line), column(other.column) { }
+Token::Token(const Token* other) : type(other->type), value(other->value), valueType(other->valueType), bits(0), sign(0), rows(0), columns(0), string(other->string), line(other->line), column(other->column) { }
+Token::Token(Token&& other) noexcept {
 	type = other.type;
 	value = other.value;
 	valueType = other.valueType;
+	bits = other.bits;
+	sign = other.sign;
+	rows = other.rows;
+	columns = other.columns;
 	column = other.column;
 	string = std::move(other.string);
 	line = std::move(other.line);
@@ -68,6 +72,10 @@ Token& Token::operator=(const Token& other) {
 		type = other.type;
 		value = other.value;
 		valueType = other.valueType;
+		bits = other.bits;
+		sign = other.sign;
+		rows = other.rows;
+		columns = other.columns;
 		column = other.column;
 		string = other.string;
 		line = other.line;
@@ -76,11 +84,15 @@ Token& Token::operator=(const Token& other) {
 	return *this;
 }
 
-Token& Token::operator=(Token&& other) {
+Token& Token::operator=(Token&& other) noexcept {
 	if (this != &other) {
 		type = other.type;
 		value = other.value;
 		valueType = other.valueType;
+		bits = other.bits;
+		sign = other.sign;
+		rows = other.rows;
+		columns = other.columns;
 		column = other.column;
 		string = std::move(other.string);
 		line = std::move(other.line);

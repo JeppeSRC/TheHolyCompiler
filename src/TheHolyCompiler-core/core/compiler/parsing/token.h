@@ -141,13 +141,13 @@ public:
 	Token(TokenType type, uint64 value, const utils::String& string, const parsing::Line& line, uint64 column);
 
 	//Def
-	Token() { }
+	Token();
 	Token(const Token& other);
 	Token(const Token* other);
-	Token(Token&& other);
+	Token(Token&& other) noexcept;
 
 	Token& operator=(const Token& other);
-	Token& operator=(Token&& other);
+	Token& operator=(Token&& other) noexcept;
 
 public:
 	static bool ValidReturnType(TokenType type);

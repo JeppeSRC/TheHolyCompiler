@@ -846,11 +846,9 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 
 	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector)) {
 		CAST_ERROR;
-		return res;
 	} else if (cType->type == Type::Vector) {
 		if (type->type == Type::Vector && cType->rows != type->rows) {
 			CAST_ERROR;
-			return res;
 		}
 	}
 
@@ -871,7 +869,6 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 			}
 		} else { // Bool
 			CAST_ERROR;
-			return res;
 		}
 	} else if (cType->componentType == Type::Float) { //Float
 		if (type->componentType == Type::Float) {
@@ -884,7 +881,6 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 			}
 		} else { //Bool
 			CAST_ERROR;
-			return res;
 		}
 	} else { //Bool
 		if (type->type == Type::Int) { //Int
@@ -893,7 +889,6 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 			operation = new InstFOrdNotEqual(castType->typeId, operandId, CreateConstant(type, 0.0F));
 		} else {
 			CAST_ERROR;
-			return res;
 		}
 	}
 
@@ -1612,7 +1607,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"int32", TokenType::TypeInt, 32, 1, 0, 0},
 		{"int64", TokenType::TypeInt, 64, 1, 0, 0},
 
-		{"float",  TokenType::TypeFloat, CompilerOptions::FPPrecision32() ? 32 : 64, 0, 0, 0},
+		{"float",  TokenType::TypeFloat, CompilerOptions::FPPrecision32() ? (uint8)32 : (uint8)64, 0, 0, 0},
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 

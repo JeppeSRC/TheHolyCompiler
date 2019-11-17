@@ -203,7 +203,7 @@ uint64 Utils::StringToUint64(const char* string, uint64* length) {
 
 	for (uint64 i = 0; i < len; i++) {
 		uint64 v = GetValue(string[len - i - 1]);
-		value += v * (uint64)pow(base, i);
+		value += v * (uint64)pow((double)base, (double)i);
 
 		if (v == ~0) {
 			return ~0;
@@ -247,7 +247,7 @@ ValueResult Utils::StringToValue(const char* string, uint64* length, const Line&
 
 	for (uint64 i = 0; i < len; i++) {
 		uint64 v = GetValue(string[len - i - 1]);
-		value += v * (uint64)pow(base, i);
+		value += v * (uint64)pow((double)base, (double)i);
 	}
 
 	if (sign) value *= -1;
@@ -273,10 +273,10 @@ ValueResult Utils::StringToValue(const char* string, uint64* length, const Line&
 
 		for (uint64 i = 0; i < len; i++) {
 			uint64 v = GetValue(string[len - i - 1]);
-			value += v * (uint64)pow(base, i);
+			value += v * (uint64)pow((double)base, (double)i);
 		}
 
-		res.fvalue += (float32)value / (float32)pow(10, len);
+		res.fvalue += (float32)value / (float32)pow(10.0, (double)len);
 	} else {
 		res.type = ValueResultType::Int;
 		res.sign = sign ? 1 : 0;

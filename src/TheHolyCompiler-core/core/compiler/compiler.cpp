@@ -690,7 +690,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				}
 
 				if (*type != retType) {
-					ResultVariable tmp = Cast(retType, type, operandId);
+					ResultVariable tmp = Cast(retType, type, operandId, &next);
 
 					if (tmp.id == nullptr) {
 						Log::CompilerError(next, "No suitable conversion between return type(%s) and \"%s\"", retType->typeString.str, type->typeString.str);
@@ -757,13 +757,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 
 	if (res.type->type != Type::Bool) {
 		TypeBase* tmp = res.type;
-		res = Cast(CreateTypeBool(), res.type, res.id);
-
-		if (res.id == nullptr) {
-			Log::CompilerError(tokens[start+2], "No suitable conversion between \"bool\" and \"%s\"", tmp->typeString.str);
-		} else {
-			Log::CompilerWarning(tokens[start + 2], "Implicit conversion from \"%s\" to \"bool\"", tmp->typeString.str);
-		}
+		res = ImplicitCast(CreateTypeBool(), res.type, res.id, &tokens[start + 2]);
 	}
 
 	tokens.Remove(start, inf.end+1);
@@ -1051,7 +1045,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				switch (var->type->type) {
 					case Type::Int:
-						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
+						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : ~0U));
 						break;
 					case Type::Float:
 						operation = new InstFAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
@@ -1108,7 +1102,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				expressions.RemoveAt(i);
 			} else {
 				right.type = ExpressionType::Result;
-				right.result = Cast(e.castType, type, operandId);
+				right.result = Cast(e.castType, type, operandId, &e.parent);
 
 				if (right.result.id == nullptr) {
 					Log::CompilerError(e.parent, "The only castable types are scalar integers or floats");
@@ -1143,7 +1137,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				switch (var->type->type) {
 					case Type::Int:
-						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : -1U));
+						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : ~0U));
 						break;
 					case Type::Float:
 						operation = new InstFAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
@@ -1323,7 +1317,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				ret = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
 			
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 			
@@ -1365,7 +1359,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				ret = Subtract(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1409,7 +1403,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* rId = rOperandId;
 
 			if (lType->bits != rType->bits) {
-				rId = Cast(lType, rType, rOperandId).id;
+				rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 			}
 
 			if (e.operatorType == TokenType::OperatorRightShift) {
@@ -1423,7 +1417,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ret.type = lType;
 			ret.id = instruction->id;
 			
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1472,12 +1466,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						rId = Cast(lType, rType, rOperandId).id;
+						rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 					} else if (lType->bits < rType->bits) {
-						lId = Cast(rType, lType, lOperandId).id;
+						lId = ImplicitCast(rType, lType, lOperandId, &e.parent).id;
 					}
 				} else { // Int
-					rId = Cast(lType, rType, rOperandId).id;
+					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 				}
 
 				floatCmp = true;
@@ -1499,7 +1493,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else { // Float
-					lId = Cast(rType, lType, lOperandId).id;
+					lId = ImplicitCast(rType, lType, lOperandId, &e.parent).id;
 
 					floatCmp = true;
 				}
@@ -1545,7 +1539,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ret.id = instruction->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1594,12 +1588,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						rId = Cast(lType, rType, rOperandId).id;
+						rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 					} else if (lType->bits < rType->bits) {
-						lId = Cast(rType, lType, rOperandId).id;
+						lId = ImplicitCast(rType, lType, rOperandId, &e.parent).id;
 					}
 				} else if (rType->type == Type::Int) { // Int
-					rId = Cast(lType, rType, rOperandId).id;
+					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 				} else {
 					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", lType->typeString.str);
 				}
@@ -1619,7 +1613,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else if (rType->type == Type::Float) { // Float
-					rId = Cast(lType, rType, rOperandId).id;
+					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
 
 					cmpType = 1;
 				} else {
@@ -1670,7 +1664,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ret.id = instruction->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1727,7 +1721,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ret.type = lType;
 			ret.id = inst->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1784,7 +1778,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ret.type = lType;
 			ret.id = inst->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1841,7 +1835,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ret.type = lType;
 			ret.id = inst->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1898,7 +1892,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ret.type = lType;
 			ret.id = inst->id;
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
 
@@ -1954,7 +1948,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			instructions.Add(instruction);
 
-			left.type == ExpressionType::Result;
+			left.type = ExpressionType::Result;
 			left.result.type = retType;
 			left.result.isConstant = false;
 			left.result.isVariable = false;
@@ -2105,13 +2099,8 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 						}
 
 						TypeBase* tmp = res.type;
-						res = Cast(dt, res.type, operandId);
+						res = ImplicitCast(dt, res.type, operandId, &functionName);
 
-						if (res.id == nullptr) {
-							Log::CompilerError(functionName, "argument %llu in \"%s\" must be an \"%s\"", i, functionName.string.str, dt->typeString.str);
-						} else {
-							Log::CompilerWarning(functionName, "Implicit conversion from \"%s\" to \"%s\"", tmp->typeString.str, dt->typeString.str);
-						}
 					} else {
 						decls.RemoveAt(j--);
 						continue;
