@@ -897,116 +897,24 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	return res;
 }
 
-Compiler::ResultVariable Compiler::Add(TypeBase* type, ID* operand1, ID* operand2) {
-	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
-	TypePrimitive* t = (TypePrimitive*)type;
-
-	InstBase* operation = nullptr;
-
-	ResultVariable res;
-
-	res.isVariable = false;
-	res.type = type;
-
-	if (t->componentType == Type::Int) {
-		operation = new InstIAdd(type->typeId, operand1, operand2);
-	} else if (t->componentType == Type::Float) {
-		operation = new InstFAdd(type->typeId, operand1, operand2);
-	} else {
-		res.id = nullptr;
-		return res;
+Compiler::ResultVariable Compiler::Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+	if (!Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector) || !Utils::CompareEnums(type1->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
+		Log::CompilerError(*parent, "Invalid operands. %s + %s", type1->typeString.str, type2->typeString.str);
 	}
 
-	instructions.Add(operation);
 
-	res.id = operation->id;
-
-	return res;
 }
 
-Compiler::ResultVariable Compiler::Subtract(TypeBase* type, ID* operand1, ID* operand2) {
-	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
-	TypePrimitive* t = (TypePrimitive*)type;
-
-	InstBase* operation = nullptr;
-
-	ResultVariable res;
-
-	res.isVariable = false;
-	res.type = type;
-
-	if (t->componentType == Type::Int) {
-		operation = new InstISub(type->typeId, operand1, operand2);
-	} else if (t->componentType == Type::Float) {
-		operation = new InstFSub(type->typeId, operand1, operand2);
-	} else {
-		res.id = nullptr;
-		return res;
-	}
-
-	instructions.Add(operation);
-
-	res.id = operation->id;
-
-	return res;
+Compiler::ResultVariable Compiler::Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+	
 }
 
-Compiler::ResultVariable Compiler::Multiply(TypeBase* type, ID* operand1, ID* operand2) {
-	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
-	TypePrimitive* t = (TypePrimitive*)type;
-
-	InstBase* operation = nullptr;
-
-	ResultVariable res;
-
-	res.isVariable = false;
-	res.type = type;
-
-	if (t->componentType == Type::Int) {
-		operation = new InstIMul(type->typeId, operand1, operand2);
-	} else if (t->componentType == Type::Float) {
-		operation = new InstFMul(type->typeId, operand1, operand2);
-	} else {
-		res.id = nullptr;
-		return res;
-	}
-
-	instructions.Add(operation);
-
-	res.id = operation->id;
-
-	return res;
+Compiler::ResultVariable Compiler::Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+	
 }
 
-Compiler::ResultVariable Compiler::Divide(TypeBase* type, ID* operand1, ID* operand2) {
-	THC_ASSERT(Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector));
-	TypePrimitive* t = (TypePrimitive*)type;
-
-	InstBase* operation = nullptr;
-
-	ResultVariable res;
-
-	res.isVariable = false;
-	res.type = type;
-
-	if (t->componentType == Type::Int) {
-		if (t->sign) {
-			operation = new InstSDiv(type->typeId, operand1, operand2);
-		} else {
-			operation = new InstUDiv(type->typeId, operand1, operand2);
-		}
-	} else if (t->componentType == Type::Float) {
-		operation = new InstFDiv(type->typeId, operand1, operand2);
-	} else {
-		res.id = nullptr;
-		return res;
-	}
-
-	instructions.Add(operation);
-
-	res.id = operation->id;
-
-	return res;
+Compiler::ResultVariable Compiler::Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
+	
 }
 
 utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
