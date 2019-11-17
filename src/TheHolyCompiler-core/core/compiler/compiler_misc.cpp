@@ -885,8 +885,6 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 		}
 	}
 
-	if (t) Log::CompilerWarning(*t, "Implicit conversion from %s to %s", type->typeString.str, cType->typeString.str);
-
 	instructions.Add(operation);
 	res.id = operation->id;
 
@@ -895,6 +893,18 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	res.isConstant = false;
 
 	return res;
+}
+
+Compiler::ResultVariable Compiler::ImplicitCast(TypeBase* castType, TypeBase* currType, ID* operandId, const Token* t) {
+	if (!CompilerOptions::ImplicitConversions()) {
+		Log::CompilerError(*t, "Implicit conversion. %s -> %s", currType->typeString.str, castType->typeString.str);
+	}
+
+	ResultVariable ret = Cast(castType, currType, operandId, t);
+
+	Log::CompilerWarning(*t, "Implicit conversion %s -> %s", currType->typeString.str, castType->typeString.str);
+
+	return ret;
 }
 
 Compiler::ResultVariable Compiler::Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const Token* parent) {
