@@ -1315,73 +1315,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType);
 
-			InstBase* instruction = nullptr;
 			ResultVariable ret = {0};
 
-			if (*lType == rType) {
-				if (Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
-					if (mul) {
-						ret = Multiply(lType, lOperandId, rOperandId);
-					} else {
-						ret = Divide(lType, lOperandId, rOperandId);
-					}
-				} else if (lType->type == Type::Matrix) {
-					if (mul) {
-						instruction = new InstMatrixTimesMatrix(lType->typeId, lOperandId, rOperandId);
-						ret.type = lType;
-						ret.id = instruction->id;
-					} else {
-						Log::CompilerError(e.parent, "Cannot divide 2 matrices");
-					}
-				} else {
-					Log::CompilerError(e.parent, "Invalid types, cannot multiply or divide types");
-				}
+			if (mul) {
+				ret = Multiply(lType, lOperandId, rType, rOperandId, &e.parent);
 			} else {
-				if (lType->type == Type::Vector && mul) {
-					if (rType->type == Type::Int || rType->type == Type::Float) {
-						if (lType->componentType != rType->type || lType->bits != rType->bits) {
-							Log::CompilerError(e.parent, "Scalar must match component type");
-						}
-
-						instruction = new InstVectorTimesScalar(lType->typeId, lOperandId, rOperandId);
-						ret.type = lType;
-						ret.id = instruction->id;
-					} else if (rType->type == Type::Matrix) {
-						if (lType->componentType != rType->componentType || lType->bits != rType->bits || lType->rows != rType->columns) {
-							Log::CompilerError(e.parent, "Component types must match");
-						}
-
-						instruction = new InstVectorTimesMatrix(lType->typeId, lOperandId, rOperandId);
-						ret.type = lType;
-						ret.id = instruction->id;
-					} else {
-						Log::CompilerError(e.parent, "Type missmatch");
-					}
-				} else if (lType->type == Type::Matrix && mul) {
-					if (rType->type == Type::Int || rType->type == Type::Float) {
-						if (lType->componentType != rType->type || lType->bits != rType->bits) {
-							Log::CompilerError(e.parent, "Scalar must match component type");
-						}
-
-						instruction = new InstMatrixTimesScalar(lType->typeId, lOperandId, rOperandId);
-						ret.type = lType;
-						ret.id = instruction->id;
-					} else if (rType->type == Type::Vector) {
-						if (lType->componentType != rType->componentType || lType->bits != rType->bits || lType->columns != rType->rows) {
-							Log::CompilerError(e.parent, "Component types must match");
-						}
-
-						instruction = new InstMatrixTimesVector(lType->typeId, lOperandId, rOperandId);
-						ret.type = lType;
-						ret.id = instruction->id;
-					} else {
-						Log::CompilerError(e.parent, "Type missmatch");
-					}
-				}
+				ret = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
-
-			if (!instruction) instructions.Add(instruction);
-
+			
 			left.type == ExpressionType::Result;
 			left.result = ret;
 			left.variable = nullptr;
@@ -1418,85 +1359,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			ResultVariable ret = { 0 };
 			
-			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float, Type::Vector)) {
-				Log::CompilerError(e.parent, "Operands must be scalar or vector of type integer or float");
+			if (add) {
+				ret = Add(lType, lOperandId, rType, rOperandId, &e.parent);
+			} else {
+				ret = Subtract(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
-
-			ID* rId = rOperandId;
-			ID* lId = lOperandId;
-
-			InstBase* instruction = nullptr;
-			InstBase* convInst = nullptr;
-
-			if (lType->type == Type::Int) {
-				if (rType->type == Type::Int) {
-					TypePrimitive* tmp = nullptr;
-
-					if (lType->bits > rType->bits) {
-						convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 1))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, lType->bits, 0))->typeId, rOperandId);
-						rId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
-					} else if (lType->bits < rType->bits) {
-						convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 1))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveScalar(Type::Int, rType->bits, 0))->typeId, lOperandId);
-						lId = convInst->id;
-						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
-					}
-
-					ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
-					instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
-
-				} else if (rType->type == Type::Float) {
-					rId = Cast(lType, rType, rOperandId, &right.parent).id;
-
-					instruction = add ? new InstIAdd(lType->typeId, lId, rId) : (InstBase*)new InstISub(lType->typeId, lId, rId);
-				} else {
-					Log::CompilerError(right.parent, "Can't add %s to %s", rType->typeString.str, lType->typeString.str);
-				}
-			} else if (lType->type == Type::Float) {
-				if (rType->type == Type::Float) {
-					if (lType->bits > rType->bits) {
-						rId = Cast(lType, rType, rOperandId, &right.parent).id;
-					} else if (rType->bits > lType->bits) {
-						lId = Cast(rType, lType, lOperandId).id;
-					}
-				} else if (rType->type == Type::Int) {
-					rId = Cast(lType, rType, rOperandId).id;
-				} else {
-					Log::CompilerError(right.parent, "Can't add %s to %s", rType->typeString.str, lType->typeString.str);
-				}
-
-				ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
-				instruction = add ? new InstFAdd(typeId, lId, rId) : (InstBase*)new InstFSub(typeId, lId, rId);
-			} else if (lType->type == Type::Vector) {
-				if (rType->type != Type::Vector) {
-					Log::CompilerError(right.parent, "Right operand must be a vector");
-				} else if (rType->rows != lType->rows) {
-					Log::CompilerError(e.parent, "Operands must have matching amount of rows");
-				}
-
-				if (lType->componentType == Type::Int) {
-					if (rType->componentType == Type::Int) {
-						TypePrimitive* tmp = nullptr;
-
-						if (lType->bits > rType->bits) {
-							convInst = rType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, lType->bits, 1, lType->rows))->typeId, rOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, lType->bits, 0, lType->rows))->typeId, rOperandId);
-							rId = convInst->id;
-							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", rType->typeString.str, tmp->typeString.str);
-						} else if (lType->bits < rType->bits) {
-							convInst = lType->sign ? new InstSConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 1, lType->rows))->typeId, lOperandId) : (InstBase*)new InstUConvert((tmp = CreateTypePrimitiveVector(Type::Int, rType->bits, 0, lType->rows))->typeId, lOperandId);
-							lId = convInst->id;
-							Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
-						}
-
-						ID* typeId = lId == lOperandId ? lType->typeId : rType->typeId;
-						instruction = add ? new InstIAdd(typeId, lId, rId) : (InstBase*)new InstISub(typeId, lId, rId);
-					} 
-				}
-
-			}
-
-			if (convInst) instructions.Add(convInst);
-			instructions.Add(instruction);
 
 			left.type == ExpressionType::Result;
 			left.result = ret;
