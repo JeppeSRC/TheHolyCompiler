@@ -1962,6 +1962,65 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 12
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLogicalOr)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
+				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
+			}
+
+			ID* lId = lOperandId;
+			ID* rId = rOperandId;
+
+			TypeBase* retType = CreateTypeBool();
+
+			if (lType->type != Type::Bool) {
+				ResultVariable r = Cast(retType, lType, lOperandId, &left.parent);
+				lId = r.id;
+			}
+
+			if (rType->type != Type::Bool) {
+				ResultVariable r = Cast(retType, rType, rOperandId, &right.parent);
+				rId = r.id;
+			}
+
+			InstBase* instruction = new InstLogicalOr(retType->typeId, lId, rId);
+
+			instructions.Add(instruction);
+
+			left.type = ExpressionType::Result;
+			left.result.type = retType;
+			left.result.isConstant = false;
+			left.result.isVariable = false;
+			left.result.id = instruction->id;
+			left.variable = nullptr;
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};
