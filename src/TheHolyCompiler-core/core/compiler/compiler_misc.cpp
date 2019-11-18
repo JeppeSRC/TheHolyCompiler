@@ -1408,8 +1408,6 @@ ID* Compiler::CreateConstantBool(bool value) {
 ID* Compiler::CreateConstantS32(int32 value) {
 	TypeBase* type = CreateTypePrimitiveScalar(Type::Int, 32, 1);
 
-	CheckTypeExist(&type);
-
 	return CreateConstant(type, *(uint32*)&value);
 }
 
