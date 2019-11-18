@@ -2021,6 +2021,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 13
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		
+	}
+
+#pragma endregion
+
 	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};
