@@ -1,4 +1,4 @@
-//#define DANK "Bruh"
+#define DANK "Bruh"
 
 #ifdef DANK
 #message "Dank Works"

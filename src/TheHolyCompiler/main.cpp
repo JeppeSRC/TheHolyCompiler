@@ -24,8 +24,6 @@ int main() {
 	List<String> includes;
 	List<String> defines;
 
-	defines.Add("DADDY");
-
 	includes.Add(path);
 
 	Compiler::Run(path + "/test.thsl", defines, includes);
