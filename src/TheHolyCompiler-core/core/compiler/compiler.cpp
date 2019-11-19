@@ -2031,6 +2031,60 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 #pragma endregion
 
+#pragma region precedence 14
+
+	for (uint64 i = 0; i < expressions.GetCount(); i++) {
+		const Expression& e = expressions[i];
+
+		if (e.type != ExpressionType::Operator) continue;
+
+		if (i < 1) {
+			Log::CompilerError(e.parent, "No left hand operand");
+		} else if (i >= expressions.GetCount() - 1) {
+			Log::CompilerError(e.parent, "No right hand operand");
+		}
+
+		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorAssign, TokenType::OperatorCompoundAdd, TokenType::OperatorCompoundSub, TokenType::OperatorCompoundMul, TokenType::OperatorCompoundDiv)) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[1 + 1];
+
+			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+
+			TypePrimitive* lType = nullptr;
+			TypePrimitive* rType = nullptr;
+			ID* lOperandId = GetExpressionOperandId(&left, &lType);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+
+			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
+				Log::CompilerError(e.parent, "Operands must be a of valid type");
+			}
+
+			InstBase* instruction = nullptr;
+
+			if (e.operatorType == TokenType::OperatorAssign) {
+				instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
+
+				if (lType->type != rType->type) {
+					ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
+
+					rType = (TypePrimitive*)tmp.type;
+					rOperandId = tmp.id;
+				}
+
+				instruction = new InstStore(left.variable->variableId, rOperandId, 0);
+			} else if (e.operatorType == TokenType::OperatorCompoundAdd) {
+
+			}
+
+			instructions.Add(instruction);
+
+			expressions.Remove(i, i + 1);
+			i--;
+		}
+	}
+
+#pragma endregion
+
 	instructions.Add(postIncrements);
 
 	ResultVariable result = {0};
