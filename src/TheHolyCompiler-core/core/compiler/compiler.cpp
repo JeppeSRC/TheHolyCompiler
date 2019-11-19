@@ -2059,24 +2059,37 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
 			}
 
-			InstBase* instruction = nullptr;
+			if (lType->type != rType->type) {
+				ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
 
-			if (e.operatorType == TokenType::OperatorAssign) {
-				instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
-
-				if (lType->type != rType->type) {
-					ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
-
-					rType = (TypePrimitive*)tmp.type;
-					rOperandId = tmp.id;
-				}
-
-				instruction = new InstStore(left.variable->variableId, rOperandId, 0);
-			} else if (e.operatorType == TokenType::OperatorCompoundAdd) {
-
+				rType = (TypePrimitive*)tmp.type;
+				rOperandId = tmp.id;
 			}
 
-			instructions.Add(instruction);
+			ResultVariable tmp;
+
+			tmp.id = rOperandId;
+
+			switch (e.operatorType) {
+				case TokenType::OperatorAssign:
+					instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
+					break;
+				case TokenType::OperatorCompoundAdd:
+					tmp = Add(lType, lOperandId, rType, rOperandId, &e.parent);
+					break;
+				case TokenType::OperatorCompoundSub:
+					tmp = Subtract(lType, lOperandId, rType, rOperandId, &e.parent);
+					break;
+				case TokenType::OperatorCompoundMul:
+					tmp = Multiply(lType, lOperandId, rType, rOperandId, &e.parent);
+					break;
+				case TokenType::OperatorCompoundDiv:
+					tmp = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
+					break;
+			}
+
+
+			instructions.Add(new InstStore(left.variable->variableId, tmp.id, 0));
 
 			expressions.Remove(i, i + 1);
 			i--;
