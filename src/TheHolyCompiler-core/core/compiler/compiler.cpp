@@ -937,7 +937,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
-		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix && info->start == info->end) {
+		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) {
 			if (info->start == info->end) {//Type for a cast
 				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
 				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
