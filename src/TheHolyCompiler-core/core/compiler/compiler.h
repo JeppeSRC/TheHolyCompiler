@@ -308,6 +308,7 @@ private:
 	void ParseTokens(utils::List<parsing::Token>& tokens);
 	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseInOut(utils::List<parsing::Token>& tokens, uint64 start, VariableScope scope);
+	void ParseTypeConstructor(utils::List<parsing::Token>& tokens, uint64 start);
 	void ParseFunction(utils::List<parsing::Token>& tokens, uint64 start);
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
 	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);

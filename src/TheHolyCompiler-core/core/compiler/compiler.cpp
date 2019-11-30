@@ -899,7 +899,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 		Expression e = {ExpressionType::Undefined};
 
 		if (t.type == TokenType::Name) {
-			const Token& next = tokens[i + 1];
+			const Token& next = tokens[i + (i == info->end ? 0 : 1)];
 			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
 				ParseInfo inf;
 				inf.start = i;
@@ -919,13 +919,25 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				e.constant.type = CreateTypeBool();
 				e.constant.id = CreateConstantBool(t.string == "true");
 				e.parent = t;
-			} else { //Normal variable
-				e.type = ExpressionType::Variable;
-				e.variable = GetVariable(t.string, localVariables);
-				e.parent = t;
+			} else { //Variable or function
+				if (next.type == TokenType::ParenthesisOpen) { //Function
+					ParseInfo inf;
+					inf.start = i;
 
-				if (e.variable == nullptr) {
-					Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constant", t.string.str);
+					ResultVariable res = ParseFunctionCall(tokens, &inf, localVariables);
+
+					e.type = ExpressionType::Result;
+					e.result = res;
+					
+					i += inf.len;
+				} else { //Variable
+					e.type = ExpressionType::Variable;
+					e.variable = GetVariable(t.string, localVariables);
+					e.parent = t;
+
+					if (e.variable == nullptr) {
+						Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constant", t.string.str);
+					}
 				}
 			}
 		} else if (t.type == TokenType::Value) {
@@ -991,19 +1003,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(t, "\"(\" needs a closing \")\"");
 			}
 
-			bool isFunction = i > 0 ? tokens[i-1].type == TokenType::Name : false;
+			inf.start = i + 1;
+			inf.end = --parenthesisClose;
 
-			if (isFunction) {
-				inf.start = i - 1;
-				inf.end = ++parenthesisClose;
-
-				e.result = ParseFunctionCall(tokens, &inf, localVariables);
-			}else {
-				inf.start = i + 1;
-				inf.end = --parenthesisClose;
-
-				e.result = ParseExpression(tokens, &inf, localVariables);
-			}
+			e.result = ParseExpression(tokens, &inf, localVariables);
 
 			info->end -= parenthesisClose - inf.end;
 		}
@@ -2127,38 +2130,24 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token functionName = tokens[info->start];
-	TypeBase* type = nullptr;
-
-	if (functionName.type == TokenType::OperatorGreater) {
-		uint64 len = 0;
-		info->start -= 3;
-
-		functionName = tokens[info->start];
-		type = CreateType(tokens, info->start, &len);
-		functionName.string = type->typeString;
-
-		info->end -= len;
-	}
 
 	List<ResultVariable> parameterResults;
 
-	uint64 offset = 0;
+	uint64 offset = info->start+1;
 
-	const Token& parenthesisOpen = tokens[info->start + offset++];
+	const Token& parenthesisOpen = tokens[offset];
 
 	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
 		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
 	}
 
-	uint64 parenthesisClose = FindMatchingToken(tokens, info->start + offset - 1, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+	uint64 parenthesisClose = FindMatchingToken(tokens, offset++, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
 	if (parenthesisClose == ~0) {
 		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
 	}
 
 	bool moreParams = true;
-
-	offset += info->start;
 
 	do {
 		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
@@ -2175,7 +2164,7 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 
 		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
 
-		offset = end + 2;
+		offset = end + 2; //dank(shit, dank)
 		
 		parameterResults.Add(res);
 	} while (moreParams);
@@ -2184,89 +2173,82 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 
 	ResultVariable r;
 
-	if (type == nullptr) {
-		uint64 fOffset = 0;
+	uint64 fOffset = 0;
 	
-		List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
+	List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
 
-		if (!decls.GetCount()) {
-			Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
-		}
+	if (!decls.GetCount()) {
+		Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
+	}
 	
 
-		for (uint64 i = 0; i < decls.GetCount(); i++) {
-			if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
-				decls.RemoveAt(i--);
-			}
+	for (uint64 i = 0; i < decls.GetCount(); i++) {
+		if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
+			decls.RemoveAt(i--);
 		}
+	}
 
-		if (decls.GetCount() == 0) {
-			Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
-		}
+	if (decls.GetCount() == 0) {
+		Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
+	}
 
-		for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-			ResultVariable& res = parameterResults[i];
+	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+		ResultVariable& res = parameterResults[i];
 
-			for (uint64 j = 0; j < decls.GetCount(); j++) {
-				FunctionDeclaration* d = decls[j];
+		for (uint64 j = 0; j < decls.GetCount(); j++) {
+			FunctionDeclaration* d = decls[j];
 
-				Variable* param = d->parameters[i];
-				TypeBase* dt = param->type;
+			Variable* param = d->parameters[i];
+			TypeBase* dt = param->type;
 
-				if (param->type->type == Type::Pointer) {
-					//pass by reference but argument is rvalue
-					if (!res.isVariable /*&& !param->isConstant*/) {
-						if (decls.GetCount() == 1) {
-							Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
-						} else {
-							decls.RemoveAt(j--);
-							continue;
-						}
-					}
-				} else if (*dt != res.type) {
+			if (dt->type == Type::Pointer) {
+				//pass by reference but argument is rvalue
+				if (!res.isVariable /*&& !param->isConstant*/) {
 					if (decls.GetCount() == 1) {
-						ID* operandId = res.id;
-
-						if (res.isVariable) {
-							InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
-							instructions.Add(load);
-
-							operandId = load->id;
-						}
-
-						TypeBase* tmp = res.type;
-						res = ImplicitCast(dt, res.type, operandId, &functionName);
-
+						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
 					} else {
 						decls.RemoveAt(j--);
 						continue;
 					}
 				}
+			} else if (*dt != res.type) {
+				if (decls.GetCount() == 1) {
+					ID* operandId = res.id;
+
+					if (res.isVariable) {
+						InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+						instructions.Add(load);
+
+						operandId = load->id;
+					}
+
+					TypeBase* tmp = res.type;
+					res = ImplicitCast(dt, res.type, operandId, &functionName);
+
+				} else {
+					decls.RemoveAt(j--);
+					continue;
+				}
 			}
 		}
-
-		FunctionDeclaration* decl = decls[0];
-
-		ID** ids = new ID*[parameterResults.GetCount()];
-
-		for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-			ids[i] = parameterResults[i].id;
-		}
-
-		InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
-		instructions.Add(call);
-
-		delete[] ids;
-
-		r.id = call->id;
-		r.type = decl->returnType;
-		r.isVariable = false;
-	} else if (Utils::CompareEnums(functionName.type, CompareOperation::Or, TokenType::TypeVector, TokenType::TypeMatrix)) {
-
-	} else {
-		Log::CompilerError(functionName, "%s is not a function", functionName.string.str);
 	}
 
+	FunctionDeclaration* decl = decls[0];
+
+	ID** ids = new ID*[parameterResults.GetCount()];
+
+	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
+		ids[i] = parameterResults[i].id;
+	}
+
+	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
+	instructions.Add(call);
+
+	delete[] ids;
+
+	r.id = call->id;
+	r.type = decl->returnType;
+	r.isVariable = false;
 
 	return r;
 }
