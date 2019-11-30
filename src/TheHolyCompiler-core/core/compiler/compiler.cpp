@@ -1013,6 +1013,10 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 	return r;
 }
 
+void Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+	
+}
+
 bool Compiler::Process() {
 	lines = preprocessor::PreProcessor::Run(code, filename, defines, includes);
 
