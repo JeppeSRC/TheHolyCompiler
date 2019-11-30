@@ -33,10 +33,9 @@ void main() {
     vec3 v1;
     vec3 v2 = vec3<uint32>(1, 1, 1);
 
+    float res = dot(v1, v2);
     Dank d;
 
-    float res = dot(v1, v2);
-    
     uint32 a = d.o[0].someOtherName[5];
 
     pos = Buffer0.MVP * vec4(position, 1);
