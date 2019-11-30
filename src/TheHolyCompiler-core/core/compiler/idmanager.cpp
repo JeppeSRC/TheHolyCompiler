@@ -39,7 +39,7 @@ ID* IDManager::GetNewId() {
 	if (free.GetCount() != 0) {
 		newId = free.RemoveAt(0);
 	} else {
-		newId = new ID(GetCount());
+		newId = new ID(GetCount()+1);
 		ids.Add(newId);
 	}
 
