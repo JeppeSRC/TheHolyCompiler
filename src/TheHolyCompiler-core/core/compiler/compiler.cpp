@@ -888,8 +888,6 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 	return result;
 }
 
-
-
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token functionName = tokens[info->start];
 
