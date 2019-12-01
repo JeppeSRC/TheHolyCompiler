@@ -1,4 +1,5 @@
 /*
+/*
 MIT License
 
 Copyright (c) 2018 Jesper Hammarström
@@ -300,7 +301,7 @@ InstSelectionMerge::InstSelectionMerge(compiler::ID* mergeBlockId, uint32 select
 
 InstLabel::InstLabel() : InstBase(THC_SPIRV_OPCODE_OpLabel, 2, "OpLabel", true) {}
 
-InstBranch::InstBranch(uint32 targetLabelId) : InstBase(THC_SPIRV_OPCODE_OpBranch, 2, "OpBranch"), targetLabelId(targetLabelId) {}
+InstBranch::InstBranch(ID* targetLabelId) : InstBase(THC_SPIRV_OPCODE_OpBranch, 2, "OpBranch"), targetLabelId(targetLabelId) {}
 
 InstBranchConditional::InstBranchConditional(compiler::ID* conditionId, compiler::ID* trueLabelId, compiler::ID* falseLabelId, uint32 trueWeight, uint32 falseWeight) : InstBase(THC_SPIRV_OPCODE_OpBranchConditional, 6, "OpBranchConditional"), conditionId(conditionId), trueLabelId(trueLabelId), falseLabelId(falseLabelId), trueWeight(trueWeight), falseWeight(falseWeight) {}
 

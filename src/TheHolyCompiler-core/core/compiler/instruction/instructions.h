@@ -1494,9 +1494,9 @@ public:
 
 class InstBranch : public InstBase {
 public:
-	uint32 targetLabelId;
+	compiler::ID* targetLabelId;
 
-	InstBranch(uint32 targetLabelId);
+	InstBranch(compiler::ID* targetLabelId);
 
 	void GetInstWords(uint32* words) const override;
 };
