@@ -559,6 +559,8 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		uint64 index = instructions.GetCount();
 
 		ParseBody(decl, tokens, start + offset, &localVariables);
+
+		instructions.Add(new InstFunctionEnd);
 		
 		decl->defined = true;
 	} else {
