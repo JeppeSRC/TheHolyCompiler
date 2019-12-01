@@ -31,14 +31,14 @@ void main() {
     bool tmp = false;
 
     vec3 v1;
-    vec3<uint32> v2 = vec3<uint32>(1, 1, 1);
+    vec3 v2 = vec3(1.0, 1.0, 1.0);
 
     float res = dot(v1, v2);
     Dank d;
 
     uint32 a = d.o[0].someOtherName[5];
 
-    pos = Buffer0.MVP * vec4(position, 1);
+    pos = Buffer0.MVP * vec4(position, 1.0);
 
     float a = 123.123;
 
