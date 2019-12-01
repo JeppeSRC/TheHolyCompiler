@@ -36,7 +36,12 @@ void main() {
     float res = dot(v1, v2);
     Dank d;
 
-    uint32 a = d.o[0].someOtherName[5];
+    float a = 0.0;
+
+    if (tmp) a = d.o[0].someOtherName[5];
+    else if (tmp) {
+        a = 1.23;
+    }
 
     pos = Buffer0.MVP * vec4(position, 1.0);
 
