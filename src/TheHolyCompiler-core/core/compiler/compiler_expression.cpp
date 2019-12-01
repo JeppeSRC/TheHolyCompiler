@@ -1168,6 +1168,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
 			}
 
+			//This has to be done before the ImplicitCast
+			if (e.operatorType == TokenType::OperatorAssign) instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
+
 			if (lType->type != rType->type) {
 				ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
 
@@ -1180,9 +1183,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			tmp.id = rOperandId;
 
 			switch (e.operatorType) {
-				case TokenType::OperatorAssign:
-					instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
-					break;
 				case TokenType::OperatorCompoundAdd:
 					tmp = Add(lType, lOperandId, rType, rOperandId, &e.parent);
 					break;
