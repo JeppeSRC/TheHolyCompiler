@@ -411,7 +411,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 		if (e.operatorType == TokenType::OperatorMul || e.operatorType == TokenType::OperatorDiv) {
 			bool mul = e.operatorType == TokenType::OperatorMul;
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
