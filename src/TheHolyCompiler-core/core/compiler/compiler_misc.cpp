@@ -851,7 +851,7 @@ Compiler::ResultVariable Compiler::Cast(TypeBase* castType, TypeBase* currType, 
 	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector)) {
 		CAST_ERROR;
 	} else if (cType->type == Type::Vector) {
-		if (type->type == Type::Vector && cType->rows != type->rows) {
+		if (type->type != Type::Vector || cType->rows != type->rows) {
 			CAST_ERROR;
 		}
 	}
@@ -1081,7 +1081,7 @@ Compiler::ResultVariable Compiler::Multiply(TypeBase* type1, ID* operand1, TypeB
 				operand2 = tmp.id;
 			}
 
-			instruction = new InstMatrixTimesVector(rType->typeId, operand1, operand2);
+			instruction = new InstMatrixTimesVector((lType = rType)->typeId, operand1, operand2);
 		} else {
 			Log::CompilerError(*t, "Invalid operands %s * %s", type1->typeString.str, type2->typeString.str);
 		}
