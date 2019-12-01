@@ -331,7 +331,7 @@ List<String> String::Split(const char* const delimiters, bool includeEmtyLines) 
 	for (uint64 i = 0; i < length; i++) {
 		for (uint64 j = 0; j < numDelimiters; j++) {
 			if (str[i] == delimiters[j]) {
-				if (lastIndex == i-1 || lastIndex == i) {
+				if (lastIndex == i) {
 					if (includeEmtyLines) {
 						list.Add(String(""));
 						lastIndex++;
