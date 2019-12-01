@@ -84,8 +84,17 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				e.type = ExpressionType::Type;
 				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
 				e.parent = t;
-			} else {
-				
+			} else { //Type constructor
+				ParseInfo inf;
+				inf.start = i;
+
+				ResultVariable res = ParseTypeConstructor(tokens, &inf, localVariables);
+
+				e.type = ExpressionType::Result;
+				e.result = res;
+
+				info->end -= inf.end;
+				i += inf.len;
 			}
 
 		} else if (t.type == TokenType::ParenthesisOpen) {

@@ -199,7 +199,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 	
 	tokens.Remove(start, start + offset-1);
 
-	if (len) *len = offset;
+	if (len) *len += offset;
 
 	return var;
 }
@@ -343,7 +343,7 @@ Compiler::TypePrimitive* Compiler::ModifyTypePrimitiveBitWidth(TypePrimitive* ba
 	return nullptr;
 }
 
-Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start) {
+Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 start, uint64* len) {
 	TypeStruct* var = new TypeStruct;
 
 	uint64 offset = 0;
@@ -364,7 +364,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 	List<ID*> ids;
 
 	while (true) {
-		TypeBase* tmp = CreateType(tokens, start + offset, nullptr);
+		TypeBase* tmp = CreateType(tokens, start + offset, len);
 
 		const Token& tokenName = tokens[start + offset++];
 
@@ -436,10 +436,12 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 	var->typeId = st->id;
 
+	if (len) *len += offset;
+
 	return var;
 }
 
-Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start) {
+Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start, uint64* len) {
 	TypeArray* var = new TypeArray;
 
 	uint64 offset = 0;
@@ -447,7 +449,7 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 	const Token& token = tokens[start + offset++];
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeInt, TokenType::TypeFloat, TokenType::TypeVector, TokenType::TypeMatrix)) {
-		var->elementType = CreateTypePrimitive(tokens, start, nullptr);
+		var->elementType = CreateTypePrimitive(tokens, start, len);
 		offset--;
 	} else if (token.type == TokenType::Name) {
 		uint64 index = typeDefinitions.Find<String>(token.string, findStructFunc);
@@ -489,6 +491,8 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 
 	tokens.Remove(start, start + offset-1);
 
+	if (len) *len += offset;
+
 	if (var->typeId != nullptr) {
 		return var;
 	}
@@ -509,7 +513,7 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start, uint
 
 	if (Utils::CompareEnums(token.type, CompareOperation::Or, TokenType::TypeBool, TokenType::TypeFloat, TokenType::TypeInt, TokenType::TypeMatrix, TokenType::TypeVector, TokenType::TypeVoid)) {
 		if (arr.type == TokenType::BracketOpen) {
-			return CreateTypeArray(tokens, start);
+			return CreateTypeArray(tokens, start, len);
 		} else {
 			return CreateTypePrimitive(tokens, start, len);
 		}
@@ -520,7 +524,7 @@ Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start, uint
 
 		if (index != ~0) {
 			if (arr.type == TokenType::BracketOpen) {
-				return CreateTypeArray(tokens, start);
+				return CreateTypeArray(tokens, start, len);
 			} else {
 				return typeDefinitions[index];
 			}
@@ -1671,6 +1675,17 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type) 
 	}
 
 	return id;
+}
+
+List<ID*> Compiler::GetIDs(List<ResultVariable>& things) {
+	uint64 num = things.GetCount();
+	List<ID*> ids(num);
+
+	for (uint64 i = 0; i < num; i++) {
+		ids.Add(things[i].id);
+	}
+
+	return std::move(ids);
 }
 
 void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {

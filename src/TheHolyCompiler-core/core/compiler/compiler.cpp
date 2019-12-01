@@ -206,7 +206,7 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 		} else if (token.type == TokenType::DataOut) {
 			ParseInOut(tokens, i--, VariableScope::Out);
 		} else if (token.type == TokenType::DataStruct) {
-			CreateTypeStruct(tokens, i + 1);
+			CreateTypeStruct(tokens, i + 1, nullptr);
 			tokens.RemoveAt(i--);
 		} else if (token.type == TokenType::Name) {
 			const Token& t2 = tokens[i + 1];
@@ -344,7 +344,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	Variable* var;
 
 	if (tmp.scope == VariableScope::Uniform) {
-		TypeStruct* str = CreateTypeStruct(tokens, start + offset++);
+		TypeStruct* str = CreateTypeStruct(tokens, start + offset++, nullptr);
 
 		String name = str->typeString;
 		str->typeString += "_uniform_type";
@@ -891,45 +891,12 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token functionName = tokens[info->start];
 
-	List<ResultVariable> parameterResults;
+	ParseInfo inf;
+	inf.start = info->start + 1;
 
-	uint64 offset = info->start+1;
+	List<ResultVariable> parameterResults = ParseParameters(tokens, &inf, localVariables);
 
-	const Token& parenthesisOpen = tokens[offset];
-
-	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
-		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
-	}
-
-	uint64 parenthesisClose = FindMatchingToken(tokens, offset++, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
-
-	if (parenthesisClose == ~0) {
-		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
-	}
-
-	bool moreParams = true;
-
-	do {
-		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
-
-		if (end-- > parenthesisClose) {
-			end = parenthesisClose-1;
-			moreParams = false;
-		}
-
-		ParseInfo inf;
-
-		inf.start = offset;
-		inf.end = end;
-
-		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
-
-		offset = end + 2; //dank(shit, dank)
-		
-		parameterResults.Add(res);
-	} while (moreParams);
-
-	info->len = offset-info->start;
+	info->len = inf.len;
 
 	ResultVariable r;
 
@@ -995,16 +962,10 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 
 	FunctionDeclaration* decl = decls[0];
 
-	ID** ids = new ID*[parameterResults.GetCount()];
+	List<ID*> ids = Compiler::GetIDs(parameterResults);
 
-	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-		ids[i] = parameterResults[i].id;
-	}
-
-	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)decl->parameters.GetCount(), ids);
+	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)ids.GetCount(), ids.GetData());
 	instructions.Add(call);
-
-	delete[] ids;
 
 	r.id = call->id;
 	r.type = decl->returnType;
@@ -1013,8 +974,111 @@ Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseI
 	return r;
 }
 
-void Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+	info->end = 0;
+
+	Token tmp = tokens[info->start];
+
+	TypePrimitive* type = (TypePrimitive*)CreateType(tokens, info->start, &info->end);
+
+	List<ResultVariable> parameters = ParseParameters(tokens, info, localVariables);
+
+	ResultVariable res;
+	res.type = type;
+	res.isConstant = false;
+	res.isVariable = false;
+
+	InstBase* inst = nullptr;
+
+	if (type->type == Type::Vector) {
+		uint8 numComponents = 0;
+
+		for (uint64 i = 0; i < parameters.GetCount(); i++) {
+			TypePrimitive* t = (TypePrimitive*)parameters[i].type;
+
+			if (type->componentType != t->componentType || type->bits != t->bits) {
+				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
+			}
+
+			numComponents += t->rows > 0 ? t->rows : 1;
+		}
+
+		if (numComponents != type->rows) {
+			Log::CompilerError(tmp, "Total component count must be %llu is %u", type->rows, numComponents);
+		}
+
+		List<ID*> ids = Compiler::GetIDs(parameters);
+
+		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+	} else if (type->type == Type::Matrix) {
+		if (parameters.GetCount() != type->columns) {
+			Log::CompilerError(tmp, "Argument count must be %llu is %u", parameters.GetCount(), type->columns);
+		} 
+
+		for (uint64 i = 0; i < parameters.GetCount(); i++) {
+			TypePrimitive* t = (TypePrimitive*)parameters[i].type;
+
+			if (t->componentType != type->componentType || t->bits != type->bits || t->rows != type->rows || t->type != Type::Vector) {
+				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
+			}
+		}
+
+		List<ID*> ids = Compiler::GetIDs(parameters);
+
+		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+	} else {
+		Log::CompilerError(tmp, "\"%s\" doesn't have a constructor", type->typeString.str);
+	}
+
+	instructions.Add(inst);
+	res.id = inst->id;
+
+	return res;
+}
+
+List<Compiler::ResultVariable> Compiler::ParseParameters(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+	uint64 offset = info->start;
+
+	const Token& parenthesisOpen = tokens[offset];
+
+	if (parenthesisOpen.type != TokenType::ParenthesisOpen) {
+		Log::CompilerError(parenthesisOpen, "Unexpected symbol \"%s\" expected \"(\"", parenthesisOpen.string.str);
+	}
+
+	uint64 parenthesisClose = FindMatchingToken(tokens, offset++, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+	if (parenthesisClose == ~0) {
+		Log::CompilerError(parenthesisOpen, "\"(\" needs a closing \")\"");
+	}
+
 	
+	List<ResultVariable> parameterResults;
+	
+	bool moreParams = true;
+
+	do {
+		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
+
+		if (end-- > parenthesisClose) {
+			end = parenthesisClose - 1;
+			moreParams = false;
+		}
+
+		ParseInfo inf;
+
+		inf.start = offset;
+		inf.end = end;
+
+		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+
+		offset = inf.end + 2;
+
+		parameterResults.Add(res);
+	} while (moreParams);
+
+	info->len = offset - info->start;
+
+	return std::move(parameterResults);
 }
 
 bool Compiler::Process() {

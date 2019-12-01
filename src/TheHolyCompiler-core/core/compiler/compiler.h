@@ -136,9 +136,9 @@ private: //Type stuff
 	TypePrimitive* ModifyTypePrimitiveBitWidth(TypePrimitive* base, uint8 bits);
 
 	//start is the index of the name of the struct
-	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start);
+	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 	//start is start of type
-	TypeArray* CreateTypeArray(utils::List<parsing::Token>& tokens, uint64 start);
+	TypeArray* CreateTypeArray(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
 	TypeBase* CreateType(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
@@ -322,7 +322,8 @@ private:
 	Variable* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
 	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	void ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	utils::List<ResultVariable> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 
 private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
@@ -330,6 +331,7 @@ private: //Misc
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type);
+	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
 
 public:
 	bool Process();
