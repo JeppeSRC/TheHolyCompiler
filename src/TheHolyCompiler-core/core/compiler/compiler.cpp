@@ -704,17 +704,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 		} else if (token.type == TokenType::ControlFlowIf) {
 			ParseIf(declaration, tokens, i, localVariables);
 
-		} /*else {
-			uint64 end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
-
-			if (end == ~0) {
-				Log::CompilerError(token, "Expression is missing \";\"");
-			}
-
-			ParseExpression(tokens, --i, end - 1, localVariables);
-
-			tokens.Remove(i, end);
-		}*/
+		}
 	}
 
 	tokens.Remove(start, closeBracket);
