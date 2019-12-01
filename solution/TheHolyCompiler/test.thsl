@@ -40,9 +40,7 @@ void main() {
 
     pos = Buffer0.MVP * vec4(position, 1.0);
 
-    float a = 123.123;
-
-    return 0;
+    return;
 }
 
 float dot(vec3 v1, vec3 v2) {
