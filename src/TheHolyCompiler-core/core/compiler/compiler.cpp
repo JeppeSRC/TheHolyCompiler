@@ -690,13 +690,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				}
 
 				if (*type != retType) {
-					ResultVariable tmp = Cast(retType, type, operandId, &next);
-
-					if (tmp.id == nullptr) {
-						Log::CompilerError(next, "No suitable conversion between return type(%s) and \"%s\"", retType->typeString.str, type->typeString.str);
-					} else {
-						Log::CompilerWarning(next, "Implicit conversion from \"%s\" to return type(%s)", type->typeString.str, retType->typeString.str);
-					}
+					ResultVariable tmp = ImplicitCast(retType, type, operandId, &next);
 
 					operandId = res.id;
 				}
