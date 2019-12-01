@@ -704,8 +704,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			instructions.Add(operation);
 
 		} else if (token.type == TokenType::ControlFlowIf) {
-			ParseIf(declaration, tokens, i, localVariables);
-
+			ParseIf(declaration, tokens, i--, localVariables);
+		} else {
+			Log::CompilerError(token, "Unexpected symbol \"%s\"", token.string.str);
 		}
 	}
 
@@ -750,11 +751,68 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 
 	const Token& bracket = tokens[start];
 
-	if (bracket.type != TokenType::CurlyBracketOpen) { //TODO: one line if statements
-		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \"{\"", bracket.string.str);
+	InstBase* mergeBlock = new InstLabel;
+	InstBase* trueBlock = new InstLabel;
+	InstBase* falseBlock = new InstLabel;
+
+	instructions.Add(new InstSelectionMerge(mergeBlock->id, 0));
+	instructions.Add(new InstBranchConditional(res.id, trueBlock->id, falseBlock->id, 1, 1));
+	instructions.Add(trueBlock);
+
+	if (bracket.type == TokenType::CurlyBracketOpen) { 
+		tokens.RemoveAt(start);
+		ParseBody(declaration, tokens, start, localVariables);
+		ParseElse(declaration, tokens, start, localVariables, mergeBlock, falseBlock);
+	} else  {//One line if
+		ParseInfo inf;
+		inf.start = start;
+		inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
+
+		if (inf.end-- == ~0) {
+			Log::CompilerError(bracket, "Unexpected symbol \"%s\", expected expression or \"{\"", bracket.string.str);
+		}
+
+		ParseExpression(tokens, &inf, localVariables);
+
+		tokens.Remove(start, inf.end + 1);
+
+		ParseElse(declaration, tokens, start, localVariables, mergeBlock, falseBlock);
 	}
 
+	instructions.Add(mergeBlock);
 	
+}
+
+void Compiler::ParseElse(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start, VariableStack* localVariables, InstBase* mergeBlock, InstBase* falseBlock) {
+	instructions.Add(new InstBranch(mergeBlock->id));
+	instructions.Add(falseBlock);
+	
+	const Token& els = tokens[start];
+
+	if (els.type == TokenType::ControlFlowElse) {
+		tokens.RemoveAt(start);
+
+		const Token& next = tokens[start];
+
+		if (next.type == TokenType::ControlFlowIf) {
+			ParseIf(declaration, tokens, start, localVariables);
+		} else if (next.type == TokenType::CurlyBracketOpen) {
+			ParseBody(declaration, tokens, start + 1, localVariables);
+		} else {
+			ParseInfo inf;
+			inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
+
+			if (inf.end-- == ~0) {
+				Log::CompilerError(next, "Unexpected symbol \"%s\", expected expression or \"{\"", next.string.str);
+			}
+
+			ParseExpression(tokens, &inf, localVariables);
+
+			tokens.Remove(start, inf.end + 1);
+		}
+	}
+
+	instructions.Add(new InstBranch(mergeBlock->id));
 }
 
 Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {

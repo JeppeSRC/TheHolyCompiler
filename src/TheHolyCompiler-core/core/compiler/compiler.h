@@ -312,6 +312,7 @@ private:
 	void CreateFunctionDeclaration(FunctionDeclaration* decl);
 	void ParseBody(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
 	void ParseIf(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables);
+	void ParseElse(FunctionDeclaration* declaration, utils::List<parsing::Token>& tokens, uint64 start, VariableStack* localVariables, instruction::InstBase* mergeBlock, instruction::InstBase* falseBlock);
 	
 	struct ParseInfo {
 		uint64 start;
