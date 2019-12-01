@@ -1137,7 +1137,7 @@ void InstLabel::GetInstWords(uint32* words) const {
 void InstBranch::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
-	words[1] = targetLabelId;
+	words[1] = targetLabelId->id;
 }
 
 void InstBranchConditional::GetInstWords(uint32* words) const {
