@@ -1155,7 +1155,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorAssign, TokenType::OperatorCompoundAdd, TokenType::OperatorCompoundSub, TokenType::OperatorCompoundMul, TokenType::OperatorCompoundDiv)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 
