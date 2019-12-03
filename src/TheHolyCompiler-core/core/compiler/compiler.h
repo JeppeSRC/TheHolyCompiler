@@ -333,6 +333,7 @@ private: //Misc
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type);
 	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
+	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
 
 public:
 	bool Process();

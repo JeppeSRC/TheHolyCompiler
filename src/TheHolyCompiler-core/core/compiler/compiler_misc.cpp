@@ -1688,6 +1688,39 @@ List<ID*> Compiler::GetIDs(List<ResultVariable>& things) {
 	return std::move(ids);
 }
 
+List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePrimitive* type) {
+	List<uint32> ret(4);
+
+	uint64 count = token.string.length;
+
+	if (count > 4) {
+		Log::CompilerError(token, "Cannot make vector with %llu components", count);
+	}
+
+	for (uint64 i = 0; i < count; i++) {
+		switch (token.string[i]) {
+			case 'x':
+				ret.Add(0);
+				break;
+			case 'y':
+				ret.Add(1);
+				break;
+			case 'z':
+				if (type->rows < 3) Log::CompilerError(token, "No z component in a \"%s\"", type->typeString.str);
+				ret.Add(2);
+				break;
+			case 'w':
+				if (type->rows < 4) Log::CompilerError(token, "No w component in a \"%s\"", type->typeString.str);
+				ret.Add(3);
+				break;
+			default:
+				Log::CompilerError(token, "\%c\" is not a valid member of a \"%s\"", token.string[i], type->typeString.str);
+		}
+	}
+
+	return std::move(ret);
+}
+
 void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	if (decl->declInstructions.GetCount() != 0) {
 		return;
