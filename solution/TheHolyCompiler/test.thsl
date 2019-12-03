@@ -21,6 +21,7 @@ float dot(vec3 v1, vec3 v2);
 
 struct O {
     uint32[10] someOtherName;
+    vec2 shit;
 };
 
 struct Dank {
@@ -36,11 +37,11 @@ void main() {
     float res = dot(v1, v2);
     Dank d;
 
-    float a = 0.0;
+    vec2 a = d.o[0].shit.xy;
 
-    if (tmp) a = d.o[0].someOtherName[5];
+    if (tmp) a.x = d.o[0].someOtherName[5];
     else if (tmp) {
-        a = 1.23;
+        a.y = 1.23;
     }
 
     pos = Buffer0.MVP * vec4(position, 1.0);
