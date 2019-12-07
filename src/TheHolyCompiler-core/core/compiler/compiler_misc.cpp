@@ -1688,8 +1688,8 @@ List<ID*> Compiler::GetIDs(List<ResultVariable>& things) {
 	return std::move(ids);
 }
 
-List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePrimitive* type) {
-	List<uint32> ret(4);
+List<uint8> Compiler::GetVectorShuffleIndices(const Token& token, const TypePrimitive* type) {
+	List<uint8> ret(4);
 
 	uint64 count = token.string.length;
 

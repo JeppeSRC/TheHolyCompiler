@@ -821,7 +821,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 	const Token& name = tokens[info->start + offset++];
 
 	Variable* var = GetVariable(name.string, localVariables);
-	Variable* result;
+	Variable* result = new Variable;
 
 	if (var == nullptr) {
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable", name.string.str);
@@ -837,11 +837,40 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 
 		while (true) {
 			if (op.type == TokenType::OperatorSelector) {
-				if (curr->type != Type::Struct) {
-					Log::CompilerError(op, "Left of operator \".\" must be a struct");
+				const Token& member = tokens[info->start + offset++];
+
+				if (curr->type != Type::Struct && curr->type != Type::Vector) {
+					Log::CompilerError(op, "Left of operator \".\" must be a struct or vector");
 				}
 
-				const Token& member = tokens[info->start + offset++];
+				if (curr->type == Type::Vector) {
+					List<uint8> indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
+
+					if (indices.GetCount() > 1) {
+						Variable::SwizzleData* swizzle = &result->swizzleData;
+
+						swizzle->writable = true;
+
+						for (uint64 i = 0; i < indices.GetCount()-1; i++) {
+							if (indices.Find(indices[i], i + 1) != ~0) {
+								swizzle->writable = false;
+								break;
+							}
+						}
+
+						swizzle->numIndices = (uint8)indices.GetCount();
+						memcpy(swizzle->indices, indices.GetData(), indices.GetSize());
+
+						break;
+					} else { 
+						n.Append(".").Append(member.string.str);
+						accessIds.Add(CreateConstantS32(indices[0]));
+
+						TypePrimitive* prim = (TypePrimitive*)curr;
+						curr = CreateTypePrimitiveScalar(prim->componentType, prim->bits, prim->sign);
+						break;
+					}
+				}
 
 				if (member.type != TokenType::Name) {
 					Log::CompilerError(member, "Right of operator \".\" must be a valid name");
@@ -913,9 +942,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 			InstAccessChain* access = new InstAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
 
 			instructions.Add(access);
-
-			result = new Variable;
-
+			
 			result->scope = var->scope;
 			result->name = n;
 			result->type = curr;
@@ -924,6 +951,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 			result->isConstant = var->isConstant;
 		} 
 	} else {
+		delete result;
 		result = var;
 	}
 
