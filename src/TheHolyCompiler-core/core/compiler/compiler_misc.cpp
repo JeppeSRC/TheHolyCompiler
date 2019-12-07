@@ -1652,15 +1652,27 @@ uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, Toke
 	return ~0;
 }
 
-ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type) {
+ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle) {
 	ID* id = nullptr;
 
 	if (e->type == ExpressionType::Variable) {
-		InstLoad* load = new InstLoad(e->variable->type->typeId, e->variable->variableId, 0);
+		Variable* v = e->variable;
+		InstLoad* load = new InstLoad(v->type->typeId, v->variableId, 0);
 		instructions.Add(load);
 
-		id = load->id;
-		*type = (TypePrimitive*)e->variable->type;
+		TypePrimitive* tmp = (TypePrimitive*)v->type;
+
+		if (v->swizzleData.numIndices > 0 && swizzle) {
+			*type = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, v->swizzleData.numIndices);
+			InstBase* swiz = new InstVectorShuffle((*type)->typeId, load->id, load->id, v->swizzleData.numIndices, v->swizzleData.indices);
+			instructions.Add(swiz);
+
+			id = swiz->id;
+		} else {
+			id = load->id;
+			*type = (TypePrimitive*)v->type;
+		}
+		
 	} else if (e->type == ExpressionType::Result || e->type == ExpressionType::Constant) {
 		if (e->result.isVariable) {
 			InstLoad* load = new InstLoad(e->result.type->typeId, e->result.id, 0);
@@ -1688,8 +1700,8 @@ List<ID*> Compiler::GetIDs(List<ResultVariable>& things) {
 	return std::move(ids);
 }
 
-List<uint8> Compiler::GetVectorShuffleIndices(const Token& token, const TypePrimitive* type) {
-	List<uint8> ret(4);
+List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePrimitive* type) {
+	List<uint32> ret(4);
 
 	uint64 count = token.string.length;
 

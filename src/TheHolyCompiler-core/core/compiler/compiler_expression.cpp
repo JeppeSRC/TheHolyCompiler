@@ -195,7 +195,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &type);
+			ID* operandId = GetExpressionOperandId(&right, &type, false);
 
 
 			if (operandId == nullptr) {
@@ -277,7 +277,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &type);
+			ID* operandId = GetExpressionOperandId(&right, &type, true);
 
 			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer or float");
@@ -321,7 +321,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* rType = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &rType);
+			ID* operandId = GetExpressionOperandId(&right, &rType, false);
 
 			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a variable or value");
@@ -371,7 +371,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &type);
+			ID* operandId = GetExpressionOperandId(&right, &type, true);
 
 			if (operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar or vector of type integer");
@@ -415,8 +415,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			ResultVariable ret = { 0 };
 
@@ -457,8 +457,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			ResultVariable ret = { 0 };
 
@@ -498,8 +498,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 
 			if (lType->type != Type::Int && rType->type != Type::Int) {
@@ -556,8 +556,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			InstBase* instruction = nullptr;
 			InstBase* convInst = nullptr;
@@ -678,8 +678,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			InstBase* instruction = nullptr;
 			InstBase* convInst = nullptr;
@@ -803,8 +803,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			ResultVariable ret = { 0 };
 
@@ -860,8 +860,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			ResultVariable ret = { 0 };
 
@@ -917,8 +917,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			ResultVariable ret = { 0 };
 
@@ -974,8 +974,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			ResultVariable ret = { 0 };
 
@@ -1031,8 +1031,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
@@ -1090,8 +1090,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
@@ -1161,8 +1161,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
 				Log::CompilerError(e.parent, "Operands must be a of valid type");

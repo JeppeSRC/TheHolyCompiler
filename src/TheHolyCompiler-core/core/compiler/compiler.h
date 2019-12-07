@@ -172,7 +172,7 @@ private: //Variable stuff
 		struct SwizzleData {
 			bool writable;
 			uint8 numIndices;
-			uint8 indices[4];
+			uint32 indices[4];
 		} swizzleData;
 	};
 
@@ -337,9 +337,9 @@ private: //Misc
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
-	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type);
+	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle);
 	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
-	utils::List<uint8> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
+	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
 
 public:
 	bool Process();

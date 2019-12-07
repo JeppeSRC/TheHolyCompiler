@@ -844,7 +844,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 				}
 
 				if (curr->type == Type::Vector) {
-					List<uint8> indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
+					List<uint32> indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
 
 					if (indices.GetCount() > 1) {
 						Variable::SwizzleData* swizzle = &result->swizzleData;
