@@ -1714,7 +1714,7 @@ List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePri
 				ret.Add(3);
 				break;
 			default:
-				Log::CompilerError(token, "\%c\" is not a valid member of a \"%s\"", token.string[i], type->typeString.str);
+				Log::CompilerError(token, "\"%c\" is not a valid member of a \"%s\"", token.string[i], type->typeString.str);
 		}
 	}
 
