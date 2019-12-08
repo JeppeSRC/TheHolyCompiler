@@ -1105,7 +1105,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
@@ -1113,6 +1113,24 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			//This has to be done before the ImplicitCast
 			if (e.operatorType == TokenType::OperatorAssign) instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
+
+			TypePrimitive* tmpType = nullptr;
+
+			if (lType->type == Type::Vector && e.operatorType != TokenType::OperatorAssign) {
+				Variable::SwizzleData* swiz = &left.variable->swizzleData;
+				if (swiz->indices.GetCount() > 0) {
+					if (swiz->writable == false) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+					tmpType = lType;
+					lOperandId = GetSwizzledVector(left.variable, &lType, lOperandId);
+				}
+			}
+
+			if (right.type == ExpressionType::Variable && e.operatorType != TokenType::OperatorAssign) {
+				Variable::SwizzleData* swiz = &right.variable->swizzleData;
+				if (swiz->indices.GetCount() > 0) {
+					rOperandId = GetSwizzledVector(right.variable, &rType, rOperandId);
+				}
+			}
 
 			if (lType->type != rType->type) {
 				ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
@@ -1139,7 +1157,45 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					tmp = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 					break;
 			}
+			//vec3.zxy += vec3.yzx;
+			if (tmpType != nullptr) {
+				List<uint32> indices;
+				indices.Resize(tmpType->rows);
 
+				uint32 rows = tmpType->rows;
+
+				if (e.operatorType == TokenType::OperatorAssign) {
+					Variable::SwizzleData* lSwiz = &left.variable->swizzleData;
+					Variable::SwizzleData* rSwiz = &right.variable->swizzleData;
+
+					if (lSwiz->writable == false) {
+						Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+					}
+
+					if (rSwiz->indices.GetCount() > 0 && rSwiz->indices.GetCount() != lSwiz->indices.GetCount()) {
+						Log::CompilerError(e.parent, "Vectors must be matching");
+					}
+
+					for (uint64 i = 0; i < rows; i++) {
+						uint64 index = lSwiz->indices.Find(i);
+
+						if (index == ~0) {
+							indices.EmplaceAt(i, i);
+						} else {
+							uint64 rIndex = rSwiz->indices.GetCount() > 0 ? rSwiz->indices[index] : index;
+
+							indices.EmplaceAt(i, rIndex + rows);
+						}
+					}
+
+					InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, lOperandId, rOperandId, rows, indices.GetData());
+					instructions.Add(shuffle);
+
+					tmp.id = shuffle->id;
+				} else {
+
+				}
+			}
 
 			instructions.Add(new InstStore(left.variable->variableId, tmp.id, 0));
 
