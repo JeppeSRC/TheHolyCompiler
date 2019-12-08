@@ -1660,14 +1660,8 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 		InstLoad* load = new InstLoad(v->type->typeId, v->variableId, 0);
 		instructions.Add(load);
 
-		TypePrimitive* tmp = (TypePrimitive*)v->type;
-
 		if (v->swizzleData.numIndices > 0 && swizzle) {
-			*type = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, v->swizzleData.numIndices);
-			InstBase* swiz = new InstVectorShuffle((*type)->typeId, load->id, load->id, v->swizzleData.numIndices, v->swizzleData.indices);
-			instructions.Add(swiz);
-
-			id = swiz->id;
+			id = GetSwizzledVector(v, type, load->id);
 		} else {
 			id = load->id;
 			*type = (TypePrimitive*)v->type;
@@ -1731,6 +1725,16 @@ List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePri
 	}
 
 	return std::move(ret);
+}
+
+ID* Compiler::GetSwizzledVector(Variable* v, TypePrimitive** type, ID* load) {
+	TypePrimitive* tmp = (TypePrimitive*)v->type;
+
+	*type = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, v->swizzleData.numIndices);
+	InstBase* swiz = new InstVectorShuffle((*type)->typeId, load, load, v->swizzleData.numIndices, v->swizzleData.indices);
+	instructions.Add(swiz);
+
+	return swiz->id;
 }
 
 void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {

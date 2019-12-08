@@ -171,8 +171,7 @@ private: //Variable stuff
 
 		struct SwizzleData {
 			bool writable;
-			uint8 numIndices;
-			uint32 indices[4];
+			utils::List<uint32> indices;
 		} swizzleData;
 	};
 
@@ -340,6 +339,7 @@ private: //Misc
 	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle);
 	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
 	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
+	ID* GetSwizzledVector(Variable* v, TypePrimitive** type, ID* load);
 
 public:
 	bool Process();

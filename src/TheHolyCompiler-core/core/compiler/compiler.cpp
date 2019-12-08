@@ -844,27 +844,24 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 				}
 
 				if (curr->type == Type::Vector) {
-					List<uint32> indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
+					result->swizzleData.indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
 
-					if (indices.GetCount() > 1) {
+					if (result->swizzleData.indices.GetCount() > 1) {
 						Variable::SwizzleData* swizzle = &result->swizzleData;
 
 						swizzle->writable = true;
 
-						for (uint64 i = 0; i < indices.GetCount()-1; i++) {
-							if (indices.Find(indices[i], i + 1) != ~0) {
+						for (uint64 i = 0; i < result->swizzleData.indices.GetCount()-1; i++) {
+							if (result->swizzleData.indices.Find(result->swizzleData.indices[i], i + 1) != ~0) {
 								swizzle->writable = false;
 								break;
 							}
 						}
 
-						swizzle->numIndices = (uint8)indices.GetCount();
-						memcpy(swizzle->indices, indices.GetData(), indices.GetSize());
-
 						break;
 					} else { 
 						n.Append(".").Append(member.string.str);
-						accessIds.Add(CreateConstantS32(indices[0]));
+						accessIds.Add(CreateConstantS32(result->swizzleData.indices[0]));
 
 						TypePrimitive* prim = (TypePrimitive*)curr;
 						curr = CreateTypePrimitiveScalar(prim->componentType, prim->bits, prim->sign);
