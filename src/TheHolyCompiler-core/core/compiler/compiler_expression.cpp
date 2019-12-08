@@ -38,6 +38,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				tmpVariables.Add(v);
 
 				i += inf.len - 1;
+
+				if (tokens[i].type == TokenType::OperatorSelector) i++;
+
 			} else if (t.string == "false" || t.string == "true") {
 				e.type = ExpressionType::Constant;
 				e.constant.isConstant = true;
@@ -1102,10 +1105,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 
+			bool lSwizzle = left.variable->swizzleData.indices.GetCount() > 0;
+
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, !lSwizzle);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
@@ -1114,15 +1119,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			//This has to be done before the ImplicitCast
 			if (e.operatorType == TokenType::OperatorAssign) instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
 
-			TypePrimitive* tmpType = nullptr;
-			ID* tmpId = nullptr;
+			TypePrimitive* tmpType = lType;
+			ID* tmpId = lOperandId;
 
 			if (lType->type == Type::Vector && e.operatorType != TokenType::OperatorAssign) {
 				Variable::SwizzleData* swiz = &left.variable->swizzleData;
 				if (swiz->indices.GetCount() > 0) {
 					if (swiz->writable == false) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
-					tmpType = lType;
-					tmpId = lOperandId;
 					lOperandId = GetSwizzledVector(left.variable, &lType, lOperandId);
 				}
 			}
@@ -1160,7 +1163,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					break;
 			}
 			//vec3.zx += vec3.yx;
-			if (tmpType != nullptr) {
+			if (lSwizzle) {
 				List<uint32> indices;
 				indices.Resize(tmpType->rows);
 
@@ -1168,36 +1171,31 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 				Variable::SwizzleData* lSwiz = &left.variable->swizzleData;
 
+				if (lSwiz->writable == false) {
+					Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+				}
+
 				if (e.operatorType == TokenType::OperatorAssign) {
 					Variable::SwizzleData* rSwiz = &right.variable->swizzleData;
-
-					if (lSwiz->writable == false) {
-						Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
-					}
 
 					if (rSwiz->indices.GetCount() > 0 && rSwiz->indices.GetCount() != lSwiz->indices.GetCount()) {
 						Log::CompilerError(e.parent, "Vectors must be matching");
 					}
 
-					for (uint64 i = 0; i < rows; i++) {
-						uint64 index = lSwiz->indices.Find(i);
+					for (uint32 i = 0; i < rows; i++) {
+						uint32 index = (uint32)lSwiz->indices.Find(i);
 
 						if (index == ~0) {
 							indices.EmplaceAt(i, i);
 						} else {
-							uint64 rIndex = rSwiz->indices.GetCount() > 0 ? rSwiz->indices[index] : index;
+							uint32 rIndex = rSwiz->indices.GetCount() > 0 ? rSwiz->indices[index] : index;
 
 							indices.EmplaceAt(i, rIndex + rows);
 						}
 					}
-
-					InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, lOperandId, rOperandId, rows, indices.GetData());
-					instructions.Add(shuffle);
-
-					tmp.id = shuffle->id;
 				} else {
-					for (uint64 i = 0; i < rows; i++) {
-						uint64 index = lSwiz->indices.Find(i);
+					for (uint32 i = 0; i < rows; i++) {
+						uint32 index = (uint32)lSwiz->indices.Find(i);
 
 						if (index == ~0) {
 							indices.EmplaceAt(i, i);
@@ -1205,12 +1203,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 							indices.EmplaceAt(i, index + rows);
 						}
 					}
-
-					InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, tmpId, tmp.id, rows, indices.GetData());
-					instructions.Add(shuffle);
-
-					tmp.id = shuffle->id;
 				}
+				
+				InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, tmpId, tmp.id, rows, indices.GetData());
+				instructions.Add(shuffle);
+
+				tmp.id = shuffle->id;
 			}
 
 			instructions.Add(new InstStore(left.variable->variableId, tmp.id, 0));
