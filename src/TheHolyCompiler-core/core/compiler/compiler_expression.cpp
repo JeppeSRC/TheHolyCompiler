@@ -1115,12 +1115,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (e.operatorType == TokenType::OperatorAssign) instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
 
 			TypePrimitive* tmpType = nullptr;
+			ID* tmpId = nullptr;
 
 			if (lType->type == Type::Vector && e.operatorType != TokenType::OperatorAssign) {
 				Variable::SwizzleData* swiz = &left.variable->swizzleData;
 				if (swiz->indices.GetCount() > 0) {
 					if (swiz->writable == false) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 					tmpType = lType;
+					tmpId = lOperandId;
 					lOperandId = GetSwizzledVector(left.variable, &lType, lOperandId);
 				}
 			}
@@ -1157,15 +1159,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					tmp = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 					break;
 			}
-			//vec3.zxy += vec3.yzx;
+			//vec3.zx += vec3.yx;
 			if (tmpType != nullptr) {
 				List<uint32> indices;
 				indices.Resize(tmpType->rows);
 
 				uint32 rows = tmpType->rows;
 
+				Variable::SwizzleData* lSwiz = &left.variable->swizzleData;
+
 				if (e.operatorType == TokenType::OperatorAssign) {
-					Variable::SwizzleData* lSwiz = &left.variable->swizzleData;
 					Variable::SwizzleData* rSwiz = &right.variable->swizzleData;
 
 					if (lSwiz->writable == false) {
@@ -1193,7 +1196,20 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 					tmp.id = shuffle->id;
 				} else {
+					for (uint64 i = 0; i < rows; i++) {
+						uint64 index = lSwiz->indices.Find(i);
 
+						if (index == ~0) {
+							indices.EmplaceAt(i, i);
+						} else {
+							indices.EmplaceAt(i, index + rows);
+						}
+					}
+
+					InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, tmpId, tmp.id, rows, indices.GetData());
+					instructions.Add(shuffle);
+
+					tmp.id = shuffle->id;
 				}
 			}
 
