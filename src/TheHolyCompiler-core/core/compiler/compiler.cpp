@@ -650,7 +650,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				i = inf.end+1;
 			}
 		} else if (token.type == TokenType::ControlFlowReturn) {
-			const Token& next = tokens[i + 1];
+			const Token& next = tokens[++i];
 
 			InstBase* operation = nullptr;
 
@@ -668,7 +668,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				}
 
 				ParseInfo inf;
-				inf.start = i + 1;
+				inf.start = i;
 				inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, inf.start);
 
 				if (inf.end-- == ~0) {
@@ -676,6 +676,8 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				}
 
 				ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+
+				i = inf.end+1;
 
 				TypeBase* type = res.type;
 				TypeBase* retType = declaration->returnType;
