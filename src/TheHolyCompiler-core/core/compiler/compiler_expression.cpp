@@ -1105,7 +1105,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 
-			bool lSwizzle = left.variable->swizzleData.indices.GetCount() > 0;
+			bool lSwizzle = left.variable->swizzleData.indices.GetCount() > 1;
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
