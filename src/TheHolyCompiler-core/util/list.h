@@ -391,6 +391,12 @@ public:
 		return ~0;
 	}
 
+	/*Clears the list of all content*/
+	inline void Clear() {
+		Resize(0);
+		memset(items, 0, GetSize());
+	}
+
 	inline T& operator[](uint64 index) {
 		THC_ASSERT(index < count);
 		return items[index];
