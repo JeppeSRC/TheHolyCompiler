@@ -871,6 +871,9 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 
 						TypePrimitive* prim = (TypePrimitive*)curr;
 						curr = CreateTypePrimitiveScalar(prim->componentType, prim->bits, prim->sign);
+
+						result->swizzleData.indices.Clear();
+
 						break;
 					}
 				}
