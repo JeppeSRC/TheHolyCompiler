@@ -660,7 +660,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 				if (!returnVoid) {
 					Log::CompilerError(token, "Function must return something that matches the return type");
 				}
-
+				
 				operation = new InstReturn;
 			} else {
 				if (returnVoid) {
@@ -845,8 +845,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 
 				if (curr->type == Type::Vector) {
 					if (accessIds.GetCount() == 0) {
-						delete result;
-						result = var;
+						*result = *var;
 					}
 
 					result->swizzleData.indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
