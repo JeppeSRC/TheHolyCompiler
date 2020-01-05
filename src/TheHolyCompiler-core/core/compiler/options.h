@@ -53,6 +53,7 @@ public:
 	inline static bool WarningMessages() { return warningsMessages; }
 	inline static bool DebugMessages() { return debugMessages; }
 	inline static bool DebugInformation() { return debugInformation; }
+	inline static bool PPOnly() { return ppOnly; }
 	inline static bool StopOnError() { return stopOnError; }
 	inline static bool FPPrecision64() { return fpPrecision64; }
 	inline static bool FPPrecision32() { return !fpPrecision64; }
