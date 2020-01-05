@@ -33,6 +33,7 @@ class CompilerOptions {
 private:
 	static bool warningsMessages;
 	static bool debugMessages;
+	static bool debugInformation;
 	static bool stopOnError;
 	static bool fpPrecision64;
 	static bool implicitConversions;
@@ -45,6 +46,7 @@ public:
 
 	inline static bool WarningMessages() { return warningsMessages; }
 	inline static bool DebugMessages() { return debugMessages; }
+	inline static bool DebugInformation() { return debugInformation; }
 	inline static bool StopOnError() { return stopOnError; }
 	inline static bool FPPrecision64() { return fpPrecision64; }
 	inline static bool FPPrecision32() { return !fpPrecision64; }

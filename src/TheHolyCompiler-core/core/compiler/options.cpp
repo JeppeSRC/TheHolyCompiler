@@ -32,6 +32,7 @@ using namespace utils;
 
 bool CompilerOptions::warningsMessages = true;
 bool CompilerOptions::debugMessages = false;
+bool CompilerOptions::debugInformation = false;
 bool CompilerOptions::stopOnError = true;
 bool CompilerOptions::fpPrecision64 = false;
 bool CompilerOptions::implicitConversions = true;

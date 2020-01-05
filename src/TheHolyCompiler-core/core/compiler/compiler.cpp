@@ -1169,6 +1169,10 @@ bool Compiler::Process() {
 	return false;
 }
 
+bool Compiler::GenerateFile() {
+
+}
+
 Compiler::Compiler(const String& code, const String& filename, const List<String>& defines, const List<String>& includes) : code(code), filename(filename), defines(defines), includes(includes) {
 
 }
