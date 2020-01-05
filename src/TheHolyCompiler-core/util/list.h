@@ -114,7 +114,7 @@ public:
 	/*Resizes the list*/
 	inline void Resize(uint64 count) {
 		if (count > allocated) {
-			Reserve(allocated + THC_PREALLOC_COUNT);
+			Reserve(count + THC_PREALLOC_COUNT);
 		}
 
 		this->count = count;
