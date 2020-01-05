@@ -1,5 +1,3 @@
-#define DANK "Bruh"
-
 #ifdef DANK
 #message "Dank Works"
 #elif defined(DADDY)
