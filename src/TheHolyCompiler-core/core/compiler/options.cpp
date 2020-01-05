@@ -36,6 +36,8 @@ bool CompilerOptions::debugInformation = false;
 bool CompilerOptions::stopOnError = true;
 bool CompilerOptions::fpPrecision64 = false;
 bool CompilerOptions::implicitConversions = true;
+bool CompilerOptions::vertexShader = false;
+bool CompilerOptions::fragmentShader = false;
 
 List<String> CompilerOptions::includeDirectories;
 List<String> CompilerOptions::defines;

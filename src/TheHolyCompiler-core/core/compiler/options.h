@@ -37,6 +37,8 @@ private:
 	static bool stopOnError;
 	static bool fpPrecision64;
 	static bool implicitConversions;
+	static bool vertexShader;
+	static bool fragmentShader;
 
 	static utils::List<utils::String> includeDirectories;
 	static utils::List<utils::String> defines;
@@ -51,6 +53,8 @@ public:
 	inline static bool FPPrecision64() { return fpPrecision64; }
 	inline static bool FPPrecision32() { return !fpPrecision64; }
 	inline static bool ImplicitConversions() { return implicitConversions; }
+	inline static bool VertexShader() { return vertexShader; }
+	inline static bool FragmentShader() { return fragmentShader; }
 
 	inline static const utils::List<utils::String>& IncludeDirectories() { return includeDirectories; }
 	inline static const utils::List<utils::String>& PredefinedDefines() { return defines; }
