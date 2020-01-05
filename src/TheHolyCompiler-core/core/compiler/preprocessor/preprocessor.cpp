@@ -179,11 +179,11 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 	
 	if (res) {
 		if (elifIndex != ~0) {
-			for (uint64 i = endifIndex; i >= elifIndex; i--) {
+			for (uint64 i = (int64)endifIndex; i >= (int64)elifIndex; i--) {
 				lines.RemoveAt(i);
 			}
 		} else if (elseIndex != ~0) {
-			for (uint64 i = endifIndex; i >= elseIndex; i--) {
+			for (uint64 i = endifIndex; (int64)i >= (int64)elseIndex; i--) {
 				lines.RemoveAt(i);
 			}
 		} else {
@@ -203,11 +203,11 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 					remIndex = elseIndex != ~0 ? elseIndex : endifIndex;
 				}
 
-				for (uint64 i = endifIndex; i >= remIndex; i--) {
+				for (uint64 i = endifIndex; (int64)i >= (int64)remIndex; i--) {
 					lines.RemoveAt(i);
 				}
 
-				for (uint64 i = elifIndex; i >= index; i--) {
+				for (uint64 i = elifIndex; (int64)i >= (int64)index; i--) {
 					lines.RemoveAt(i);
 				}
 
@@ -220,11 +220,11 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 	if (elseIndex != ~0) {
 		lines.RemoveAt(endifIndex);
 		
-		for (uint64 i = elseIndex; i >= index; i--) {
+		for (uint64 i = elseIndex; (int64)i >= (int64)index; i--) {
 			lines.RemoveAt(i);
 		}
 	} else {
-		for (uint64 i = endifIndex; i >= index; i--) {
+		for (uint64 i = endifIndex; (int64)i >= (int64)index; i--) {
 			lines.RemoveAt(i);
 		}
 	}
