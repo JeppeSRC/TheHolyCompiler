@@ -426,12 +426,16 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 	tokens.Remove(start, start + offset);
 
+	debugInstructions.Add(new InstName(st->id, var->typeString.str));
+
 	uint32 memberOffset = 0;
 
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
+		const StructMember& m = var->members[i];
+		debugInstructions.Add(new InstMemberName(st->id, i, m.name.str));
 		annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
-
-		memberOffset += var->members[i].type->GetSize();
+		
+		memberOffset += m.type->GetSize();
 	}
 
 	var->typeId = st->id;
