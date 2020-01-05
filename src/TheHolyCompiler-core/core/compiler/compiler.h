@@ -25,8 +25,8 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <core/compiler/parsing/token.h>
-#include <core/compiler/type/types.h>
+#include <core/parsing/token.h>
+#include <core/type/types.h>
 #include "options.h"
 #include "idmanager.h"
 

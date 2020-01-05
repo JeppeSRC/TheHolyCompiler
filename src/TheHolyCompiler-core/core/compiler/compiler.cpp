@@ -25,7 +25,7 @@ SOFTWARE.
 
 #include "compiler.h"
 #include <util/utils.h>
-#include <core/compiler/preprocessor/preprocessor.h>
+#include <core/preprocessor/preprocessor.h>
 #include <util/log.h>
 
 namespace thc {

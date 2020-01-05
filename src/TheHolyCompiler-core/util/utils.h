@@ -27,7 +27,7 @@ SOFTWARE.
 #define CLAMP(x, min, max) (x > max ? max : x < min ? min : x)
 
 #include "string.h"
-#include <core/compiler/parsing/line.h>
+#include <core/parsing/line.h>
 
 namespace thc {
 namespace utils {

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <core/compiler/preprocessor/preprocessor.h>
+#include <core/preprocessor/preprocessor.h>
 
 namespace thc {
 namespace core {

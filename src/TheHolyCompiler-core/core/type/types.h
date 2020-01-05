@@ -27,8 +27,8 @@ SOFTWARE.
 #include <memory>
 
 #include <core/spirvlimits.h>
-#include <core/compiler/instruction/instructions.h>
-#include <core/compiler/parsing/token.h>
+#include <core/instruction/instructions.h>
+#include <core/parsing/token.h>
 
 namespace thc {
 namespace core {

@@ -25,8 +25,8 @@ SOFTWARE.
 #pragma once
 
 #include <Windows.h>
-#include <core/compiler/parsing/line.h>
-#include <core/compiler/parsing/token.h>
+#include <core/parsing/line.h>
+#include <core/parsing/token.h>
 #include "string.h"
 
 namespace thc {

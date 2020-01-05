@@ -25,7 +25,7 @@ SOFTWARE.
 #pragma once
 
 #include <util/string.h>
-#include <core/compiler/parsing/token.h>
+#include <core/parsing/token.h>
 #include <core/thctypes.h>
 
 namespace thc {

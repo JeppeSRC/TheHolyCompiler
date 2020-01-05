@@ -1,6 +1,6 @@
-#include <core/compiler/preprocessor/preprocessor.h>
+#include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
-#include <core/compiler/parsing/line.h>
+#include <core/parsing/line.h>
 #include <util/log.h>
 #include <Windows.h>
 
