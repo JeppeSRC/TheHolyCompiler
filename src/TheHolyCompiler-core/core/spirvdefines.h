@@ -24,6 +24,14 @@ SOFTWARE.
 
 #pragma once
 
+#define THC_MAKE_GENERATOR_ID(id, version) ((id << 16) | version)
+
+#define THC_VERSION 0x0001
+#define THC_GEN 0xDEAD
+
+#define THC_GENERATOR_ID THC_MAKE_GENERATOR_ID(THC_GEN, THC_VERSION)
+
+
 //Magic Number
 #define THC_SPIRV_MAGIC_NUMBER											0x07230203
 
