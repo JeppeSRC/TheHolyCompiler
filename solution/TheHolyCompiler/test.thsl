@@ -31,7 +31,7 @@ void main() {
     bool tmp = false;
 
     vec3 v1;
-    vec3 v2 = vec3(CONSTANT, 0, CONSTANT);
+    vec3 v2 = vec3(CONSTANT, 0.0, CONSTANT);
 
     float res = dot(v1, v2);
     Dank d;
