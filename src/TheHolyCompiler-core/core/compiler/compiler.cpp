@@ -1162,11 +1162,26 @@ List<Compiler::ResultVariable> Compiler::ParseParameters(List<Token>& tokens, Pa
 bool Compiler::Process() {
 	lines = preprocessor::PreProcessor::Run(code, filename, defines, includes);
 
+	if (CompilerOptions::PPOnly()) {
+		String tmp;
+
+		for (uint64 i = 0; i < lines.GetCount(); i++) {
+			tmp.Append(lines[i].string + "\n");
+		}
+		
+		FILE* file = fopen((CompilerOptions::OutputFile() + ".pp").str, "wb");
+
+		fwrite(tmp.str, tmp.length * sizeof(char), 1, file);
+		fclose(file);
+
+		return false;
+	}
+
 	List<Token> tokens = Tokenize();
 
 	ParseTokens(tokens);
 
-	return false;
+	return true;
 }
 
 bool Compiler::GenerateFile(const String& filename) {
@@ -1259,6 +1274,8 @@ bool Compiler::Run(const String& code, const String& filename, const List<String
 	Compiler c(code, filename, defines, includes);
 
 	bool res = c.Process();
+
+	if (res == false) return true;
 
 	return c.GenerateFile(outFile);
 }
