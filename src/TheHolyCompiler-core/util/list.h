@@ -205,6 +205,18 @@ public:
 		count = totalCount;
 	}
 
+	template<uint64 N>
+	inline void Add(T(&item)[N], uint64 num = N) {
+		uint64 totalCount = count + num;
+		if (totalCount >= allocated) {
+			Reserve(count);
+		}
+
+		for (uint64 i = 0; i < num; i++) {
+			items[count++] = item[i];
+		}
+	}
+
 	/*Replaces item*/
 	inline void ReplaceAt(uint64 index, const T& item) {
 		THC_ASSERT(index < count);
