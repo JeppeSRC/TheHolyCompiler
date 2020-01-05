@@ -41,7 +41,7 @@ private:
 	uint64 allocated;
 
 public:
-	List() : count(0), items(nullptr), allocated(0) {}
+	List() : List(THC_PREALLOC_COUNT) {}
 
 	List(uint64 reserve) : count(0), allocated(reserve) {
 		items = new T[reserve];
@@ -209,7 +209,7 @@ public:
 	inline void Add(T(&item)[N], uint64 num = N) {
 		uint64 totalCount = count + num;
 		if (totalCount >= allocated) {
-			Reserve(count);
+			Reserve(totalCount + THC_PREALLOC_COUNT);
 		}
 
 		for (uint64 i = 0; i < num; i++) {
