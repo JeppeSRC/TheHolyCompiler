@@ -54,12 +54,14 @@ void Log::LogInternal(LogLevel level, const char* const message, va_list list) {
 				printf("\n");
 				break;
 			case LogLevel::Debug:
+				if (CompilerOptions::DebugMessages() == false) break;
 				SetConsoleTextAttribute(logHandle, THC_LOG_COLOR_DEBUG);
 				printf("DEBUG: ");
 				vprintf(message, list);
 				printf("\n");
 				break;
 			case LogLevel::Warning:
+				if (CompilerOptions::WarningMessages() == false) break;
 				SetConsoleTextAttribute(logHandle, THC_LOG_COLOR_WARNING);
 				printf("WARNING: ");
 				vprintf(message, list);
@@ -128,8 +130,6 @@ void Log::CompilerInfo(const char* const filename, uint64 line, uint64 col, cons
 }
 
 void Log::CompilerDebug(const char* const filename, uint64 line, uint64 col, const char* const message...) {
-	if (!CompilerOptions::DebugMessages()) return;
-
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Debug, filename, line, col, message, list);
@@ -137,8 +137,6 @@ void Log::CompilerDebug(const char* const filename, uint64 line, uint64 col, con
 }
 
 void Log::CompilerWarning(const char* const filename, uint64 line, uint64 col, const char* const message...) {
-	if (!CompilerOptions::WarningMessages()) return;
-	
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Warning, filename, line, col, message, list);
@@ -164,8 +162,6 @@ void Log::CompilerInfo(const Line& line, uint64 col, const char* const message..
 }
 
 void Log::CompilerDebug(const Line& line, uint64 col, const char* const message...) {
-	if (!CompilerOptions::DebugMessages()) return;
-
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Debug, line.sourceFile.str, line.lineNumber, col, message, list);
@@ -173,8 +169,6 @@ void Log::CompilerDebug(const Line& line, uint64 col, const char* const message.
 }
 
 void Log::CompilerWarning(const Line& line, uint64 col, const char* const message...) {
-	if (!CompilerOptions::WarningMessages()) return;
-
 	va_list list;
 	va_start(list, message);
 	CompilerLog(LogLevel::Warning, line.sourceFile.str, line.lineNumber, col, message, list);
