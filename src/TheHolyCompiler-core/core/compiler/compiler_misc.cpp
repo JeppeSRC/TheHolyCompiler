@@ -813,6 +813,8 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 
 	var->variableId = opVar->id;
 
+	debugInstructions.Add(new InstName(opVar->id, name.str));
+
 	types.Add(opVar);
 	globalVariables.Add(var);
 
