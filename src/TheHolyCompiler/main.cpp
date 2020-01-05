@@ -11,6 +11,7 @@ using namespace parsing;
 using namespace preprocessor;
 using namespace compiler;
 
+#if 0
 
 int main() {
 	Log::SetOutputHandle(GetStdHandle(STD_OUTPUT_HANDLE));
@@ -34,3 +35,22 @@ int main() {
 
 	return 0;
 }
+
+#else 
+
+int main(int argc, char** argv) {
+	Log::SetOutputHandle(GetStdHandle(STD_OUTPUT_HANDLE));
+
+	CompilerOptions::ParseOptions(argc, argv);
+	return 0;
+	Compiler::Run(CompilerOptions::InputFile(), CompilerOptions::PredefinedDefines(), CompilerOptions::IncludeDirectories(), CompilerOptions::OutputFile());
+
+	/*String s = Line::ToString(PreProcessor::Run(path+"/test.thsl", defines, includes));
+
+	printf("%s\n", s.str);*/
+
+	return 0;
+}
+
+
+#endif
