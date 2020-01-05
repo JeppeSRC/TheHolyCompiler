@@ -3,6 +3,7 @@
 #elif defined(DADDY)
 #message "Daddy Works, defining DANK to Bruh"
 #define DANK "Bruh"
+#define CONSTANT 1.0
 #else
 #error "Y'all suck"
 #endif
@@ -30,7 +31,7 @@ void main() {
     bool tmp = false;
 
     vec3 v1;
-    vec3 v2 = vec3(1.0, 1.0, 1.0);
+    vec3 v2 = vec3(CONSTANT, 0, CONSTANT);
 
     float res = dot(v1, v2);
     Dank d;
