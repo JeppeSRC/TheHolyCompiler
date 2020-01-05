@@ -1173,16 +1173,16 @@ Compiler::Compiler(const String& code, const String& filename, const List<String
 
 }
 
-bool Compiler::Run(const String& code, const String& filename, const List<String>& defines, const List<String>& includes) {
+bool Compiler::Run(const String& code, const String& filename, const List<String>& defines, const List<String>& includes, const String& outFile) {
 	Compiler c(code, filename, defines, includes);
 
 	bool res = c.Process();
 
-	return res;
+	return false;
 }
 
-bool Compiler::Run(const String& filename, const List<String>& defines, const List<String>& includes) {
-	return Run(Utils::ReadFile(filename), filename, defines, includes);
+bool Compiler::Run(const String& filename, const List<String>& defines, const List<String>& includes, const String& outFile) {
+	return Run(Utils::ReadFile(filename), filename, defines, includes, outFile);
 }
 
 }
