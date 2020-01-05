@@ -1,5 +1,6 @@
 #include <core/preprocessor/preprocessor.h>
 #include <core/compiler/compiler.h>
+#include <core/visualizer/visulizer.h>
 #include <core/parsing/line.h>
 #include <util/log.h>
 #include <Windows.h>
@@ -10,6 +11,7 @@ using namespace utils;
 using namespace parsing;
 using namespace preprocessor;
 using namespace compiler;
+using namespace visualizer;
 
 #if 0
 
@@ -39,6 +41,8 @@ int main() {
 #else 
 
 int main(int argc, char** argv) {
+	Visualizer::VisualizeSPIRV("test.bin");
+	return 0;
 	Log::SetOutputHandle(GetStdHandle(STD_OUTPUT_HANDLE));
 
 	CompilerOptions::ParseOptions(argc, argv);
