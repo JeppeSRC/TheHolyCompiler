@@ -26,7 +26,7 @@ int main() {
 
 	includes.Add(path);
 
-	Compiler::Run(path + "/test.thsl", defines, includes);
+	Compiler::Run(path + "/test.thsl", defines, includes, "out.bin");
 
 	/*String s = Line::ToString(PreProcessor::Run(path+"/test.thsl", defines, includes));
 
