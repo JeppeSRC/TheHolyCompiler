@@ -42,7 +42,7 @@ bool CompilerOptions::fragmentShader = false;
 List<String> CompilerOptions::includeDirectories;
 List<String> CompilerOptions::defines;
 
-void CompilerOptions::ParseOptions(const String& args) {
+void CompilerOptions::ParseOptions(const List<String>& args) {
 
 }
 

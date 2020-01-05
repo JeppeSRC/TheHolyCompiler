@@ -44,7 +44,7 @@ private:
 	static utils::List<utils::String> defines;
 
 public:
-	static void ParseOptions(const utils::String& args);
+	static void ParseOptions(const utils::List<utils::String>& args);
 
 	inline static bool WarningMessages() { return warningsMessages; }
 	inline static bool DebugMessages() { return debugMessages; }
