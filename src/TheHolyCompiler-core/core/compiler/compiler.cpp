@@ -1169,8 +1169,86 @@ bool Compiler::Process() {
 	return false;
 }
 
-bool Compiler::GenerateFile() {
+bool Compiler::GenerateFile(const String& filename) {
+	List<InstBase*> capabilities;
 
+	capabilities.Add(new InstCapability(THC_SPIRV_CAPABILITY_SHADER)); // Currently shader is the only supported capability
+	capabilities.Add(new InstMemoryModel(THC_SPIRV_ADDRESSING_MODEL_LOGICAL, THC_SPIRV_MEMORY_MODEL_GLSL450));
+
+	List<ID*> ids;
+
+	auto findIds = [&](VariableScope scope) {
+		for (uint64 i = 0; i < globalVariables.GetCount(); i++) {
+			Variable* v = globalVariables[i];
+
+			if (v->scope == scope) {
+				ids.Add(v->variableId);
+			}
+		}
+	};
+
+	findIds(VariableScope::Out);
+	findIds(VariableScope::In);
+
+	uint32 executionMode = CompilerOptions::VertexShader() ? THC_SPIRV_EXECUTION_MODEL_VERTEX : CompilerOptions::FragmentShader() ? THC_SPIRV_EXECUTION_MODEL_FRAGMENT : ~0;
+	
+	List<FunctionDeclaration*> main = GetFunctionDeclarations("main");
+
+	if (main.GetCount() == 0) {
+		Log::Error("No main function defined!");
+	} else if (main.GetCount() > 1) {
+		Log::Error("Multiple main functions defined!");
+	}
+
+	FunctionDeclaration* decl = main[0];
+
+	if (!decl->defined) Log::Error("Main function not defined!");
+
+	capabilities.Add(new InstEntryPoint(executionMode, decl->id, "main", (uint32)ids.GetCount(), ids.GetData()));
+	capabilities.Add(new InstExecutionMode(decl->id, THC_SPIRV_EXECUTION_MODE_ORIGIN_LOWER_LEFT, 0, nullptr));
+
+	FILE* file = fopen(filename.str, "wb");
+
+	if (file == nullptr) {
+		Log::Error("Failed to open file \"%s\"", filename.str);
+		return false;
+	}
+
+	struct Header {
+		uint32 magic = 0x07230203;
+		uint32 version = 0x00010200;
+		uint32 gen = 0xDEADBEEF;
+		uint32 bound = IDManager::GetCount();
+		uint32 schema = 0;
+	} header;
+
+	fwrite(&header, sizeof(Header), 1, file);
+
+	List<uint32> code;
+
+	auto writeCode = [&code, &file](List<InstBase*>& list) {
+		uint32 tmp[128];
+
+		for (uint64 i = 0; i < list.GetCount(); i++) {
+			InstBase* inst = list[i];
+
+			inst->GetInstWords(tmp);
+
+			code.Add(tmp, inst->wordCount);
+		}
+
+		fwrite(code.GetData(), code.GetSize(), 1, file);
+	};
+
+	writeCode(capabilities);
+	writeCode(debugInstructions);
+	writeCode(annotationIstructions);
+	writeCode(types);
+	writeCode(instructions);
+
+	fclose(file);
+
+	return true;
 }
 
 Compiler::Compiler(const String& code, const String& filename, const List<String>& defines, const List<String>& includes) : code(code), filename(filename), defines(defines), includes(includes) {
@@ -1182,7 +1260,7 @@ bool Compiler::Run(const String& code, const String& filename, const List<String
 
 	bool res = c.Process();
 
-	return false;
+	return c.GenerateFile(outFile);
 }
 
 bool Compiler::Run(const String& filename, const List<String>& defines, const List<String>& includes, const String& outFile) {

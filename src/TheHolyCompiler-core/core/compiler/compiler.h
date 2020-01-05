@@ -343,7 +343,7 @@ private: //Misc
 
 public:
 	bool Process();
-	bool GenerateFile();
+	bool GenerateFile(const utils::String& filename);
 
 	Compiler(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes);
 	static bool Run(const utils::String& code, const utils::String& filename, const utils::List<utils::String>& defines, const utils::List<utils::String>& includes, const utils::String& outFile);
