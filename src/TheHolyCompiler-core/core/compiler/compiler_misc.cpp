@@ -835,6 +835,8 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
 
 	var->variableId = opVar->id;
+
+	debugInstructions.Add(new InstName(opVar->id, name.str));
 	
 	localVariables->AddVariable(var, opVar);
 
