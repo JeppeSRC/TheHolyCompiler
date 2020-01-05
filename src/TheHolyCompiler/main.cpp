@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
 	Log::SetOutputHandle(GetStdHandle(STD_OUTPUT_HANDLE));
 
 	CompilerOptions::ParseOptions(argc, argv);
-	return 0;
 	Compiler::Run(CompilerOptions::InputFile(), CompilerOptions::PredefinedDefines(), CompilerOptions::IncludeDirectories(), CompilerOptions::OutputFile());
 
 	/*String s = Line::ToString(PreProcessor::Run(path+"/test.thsl", defines, includes));
