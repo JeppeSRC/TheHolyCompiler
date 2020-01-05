@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #include "compiler.h"
+#include <util/log.h>
 
 namespace thc {
 namespace core {
@@ -33,7 +34,8 @@ using namespace utils;
 bool CompilerOptions::warningsMessages = true;
 bool CompilerOptions::debugMessages = false;
 bool CompilerOptions::debugInformation = false;
-bool CompilerOptions::stopOnError = true;
+bool CompilerOptions::ppOnly = false;
+bool CompilerOptions::stopOnError = false;
 bool CompilerOptions::fpPrecision64 = false;
 bool CompilerOptions::implicitConversions = true;
 bool CompilerOptions::vertexShader = false;
@@ -41,9 +43,63 @@ bool CompilerOptions::fragmentShader = false;
 
 List<String> CompilerOptions::includeDirectories;
 List<String> CompilerOptions::defines;
+String CompilerOptions::inputFile;
+String CompilerOptions::outputFile;
 
-void CompilerOptions::ParseOptions(const List<String>& args) {
+bool CompilerOptions::ParseOptions(uint32 argc, char** argv) {
+	List<String> args;
 
+	for (int i = 0; i < argc; i++) {
+		args.Add(String(argv[i]));
+	}
+
+	return ParseOptions(args);
+}
+
+bool CompilerOptions::ParseOptions(const List<String>& args) {
+	for (uint64 i = 1; i < args.GetCount(); i++) {
+		String arg = args[i];
+
+		if (arg == "-noW") warningsMessages = false;
+		else if (arg == "-soE") stopOnError = true;
+		else if (arg == "-eD") debugMessages = true;
+		else if (arg == "-eDI") debugInformation = true;
+		else if (arg == "-pp") ppOnly = true;
+		else if (arg == "-f64") fpPrecision64 = true;
+		else if (arg == "-moIMP") implicitConversions = false;
+		else if (arg == "-vertex") vertexShader = true;
+		else if (arg == "-fragment") fragmentShader = true;
+		else if (arg.StartsWith("-D=")) {
+			arg.Remove(0, 2);
+			defines.Add(arg.Split(","));
+		} else if (arg.StartsWith("-I=")) {
+			arg.Remove(0, 2);
+			includeDirectories.Add(arg.Split(","));
+		} else if (arg.StartsWith("-out=")) {
+			arg.Remove(0, 4);
+			
+			if (outputFile.length != 0) {
+				Log::Error("Output file already specified");
+				return false;
+			}
+
+			outputFile = arg;
+		} else {
+			if (inputFile.length != 0) {
+				Log::Error("Input file already specified");
+				return false;
+			}
+
+			inputFile = arg;
+		}
+	}
+
+	if (vertexShader == fragmentShader) {
+		Log::Error("Only one of -fragment or -vertex must be specified");
+		return false;
+	}
+
+	return true;
 }
 
 }

@@ -34,6 +34,7 @@ private:
 	static bool warningsMessages;
 	static bool debugMessages;
 	static bool debugInformation;
+	static bool ppOnly;
 	static bool stopOnError;
 	static bool fpPrecision64;
 	static bool implicitConversions;
@@ -42,9 +43,12 @@ private:
 
 	static utils::List<utils::String> includeDirectories;
 	static utils::List<utils::String> defines;
+	static utils::String inputFile;
+	static utils::String outputFile;
 
 public:
-	static void ParseOptions(const utils::List<utils::String>& args);
+	static bool ParseOptions(uint32 argc, char** argv);
+	static bool ParseOptions(const utils::List<utils::String>& args);
 
 	inline static bool WarningMessages() { return warningsMessages; }
 	inline static bool DebugMessages() { return debugMessages; }
@@ -58,6 +62,8 @@ public:
 
 	inline static const utils::List<utils::String>& IncludeDirectories() { return includeDirectories; }
 	inline static const utils::List<utils::String>& PredefinedDefines() { return defines; }
+	inline static const utils::String& InputFile() { return inputFile; }
+	inline static const utils::String& OutputFile() { return outputFile; }
 };
 
 }
