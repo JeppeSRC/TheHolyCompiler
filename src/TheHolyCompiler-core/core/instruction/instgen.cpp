@@ -153,7 +153,7 @@ void InstGroupDecorate::GetInstWords(uint32* words) const {
 
 void InstExtension::GetInstWords(uint32* words) const {
 	uint64 len = strlen(extension) + 1;
-	wordCount += (uint32)len;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 	InstBase::GetInstWords(words);
 
 	memcpy(words+1, extension, len);
@@ -161,7 +161,7 @@ void InstExtension::GetInstWords(uint32* words) const {
 
 void InstExtInstImport::GetInstWords(uint32* words) const {
 	uint64 len = strlen(extensionSet) + 1;
-	wordCount += (uint32)len;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0));
 	InstBase::GetInstWords(words);
 
 	words[1] = id->id;
@@ -178,7 +178,7 @@ void InstMemoryModel::GetInstWords(uint32* words) const {
 
 void InstEntryPoint::GetInstWords(uint32* words) const {
 	uint64 len = strlen(entryPointName) + 1;
-	wordCount += (uint32)len + inoutVariableCount;
+	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0)) + inoutVariableCount;
 	InstBase::GetInstWords(words);
 
 	words[1] = executionModel;
