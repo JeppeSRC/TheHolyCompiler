@@ -331,11 +331,6 @@ public:
 	uint32 valueCount;
 	uint32* values;
 
-	union {
-		uint32 u32;
-		float32 f32;
-	};
-
 	InstConstant(compiler::ID* resultTypeId, uint32 valueCount, void* values);
 	InstConstant(compiler::ID* resultTypeId, uint32 value);
 	InstConstant(compiler::ID* resultTypeId, float32 value);

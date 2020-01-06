@@ -95,11 +95,11 @@ InstConstantTrue::InstConstantTrue(compiler::ID* resultTypeId) : InstBase(THC_SP
 
 InstConstantFalse::InstConstantFalse(compiler::ID* resultTypeId) : InstBase(THC_SPIRV_OPCODE_OpConstantFalse, 3, "OpConstantFalse", true), resultTypeId(resultTypeId) {}
 
-InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 valueCount, void* values) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(valueCount), u32(0) { memcpy(this->values, values, valueCount << 2); }
+InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 valueCount, void* values) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(valueCount), values(new uint32[valueCount]) { memcpy(this->values, values, valueCount << 2); }
 
-InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), u32(value) { }
+InstConstant::InstConstant(compiler::ID* resultTypeId, uint32 value) : InstConstant(resultTypeId, 1, &value) {}
 
-InstConstant::InstConstant(compiler::ID* resultTypeId, float32 value) : InstBase(THC_SPIRV_OPCODE_OpConstant, 3, "OpConstant", true), resultTypeId(resultTypeId), valueCount(0), f32(value) {}
+InstConstant::InstConstant(compiler::ID* resultTypeId, float32 value) : InstConstant(resultTypeId, 1, &value) {}
 
 InstConstantComposite::InstConstantComposite(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds) : InstBase(THC_SPIRV_OPCODE_OpConstantComposite, 3, "OpConstantComposite", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(constituentId, constituentIds, constituentCount * sizeof(void*)); }
 
@@ -332,8 +332,6 @@ bool InstConstant::operator==(const InstBase* const inst) const {
 		for (uint32 i = 0; i < valueCount; i++) {
 			if (values[i] != c->values[i]) return false;
 		}
-
-		if (u32 != c->u32) return false;
 
 		return true;
 	}

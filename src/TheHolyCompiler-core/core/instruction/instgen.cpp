@@ -232,11 +232,7 @@ void InstConstant::GetInstWords(uint32* words) const {
 	words[1] = resultTypeId->id;
 	words[2] = id->id;
 
-	if (valueCount > 0) {
-		memcpy(words+3, values, valueCount << 2);
-	} else {
-		words[3] = u32;
-	}
+	memcpy(words+3, values, valueCount << 2);
 }
 
 void InstConstantComposite::GetInstWords(uint32* words) const {
