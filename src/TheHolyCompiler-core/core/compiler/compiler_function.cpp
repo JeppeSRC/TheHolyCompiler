@@ -200,13 +200,11 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	decl->id = func->id;
 
 	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
-		Variable* v = decl->parameters[i];
+		Parameter* v = decl->parameters[i];
 
 		InstFunctionParameter* pa = new InstFunctionParameter(v->type->typeId);
 
 		v->variableId = pa->id;
-
-
 
 		decl->declInstructions.Add(pa);
 	}

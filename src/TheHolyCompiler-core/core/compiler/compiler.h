@@ -239,7 +239,7 @@ private: //Function stuff
 		utils::String name;
 
 		TypeBase* returnType;
-		utils::List<Variable*> parameters;
+		utils::List<Parameter*> parameters;
 
 		bool defined;
 
