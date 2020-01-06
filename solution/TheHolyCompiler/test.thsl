@@ -39,7 +39,7 @@ void main() {
     vec2 a = d.o[0].shit.xy;
 
     if (tmp) a.x = d.o[0].someOtherName[5];
-    else if (tmp) {
+    else {
         a.y = 1.23;
     }
 
