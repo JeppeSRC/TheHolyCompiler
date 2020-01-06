@@ -1253,6 +1253,8 @@ bool Compiler::GenerateFile(const String& filename) {
 		}
 
 		fwrite(code.GetData(), code.GetSize(), 1, file);
+
+		code.Clear();
 	};
 
 	writeCode(capabilities);
