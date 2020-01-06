@@ -33,9 +33,9 @@ using namespace instruction;
 using namespace utils;
 using namespace parsing;
 
-Compiler::VariableStack::VariableStack(Compiler* compiler, List<Variable*>& parameters) : compiler(compiler) {
+Compiler::VariableStack::VariableStack(Compiler* compiler, List<Parameter*>& parameters) : compiler(compiler) {
 	PushStack();
-	variables.Add(parameters);
+	parameters.Add(parameters);
 	//PushStack(); Test
 }
 
@@ -65,26 +65,24 @@ bool Compiler::VariableStack::CheckName(const String& name, const Token& token) 
 		}
 	}
 
-	if (!compiler->CheckGlobalName(name)) {
-		Log::CompilerWarning(token, "Overriding global variable \"%s\"", name.str);
-	}
-
-	uint64 endOfParam = offsets[1];
-
-	for (uint64 i = 0; i < endOfParam; i++) {
-		Variable* var = variables[i];
-		if (var->name == name) {
-			Log::CompilerWarning(token, "Overriding parameter \"%s\"", name.str);
-			res = false;
-		}
-	}
-	int64 i = stackOffset - 1;
-	for (; i >= (int64)endOfParam; i--) {
+	for (int64 i = stackOffset - 1; i >= (int64)0; i--) {
 		Variable* var = variables[i];
 		if (var->name == name) {
 			Log::CompilerWarning(token, "Overriding local variable \"%s\"", name.str);
 			res = false;
 		}
+	}
+
+	for (uint64 i = 0; i < parameters.GetCount(); i++) {
+		Parameter* var = parameters[i];
+		if (var->name == name) {
+			Log::CompilerWarning(token, "Overriding parameter \"%s\"", name.str);
+			res = false;
+		}
+	}
+
+	if (!compiler->CheckGlobalName(name)) {
+		Log::CompilerWarning(token, "Overriding global variable \"%s\"", name.str);
 	}
 
 	return res;

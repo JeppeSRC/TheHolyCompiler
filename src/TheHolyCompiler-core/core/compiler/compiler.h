@@ -211,11 +211,12 @@ private:
 	public:
 		utils::List<instruction::InstBase*> variableInstructions;
 		utils::List<Variable*> variables;
+		utils::List<Parameter*> parameters;
 		utils::List<uint64> offsets;
 
 		Compiler* compiler;
 	public:
-		VariableStack(Compiler* compiler, utils::List<Variable*>& parameters);
+		VariableStack(Compiler* compiler, utils::List<Parameter*>& parameters);
 		~VariableStack();
 
 		uint64 PushStack();
