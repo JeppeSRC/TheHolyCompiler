@@ -783,7 +783,7 @@ Compiler::TypePointer* Compiler::CreateTypePointer(const TypeBase* const type, V
 	p->baseType = (TypeBase*)type;
 	p->storageClass = ScopeToStorageClass(scope);
 	p->typeId = nullptr;
-	
+
 	CheckTypeExist((TypeBase**)&p);
 
 	if (p->typeId != nullptr) {
@@ -828,7 +828,7 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, const String& name, VariableStack* localVariables) {
 	Variable* var = new Variable;
 
-	var->scope = VariableScope::None;
+	var->scope = VariableScope::Function;
 	var->name = name;
 	var->type = (TypeBase*)type;
 
