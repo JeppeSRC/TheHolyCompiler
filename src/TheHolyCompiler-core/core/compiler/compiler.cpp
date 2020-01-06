@@ -1262,7 +1262,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	};
 
 	writeCode(capabilities);
-	//if (CompilerOptions::DebugInformation()) writeCode(debugInstructions);
+	if (CompilerOptions::DebugInformation()) writeCode(debugInstructions);
 	writeCode(annotationIstructions);
 	writeCode(types);
 	writeCode(instructions);
