@@ -811,7 +811,7 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 
 	TypePointer* pointer = CreateTypePointer(type, scope);
 
-	var->typePointerId = pointer->typeId;
+	var->typePointer = pointer;
 
 	InstVariable* opVar = new InstVariable(pointer->typeId, pointer->storageClass, 0);
 
@@ -834,7 +834,7 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	TypePointer* pointer = CreateTypePointer(type, VariableScope::Function);
 
-	var->typePointerId = pointer->typeId;
+	var->typePointer = pointer;
 
 	InstVariable* opVar = new InstVariable(pointer->typeId, pointer->storageClass, 0);
 

@@ -164,7 +164,7 @@ private: //Variable stuff
 		utils::String name;
 
 		TypeBase* type;
-		ID* typePointerId;
+		TypePointer* typePointer;
 		ID* variableId;
 
 		bool isConstant;

@@ -616,7 +616,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 			result->scope = var->scope;
 			result->name = n;
 			result->type = curr;
-			result->typePointerId = pointer->typeId;
+			result->typePointer = pointer;
 			result->variableId = access->id;
 			result->isConstant = var->isConstant;
 		} 
