@@ -466,7 +466,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	while (true) {
 		Variable* param = new Variable;
 
-		param->scope = VariableScope::None;
+		param->scope = VariableScope::Function;
 
 		const Token& token = tokens[start + offset++];
 
@@ -1241,7 +1241,9 @@ bool Compiler::GenerateFile(const String& filename) {
 
 	List<uint32> code;
 
-	auto writeCode = [&code, &file](List<InstBase*>& list) {
+	uint32 writtenInstructions = 0;
+
+	auto writeCode = [&writtenInstructions, &code, &file](List<InstBase*>& list) {
 		uint32 tmp[128];
 
 		for (uint64 i = 0; i < list.GetCount(); i++) {
@@ -1250,6 +1252,8 @@ bool Compiler::GenerateFile(const String& filename) {
 			inst->GetInstWords(tmp);
 
 			code.Add(tmp, inst->wordCount);
+
+			writtenInstructions++;
 		}
 
 		fwrite(code.GetData(), code.GetSize(), 1, file);
@@ -1258,7 +1262,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	};
 
 	writeCode(capabilities);
-	if (CompilerOptions::DebugInformation()) writeCode(debugInstructions);
+	//if (CompilerOptions::DebugInformation()) writeCode(debugInstructions);
 	writeCode(annotationIstructions);
 	writeCode(types);
 	writeCode(instructions);
