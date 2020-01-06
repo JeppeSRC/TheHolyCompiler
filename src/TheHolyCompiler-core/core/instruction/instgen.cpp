@@ -178,15 +178,17 @@ void InstMemoryModel::GetInstWords(uint32* words) const {
 
 void InstEntryPoint::GetInstWords(uint32* words) const {
 	uint64 len = strlen(entryPointName) + 1;
-	wordCount += (uint32)((len >> 2) + (len % 4 ? 1 : 0)) + inoutVariableCount;
+	uint32 len2 = (uint32)((len >> 2) + (len % 4 ? 1 : 0));
+	wordCount += len2 + inoutVariableCount;
 	InstBase::GetInstWords(words);
 
 	words[1] = executionModel;
 	words[2] = entryPointId->id;
 
+	memset(words + 3, 0, len2 * 4);
 	memcpy(words+3, entryPointName, len);
 	
-	uint32 offset = ((uint32)len >> 4) + ((uint32)len % 4 ? 1 : 0) + 3;
+	uint32 offset = len2 + 3;
 
 	for (uint32 i = 0; i < inoutVariableCount; i++) {
 		words[i+offset] = inoutVariableId[i]->id;
