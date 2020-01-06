@@ -813,7 +813,7 @@ Compiler::Variable* Compiler::CreateGlobalVariable(const TypeBase* const type, V
 
 	var->typePointerId = pointer->typeId;
 
-	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
+	InstVariable* opVar = new InstVariable(pointer->typeId, pointer->storageClass, 0);
 
 	var->variableId = opVar->id;
 
@@ -836,7 +836,7 @@ Compiler::Variable* Compiler::CreateLocalVariable(const TypeBase* const type, co
 
 	var->typePointerId = pointer->typeId;
 
-	InstVariable* opVar = new InstVariable(type->typeId, pointer->storageClass, 0);
+	InstVariable* opVar = new InstVariable(pointer->typeId, pointer->storageClass, 0);
 
 	var->variableId = opVar->id;
 
