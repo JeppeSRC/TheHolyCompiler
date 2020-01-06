@@ -1116,9 +1116,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
 			}
 
-			//This has to be done before the ImplicitCast
-			if (e.operatorType == TokenType::OperatorAssign) instructions.RemoveAt(instructions.GetCount() - 1); //Variable is loaded in GetExpressionOperandId but isn't needed when only assigning a value.
-
 			TypePrimitive* tmpType = lType;
 			ID* tmpId = lOperandId;
 
