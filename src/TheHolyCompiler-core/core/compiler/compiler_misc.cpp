@@ -1747,35 +1747,6 @@ ID* Compiler::GetSwizzledVector(Variable* v, TypePrimitive** type, ID* load) {
 	return swiz->id;
 }
 
-void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
-	if (decl->declInstructions.GetCount() != 0) {
-		return;
-	}
-
-	decl->defined = false;
-
-	CreateFunctionType(decl);
-
-	InstFunction* func = new InstFunction(decl->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, decl->typeId);
-	decl->declInstructions.Add(func);
-
-	decl->id = func->id;
-
-	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
-		Variable* v = decl->parameters[i];
-
-		InstFunctionParameter* pa = new InstFunctionParameter(v->type->typeId);
-
-		v->variableId = pa->id;
-
-
-
-		decl->declInstructions.Add(pa);
-	}
-
-	functionDeclarations.Add(decl);
-}
-
 }
 }
 }
