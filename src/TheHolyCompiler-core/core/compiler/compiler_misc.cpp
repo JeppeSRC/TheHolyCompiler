@@ -1597,6 +1597,8 @@ void Compiler::ProcessName(Token& t) const {
 		{"continue", TokenType::ControlFlowContinue, 0, 0, 0, 0},
 		{"return",   TokenType::ControlFlowReturn, 0, 0, 0, 0},
 
+		{"const",    TokenType::ModifierConst, 0, 0, 0, 0},
+
 		{"struct",   TokenType::DataStruct, 0, 0, 0, 0},
 		{"layout",   TokenType::DataLayout, 0, 0, 0, 0},
 		{"in",       TokenType::DataIn, 0, 0, 0, 0},
@@ -1765,6 +1767,8 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 		InstFunctionParameter* pa = new InstFunctionParameter(v->type->typeId);
 
 		v->variableId = pa->id;
+
+
 
 		decl->declInstructions.Add(pa);
 	}
