@@ -432,7 +432,7 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 
 	for (uint64 i = 0; i < var->members.GetCount(); i++) {
 		const StructMember& m = var->members[i];
-		debugInstructions.Add(new InstMemberName(st->id, i, m.name.str));
+		debugInstructions.Add(new InstMemberName(st->id, (uint32)i, m.name.str));
 		annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
 		
 		memberOffset += m.type->GetSize();

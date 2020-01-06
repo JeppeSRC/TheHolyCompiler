@@ -179,7 +179,7 @@ void PreProcessor::ProcessIf(uint64& index, bool ifdef) {
 	
 	if (res) {
 		if (elifIndex != ~0) {
-			for (uint64 i = (int64)endifIndex; i >= (int64)elifIndex; i--) {
+			for (uint64 i = (int64)endifIndex; (int64)i >= (int64)elifIndex; i--) {
 				lines.RemoveAt(i);
 			}
 		} else if (elseIndex != ~0) {

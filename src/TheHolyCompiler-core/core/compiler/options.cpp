@@ -49,7 +49,7 @@ String CompilerOptions::outputFile;
 bool CompilerOptions::ParseOptions(uint32 argc, char** argv) {
 	List<String> args;
 
-	for (int i = 0; i < argc; i++) {
+	for (uint32 i = 0; i < argc; i++) {
 		args.Add(String(argv[i]));
 	}
 
