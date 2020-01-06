@@ -76,7 +76,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	}
 
 	while (true) {
-		Variable* param = new Variable;
+		Parameter* param = new Parameter;
 
 		param->scope = VariableScope::Function;
 
@@ -99,9 +99,11 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (ref.type == TokenType::ModifierReference) {
 			param->type = CreateTypePointer(type, VariableScope::Function);
+			param->isReference = true;
 		} else {
 			offset--;
 			param->type = type;
+			param->isReference = false;
 		}
 
 		const Token& name = tokens[start + offset++];
