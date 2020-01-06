@@ -483,6 +483,15 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(tmp, "Unexpected symbol \"%s\" expected valid type", tmp.string.str);
 		}
 
+		const Token& ref = tokens[start + offset++];
+
+		if (ref.type == TokenType::ModifierReference) {
+			param->type = CreateTypePointer(type, VariableScope::Function);
+		} else {
+			offset--;
+			param->type = type;
+		}
+
 		const Token& name = tokens[start + offset++];
 
 		if (name.type == TokenType::Name) {
@@ -492,15 +501,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			}
 		} else {
 			offset--;
-		}
-
-		const Token& ref = tokens[start + offset++];
-
-		if (ref.type == TokenType::ModifierReference) {
-			param->type = CreateTypePointer(type, VariableScope::Function);
-		} else {
-			offset--;
-			param->type = type;
+			param->name = "";
 		}
 
 		decl->parameters.Add(param);
@@ -538,7 +539,9 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			decl = functionDeclarations[index];
 
 			for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
-				decl->parameters[i]->name = old->parameters[i]->name;
+				if ((decl->parameters[i]->name = old->parameters[i]->name) == "") {
+					Log::CompilerError(name, "Parameter %u needs a name!", i);
+				}
 			}
 		}
 
@@ -549,8 +552,6 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		}
 
 		VariableStack localVariables(this, decl->parameters);
-
-
 
 		instructions.Add(new InstLabel);
 
