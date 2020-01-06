@@ -175,6 +175,10 @@ private: //Variable stuff
 		} swizzleData;
 	};
 
+	struct Parameter : public Variable {
+		bool isReference;
+	};
+
 	struct ResultVariable {
 		TypeBase* type;
 		ID* id;
