@@ -36,7 +36,7 @@ using namespace parsing;
 Compiler::VariableStack::VariableStack(Compiler* compiler, List<Variable*>& parameters) : compiler(compiler) {
 	PushStack();
 	variables.Add(parameters);
-	PushStack();
+	//PushStack(); Test
 }
 
 Compiler::VariableStack::~VariableStack() {

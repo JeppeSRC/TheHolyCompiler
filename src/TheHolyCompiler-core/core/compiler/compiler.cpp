@@ -560,6 +560,8 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		ParseBody(decl, tokens, start + offset, &localVariables);
 
+		instructions.InsertList(index, localVariables.variableInstructions); //Add all OpVariable instructions at the beginning of the first block
+
 		instructions.Add(new InstFunctionEnd);
 		
 		decl->defined = true;
@@ -572,6 +574,8 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, uint64 start, VariableStack* localVariables) {
 	uint64 closeBracket = ~0;
+
+	localVariables->PushStack(); //New stack frame
 
 	for (uint64 i = start; i < tokens.GetCount(); i++) {
 		const Token& token = tokens[i];
@@ -711,6 +715,8 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 			Log::CompilerError(token, "Unexpected symbol \"%s\"", token.string.str);
 		}
 	}
+
+	localVariables->PopStack();
 
 	tokens.Remove(start, closeBracket);
 }

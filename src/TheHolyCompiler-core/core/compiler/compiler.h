@@ -223,6 +223,8 @@ private:
 		void AddVariable(Variable* variable, instruction::InstBase* inst);
 		Variable* GetVariable(const utils::String& name);
 
+
+
 		uint64 GetSize() const;
 		uint64 GetStackSize(uint64 stack) const;
 		uint64 GetCurrentStackSize() const;
