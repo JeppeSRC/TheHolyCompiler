@@ -41,8 +41,6 @@ int main() {
 #else 
 
 int main(int argc, char** argv) {
-	Visualizer::VisualizeSPIRV("test.bin");
-	return 0;
 	Log::SetOutputHandle(GetStdHandle(STD_OUTPUT_HANDLE));
 
 	CompilerOptions::ParseOptions(argc, argv);
