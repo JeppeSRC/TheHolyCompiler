@@ -33,9 +33,9 @@ using namespace instruction;
 using namespace utils;
 using namespace parsing;
 
-Compiler::VariableStack::VariableStack(Compiler* compiler, List<Parameter*>& parameters) : compiler(compiler) {
+Compiler::VariableStack::VariableStack(Compiler* compiler, const List<Parameter*>& parameters) : compiler(compiler) {
 	PushStack();
-	parameters.Add(parameters);
+	this->parameters.Add(parameters);
 	//PushStack(); Test
 }
 
@@ -106,6 +106,11 @@ Compiler::Variable* Compiler::VariableStack::GetVariable(const String& name) {
 	for (int64 i = variables.GetCount() - 1; i >= 0; i--) {
 		Variable* var = variables[i];
 		if (var->name == name) return var;
+	}
+
+	for (uint64 i = 0; i < parameters.GetCount(); i++) {
+		Parameter* par = parameters[i];
+		if (par->name == name) return par;
 	}
 
 	return nullptr;

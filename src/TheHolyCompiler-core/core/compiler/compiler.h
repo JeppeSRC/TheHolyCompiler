@@ -216,7 +216,7 @@ private:
 
 		Compiler* compiler;
 	public:
-		VariableStack(Compiler* compiler, utils::List<Parameter*>& parameters);
+		VariableStack(Compiler* compiler, const utils::List<Parameter*>& parameters);
 		~VariableStack();
 
 		uint64 PushStack();
@@ -227,8 +227,6 @@ private:
 
 		void AddVariable(Variable* variable, instruction::InstBase* inst);
 		Variable* GetVariable(const utils::String& name);
-
-
 
 		uint64 GetSize() const;
 		uint64 GetStackSize(uint64 stack) const;
