@@ -526,19 +526,13 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 	uint64 index = functionDeclarations.Find<FunctionDeclaration*>(decl, cmp);
 
-	decl->defined = false;
-
 	if (index == ~0) {
 		CreateFunctionDeclaration(decl);
 	} else if (bracket.type == TokenType::SemiColon) {
 		Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
-	}
-
-	instructions.Add(decl->declInstructions);
-
-	if (bracket.type == TokenType::SemiColon) {
-		instructions.Add(new InstFunctionEnd);
-	} else if (bracket.type == TokenType::CurlyBracketOpen) {
+	} 
+		
+	if (bracket.type == TokenType::CurlyBracketOpen) {
 		if (index != ~0)  {
 			FunctionDeclaration* old = decl;
 			decl = functionDeclarations[index];
@@ -548,11 +542,15 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 			}
 		}
 
+		instructions.Add(decl->declInstructions);
+
 		if (decl->defined) {
 			Log::CompilerError(tokens[start], "Redefinition");
 		}
 
 		VariableStack localVariables(this, decl->parameters);
+
+
 
 		instructions.Add(new InstLabel);
 
@@ -565,7 +563,7 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 		instructions.Add(new InstFunctionEnd);
 		
 		decl->defined = true;
-	} else {
+	} else if (bracket.type != TokenType::SemiColon) {
 		Log::CompilerError(bracket, "Unexpected symbol \"%s\" expected \";\" or \"{\"", bracket.string.str);
 	}
 
@@ -805,7 +803,8 @@ void Compiler::ParseElse(FunctionDeclaration* declaration, List<Token>& tokens, 
 		if (next.type == TokenType::ControlFlowIf) {
 			ParseIf(declaration, tokens, start, localVariables);
 		} else if (next.type == TokenType::CurlyBracketOpen) {
-			ParseBody(declaration, tokens, start + 1, localVariables);
+			tokens.RemoveAt(start);
+			ParseBody(declaration, tokens, start, localVariables);
 		} else {
 			ParseInfo inf;
 			inf.end = tokens.Find<TokenType>(TokenType::SemiColon, CmpFunc, start);
