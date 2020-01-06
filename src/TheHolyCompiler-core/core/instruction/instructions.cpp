@@ -71,7 +71,7 @@ InstLine::InstLine(compiler::ID* fileNameId, uint32 line, uint32 column) : InstB
 
 InstNoLine::InstNoLine() : InstBase(THC_SPIRV_OPCODE_OpNoLine, 1, "OpNoLine") { }
 
-InstDecorate::InstDecorate(compiler::ID* targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpDecorate, 3, "OpDecorate"), targetId(targetId), decoration(decoration), numDecorationLiterals() { memcpy(this->literals, literals, numDecorationLiterals << 2); }
+InstDecorate::InstDecorate(compiler::ID* targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpDecorate, 3, "OpDecorate"), targetId(targetId), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
 
 InstMemberDecorate::InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpMemberDecorate, 4, "OpMemberDecorate"), structId(structId), member(member), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
 
