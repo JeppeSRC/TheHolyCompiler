@@ -609,7 +609,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 		if (accessIds.GetCount() != 0) {
 			TypePointer* pointer = CreateTypePointer(curr, var->scope);
 
-			InstAccessChain* access = new InstAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
+			InstInBoundsAccessChain* access = new InstInBoundsAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
 
 			instructions.Add(access);
 			
