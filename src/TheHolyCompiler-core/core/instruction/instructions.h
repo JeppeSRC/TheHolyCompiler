@@ -181,7 +181,7 @@ public:
 	uint32 numDecorationLiterals;
 	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstDecorate(compiler::ID* targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
+	InstDecorate(compiler::ID* targetId, uint32 decoration, const uint32* literals, uint32 numDecorationLiterals);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -194,7 +194,7 @@ public:
 	uint32 numDecorationLiterals;
 	uint32 literals[THC_LIMIT_DECORATIONS_PER_TARGET];
 
-	InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals);
+	InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, const uint32* literals, uint32 numDecorationLiterals);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -283,7 +283,7 @@ public:
 	uint32 extraOperandCount;
 	uint32 extraOperand[256];
 
-	InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands);
+	InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, const uint32* extraOperands);
 
 	void GetInstWords(uint32* words) const;
 };
@@ -624,7 +624,7 @@ public:
 	uint32 componentCount;
 	uint32 component[4];
 
-	InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, uint32* components);
+	InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, const uint32* components);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -647,7 +647,7 @@ public:
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, uint32* indices);
+	InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, const uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };
@@ -660,7 +660,7 @@ public:
 	uint32 indexCount;
 	uint32 index[THC_LIMIT_STRUCT_NESTING_DEPTH];
 
-	InstCompositeInsert(compiler::ID* resultTypeId, compiler::ID* objectId, compiler::ID* compositeId, uint32 indexCount, uint32* indices);
+	InstCompositeInsert(compiler::ID* resultTypeId, compiler::ID* objectId, compiler::ID* compositeId, uint32 indexCount, const uint32* indices);
 
 	void GetInstWords(uint32* words) const override;
 };

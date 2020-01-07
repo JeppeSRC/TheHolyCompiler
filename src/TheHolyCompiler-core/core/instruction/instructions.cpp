@@ -71,9 +71,9 @@ InstLine::InstLine(compiler::ID* fileNameId, uint32 line, uint32 column) : InstB
 
 InstNoLine::InstNoLine() : InstBase(THC_SPIRV_OPCODE_OpNoLine, 1, "OpNoLine") { }
 
-InstDecorate::InstDecorate(compiler::ID* targetId, uint32 decoration, uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpDecorate, 3, "OpDecorate"), targetId(targetId), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
+InstDecorate::InstDecorate(compiler::ID* targetId, uint32 decoration, const uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpDecorate, 3, "OpDecorate"), targetId(targetId), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
 
-InstMemberDecorate::InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpMemberDecorate, 4, "OpMemberDecorate"), structId(structId), member(member), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
+InstMemberDecorate::InstMemberDecorate(compiler::ID* structId, uint32 member, uint32 decoration, const uint32* literals, uint32 numDecorationLiterals) : InstBase(THC_SPIRV_OPCODE_OpMemberDecorate, 4, "OpMemberDecorate"), structId(structId), member(member), decoration(decoration), numDecorationLiterals(numDecorationLiterals) { memcpy(this->literals, literals, numDecorationLiterals << 2); }
 
 InstDecorationGroup::InstDecorationGroup() : InstBase(THC_SPIRV_OPCODE_OpDecorateGroup, 2, "OpDecorationGroup", true) { }
 
@@ -87,7 +87,7 @@ InstMemoryModel::InstMemoryModel(uint32 addressingModel, uint32 memoryModel) : I
 
 InstEntryPoint::InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, compiler::ID** inoutVariableIds) : InstBase(THC_SPIRV_OPCODE_OpEntryPoint, 3, "OpEntryPoint"), executionModel(executionModel), entryPointId(entryPointId), inoutVariableCount(inoutVariableCount){ Utils::CopyString(this->entryPointName, entryPointName); memcpy(inoutVariableId, inoutVariableIds, inoutVariableCount * sizeof(void*)); }
 
-InstExecutionMode::InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, uint32* extraOperands) : InstBase(THC_SPIRV_OPCODE_OpExecutionMode, 3, "OpExecutionMode"), entryPointId(entryPointId), mode(mode), extraOperandCount(extraOperandCount) { memcpy(this->extraOperand, extraOperand, extraOperandCount << 2); }
+InstExecutionMode::InstExecutionMode(compiler::ID* entryPointId, uint32 mode, uint32 extraOperandCount, const uint32* extraOperands) : InstBase(THC_SPIRV_OPCODE_OpExecutionMode, 3, "OpExecutionMode"), entryPointId(entryPointId), mode(mode), extraOperandCount(extraOperandCount) { memcpy(this->extraOperand, extraOperand, extraOperandCount << 2); }
 
 InstCapability::InstCapability(uint32 capability) : InstBase(THC_SPIRV_OPCODE_OpCapability, 2, "OpCapability"), capability(capability) { }
 
@@ -147,13 +147,13 @@ InstVectorExtractDynamic::InstVectorExtractDynamic(compiler::ID* resultTypeId, c
 
 InstVectorInsertDynamic::InstVectorInsertDynamic(compiler::ID* resultTypeId, compiler::ID* vectorId, compiler::ID* componentId, compiler::ID* indexId) : InstBase(THC_SPIRV_OPCODE_OpVectorInsertDynamic, 6, "OpVectorInsertDynamic", true), resultTypeId(resultTypeId), vectorId(vectorId), componentId(componentId), indexId(indexId) { }
 
-InstVectorShuffle::InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, uint32* components) : InstBase(THC_SPIRV_OPCODE_OpVectorShuffle, 5, "OpVectorShuffle", true), resultTypeId(resultTypeId), vector1Id(vector1Id), vector2Id(vector2Id), componentCount(componentCount) { memcpy(this->component, components, componentCount << 2); }
+InstVectorShuffle::InstVectorShuffle(compiler::ID* resultTypeId, compiler::ID* vector1Id, compiler::ID* vector2Id, uint32 componentCount, const uint32* components) : InstBase(THC_SPIRV_OPCODE_OpVectorShuffle, 5, "OpVectorShuffle", true), resultTypeId(resultTypeId), vector1Id(vector1Id), vector2Id(vector2Id), componentCount(componentCount) { memcpy(this->component, components, componentCount << 2); }
 
 InstCompositeConstruct::InstCompositeConstruct(compiler::ID* resultTypeId, uint32 constituentCount, compiler::ID** constituentIds) : InstBase(THC_SPIRV_OPCODE_OpCompositeConstruct, 3, "OpCompositeConstruct", true), resultTypeId(resultTypeId), constituentCount(constituentCount) { memcpy(constituentId, constituentIds, constituentCount * sizeof(void*)); }
 
-InstCompositeExtract::InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpCompositeExtract, 4, "OpCompositeExtract", true), resultTypeId(resultTypeId), compositeId(compositeId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
+InstCompositeExtract::InstCompositeExtract(compiler::ID* resultTypeId, compiler::ID* compositeId, uint32 indexCount, const uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpCompositeExtract, 4, "OpCompositeExtract", true), resultTypeId(resultTypeId), compositeId(compositeId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
 
-InstCompositeInsert::InstCompositeInsert(compiler::ID* resultTypeId, compiler::ID* objectId, compiler::ID* compositeId, uint32 indexCount, uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpCompositeInsert, 5, "OpCompositeInsert", true), resultTypeId(resultTypeId), objectId(objectId), compositeId(compositeId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
+InstCompositeInsert::InstCompositeInsert(compiler::ID* resultTypeId, compiler::ID* objectId, compiler::ID* compositeId, uint32 indexCount, const uint32* indices) : InstBase(THC_SPIRV_OPCODE_OpCompositeInsert, 5, "OpCompositeInsert", true), resultTypeId(resultTypeId), objectId(objectId), compositeId(compositeId), indexCount(indexCount) { memcpy(this->index, indices, indexCount << 2); }
 
 InstCopyObject::InstCopyObject(compiler::ID* resultTypeId, compiler::ID* operandId) : InstBase(THC_SPIRV_OPCODE_OpCopyObject, 4, "OpCopyObject", true), resultTypeId(resultTypeId), operandId(operandId) { }
 
