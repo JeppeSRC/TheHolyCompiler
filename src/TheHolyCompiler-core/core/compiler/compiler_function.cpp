@@ -313,10 +313,12 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 
 	ResultVariable res;
 	res.type = type;
-	res.isConstant = false;
+	res.isConstant = true;
 	res.isVariable = false;
 
 	InstBase* inst = nullptr;
+
+	List<ID*> ids;
 
 	if (type->type == Type::Vector) {
 		uint8 numComponents = 0;
@@ -329,15 +331,15 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 			}
 
 			numComponents += t->rows > 0 ? t->rows : 1;
+
+			if (parameters[i].isConstant == false) res.isConstant = false;
 		}
 
 		if (numComponents != type->rows) {
 			Log::CompilerError(tmp, "Total component count must be %llu is %u", type->rows, numComponents);
 		}
 
-		List<ID*> ids = Compiler::GetIDs(parameters);
-
-		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+		ids = Compiler::GetIDs(parameters);
 	} else if (type->type == Type::Matrix) {
 		if (parameters.GetCount() != type->columns) {
 			Log::CompilerError(tmp, "Argument count must be %llu is %u", parameters.GetCount(), type->columns);
@@ -349,16 +351,23 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 			if (t->componentType != type->componentType || t->bits != type->bits || t->rows != type->rows || t->type != Type::Vector) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
 			}
+
+			if (parameters[i].isConstant == false) res.isConstant = false;
 		}
 
-		List<ID*> ids = Compiler::GetIDs(parameters);
-
-		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+		ids = Compiler::GetIDs(parameters);
 	} else {
 		Log::CompilerError(tmp, "\"%s\" doesn't have a constructor", type->typeString.str);
 	}
 
-	instructions.Add(inst);
+	if (res.isConstant) {
+		inst = new InstConstantComposite(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+		CheckConstantExist(&inst);
+	} else {
+		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+		instructions.Add(inst);
+	}
+	
 	res.id = inst->id;
 
 	return res;
