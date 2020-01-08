@@ -1170,15 +1170,18 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			ID* varId = nullptr;
+			TypePrimitive* lBaseType = nullptr;
 
 			if (left.type == ExpressionType::Variable) {
 				varId = left.variable->variableId;
+				lBaseType = (TypePrimitive*)left.variable->type;
 			} else if (left.type == ExpressionType::Result) {
 				if (!left.result.isVariable) {
 					Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 				}
 
 				varId = left.result.id;
+				lBaseType = (TypePrimitive*)left.result.type;
 			} else {
 				Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 			}
@@ -1195,13 +1198,24 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			}
 
 			ID* lBaseId = nullptr;
+			
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, lSwizzled, &lBaseId);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, rSwizzled);
+			ID* lOperandId = nullptr;
+			
+			if (opAssign) {
+				lType = lBaseType;
 
-			TypePrimitive* lBaseType = (TypePrimitive*)(lSwizzled ? left.type == ExpressionType::Variable ? left.variable->type : left.result.type : lType);
+				if (lSwizzle) {
+					lBaseId = GetExpressionOperandId(&left, &lType, false);
+				}
+
+			} else {
+				lOperandId = GetExpressionOperandId(&left, &lType, lSwizzled, &lBaseId);
+			}
+
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, rSwizzled);
 
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
