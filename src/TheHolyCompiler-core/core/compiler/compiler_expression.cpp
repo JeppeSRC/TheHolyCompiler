@@ -1302,7 +1302,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 		case ExpressionType::Constant:
 			result.isConstant = true;
 		case ExpressionType::Result:
-			result = e.result;
+			result.type = e.result.type;
+			result.id = e.result.id;
 			break;
 	}
 
