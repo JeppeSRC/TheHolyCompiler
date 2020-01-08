@@ -1169,7 +1169,19 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& left = expressions[i - 1];
 			Expression& right = expressions[i + 1];
 
-			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+			ID* varId = nullptr;
+
+			if (left.type == ExpressionType::Variable) {
+				varId = left.variable->variableId;
+			} else if (left.type == ExpressionType::Result) {
+				if (!left.result.isVariable) {
+					Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+				}
+
+				varId = left.result.id;
+			} else {
+				Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
+			}
 
 			bool lSwizzle = left.swizzleIndices.GetCount() > 0;
 			bool rSwizzle = right.swizzleIndices.GetCount() > 0;
@@ -1273,7 +1285,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				tmp.id = inst->id;
 			}
 
-			instructions.Add(new InstStore(left.variable->variableId, tmp.id, 0));
+			instructions.Add(new InstStore(varId, tmp.id, 0));
 
 			expressions.Remove(i, i + 1);
 			i--;
