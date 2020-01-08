@@ -680,7 +680,7 @@ bool Compiler::GenerateFile(const String& filename) {
 		uint32 magic = THC_SPIRV_MAGIC_NUMBER;
 		uint32 version = 0x00010300;
 		uint32 gen = THC_GENERATOR_ID;
-		uint32 bound = IDManager::GetCount();
+		uint32 bound = IDManager::GetCount()+1;
 		uint32 schema = 0;
 	} header;
 
