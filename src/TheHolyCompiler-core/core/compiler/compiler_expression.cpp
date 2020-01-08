@@ -54,20 +54,22 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			//Checks if the previous thing was a vector
 			if (c >= 2) {
-				const Expression& exp = expressions[c - 2];
+				if (expressions[c - 1].type == ExpressionType::Operator && expressions[c - 1].operatorType == TokenType::OperatorSelector) {
+					const Expression& exp = expressions[c - 2];
 
-				if (Utils::CompareEnums(exp.type, CompareOperation::Or, ExpressionType::Variable, ExpressionType::Result, ExpressionType::Constant)) {
-					if (exp.type == ExpressionType::Variable) {
-						if (exp.variable->type->type == Type::Vector) {
-							e.type = ExpressionType::SwizzleComponent;
-							e.parent = t;
-							c = ~0;
-						}
-					} else {
-						if (exp.result.type->type == Type::Vector) {
-							e.type = ExpressionType::SwizzleComponent;
-							e.parent = t;
-							c = ~0;
+					if (Utils::CompareEnums(exp.type, CompareOperation::Or, ExpressionType::Variable, ExpressionType::Result, ExpressionType::Constant)) {
+						if (exp.type == ExpressionType::Variable) {
+							if (exp.variable->type->type == Type::Vector) {
+								e.type = ExpressionType::SwizzleComponent;
+								e.parent = t;
+								c = ~0;
+							}
+						} else {
+							if (exp.result.type->type == Type::Vector) {
+								e.type = ExpressionType::SwizzleComponent;
+								e.parent = t;
+								c = ~0;
+							}
 						}
 					}
 				}
