@@ -346,6 +346,7 @@ private: //Misc
 	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
 	TypePrimitive* GetSwizzledType(TypePrimitive* base, const utils::List<uint32>& indices);
 	ID* GetSwizzledVector(TypePrimitive** type, ID* load, const utils::List<uint32>& indices);
+	void CheckIntrin(const parsing::Token& intrin, const Variable* var);
 
 public:
 	bool Process();

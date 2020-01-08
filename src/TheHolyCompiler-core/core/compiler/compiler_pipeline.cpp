@@ -221,19 +221,57 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 
 	Variable* var = CreateGlobalVariable(type, scope, name.string);
 
-	if (intrin.string == "THSL_Position") {
-		uint32 builtin = 0;
-
-		if (var->scope != VariableScope::Out) {
-			Log::CompilerError(intrin, "Builtin THSL_Position must be an output variable");
-		}
-
-		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &builtin, 1));
-	}
+	CheckIntrin(intrin, var);
 
 	start--;
 
 	tokens.Remove(start, start + offset);
+}
+
+void Compiler::CheckIntrin(const Token& token, const Variable* var) {
+	enum class Stage {
+		Vertex,
+		Fragment,
+		Geometry
+	};
+
+	struct Intrin {
+		String name;
+		VariableScope scope;
+		Stage stage;
+		uint32 builtin;
+	};
+
+	static Intrin intrins[] = {
+	{ "THSL_Position",     VariableScope::Out, Stage::Vertex,   THC_SPIRV_BUILTIN_POSITION     },
+	{ "THSL_PointSize",    VariableScope::Out, Stage::Vertex,   THC_SPIRV_BUILTIN_POINT_SIZE   },
+	{ "THSL_VertexId",     VariableScope::In,  Stage::Vertex,   THC_SPIRV_BUILTIN_VERTEX_ID    },
+	{ "THSL_InstanceId",   VariableScope::In,  Stage::Vertex,   THC_SPIRV_BUILTIN_INSTANCE_ID  },
+	{ "THSL_FragCoord",    VariableScope::In,  Stage::Fragment, THC_SPIRV_BUILTIN_FRAG_COORD   },
+	{ "THSL_PointCoord",   VariableScope::In,  Stage::Fragment, THC_SPIRV_BUILTIN_POINT_COORD  },
+	{ "THSL_FrontFacing",  VariableScope::In,  Stage::Fragment, THC_SPIRV_BUILTIN_FRONT_FACING },
+	{ "THSL_FragDepth",    VariableScope::Out, Stage::Fragment, THC_SPIRV_BUILTIN_FRAG_DEPTH   }
+	};
+
+	uint64 len = sizeof(intrins) / sizeof(Intrin);
+	Stage stage = CompilerOptions::VertexShader() ? Stage::Vertex : Stage::Fragment;
+
+	for (uint64 i = 0; i < len; i++) {
+		Intrin& intr = intrins[i];
+
+		if (intr.name == token.string) {
+			if (intr.scope != var->scope) {
+				Log::CompilerError(token, "Builtin %s must be an %s variable", intr.name.str, intr.scope == VariableScope::Out ? "output" : "input");
+			} else if (intr.stage != stage) {
+				Log::CompilerError(token, "Builtin %s cannot be used in %s", intr.name.str, stage == Stage::Vertex ? "Vertex" : "Fragment");
+			}
+
+			annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &intr.builtin, 1));
+			return;
+		}
+	}
+
+	Log::CompilerError(token, "\"%s\" is not valid", token.string.str);
 }
 
 }
