@@ -197,6 +197,8 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	InstFunction* func = new InstFunction(decl->returnType->typeId, THC_SPIRV_FUNCTION_CONTROL_NONE, decl->typeId);
 	decl->declInstructions.Add(func);
 
+	debugInstructions.Add(new InstName(func->id, decl->name.str));
+
 	decl->id = func->id;
 
 	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
@@ -207,6 +209,8 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 		v->variableId = pa->id;
 
 		decl->declInstructions.Add(pa);
+
+		debugInstructions.Add(new InstName(pa->id, (decl->name + "_" + v->name).str));
 	}
 
 	functionDeclarations.Add(decl);
