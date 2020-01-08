@@ -49,7 +49,31 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 		if (t.type == TokenType::Name) {
 			const Token& next = tokens[i + (i == info->end ? 0 : 1)];
-			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen) { //Member selection in a struct and/or array subscripting
+
+			uint64 c = expressions.GetCount();
+
+			//Checks if the previous thing was a vector
+			if (c >= 2) {
+				const Expression& exp = expressions[c - 2];
+
+				if (Utils::CompareEnums(exp.type, CompareOperation::Or, ExpressionType::Variable, ExpressionType::Result, ExpressionType::Constant)) {
+					if (exp.type == ExpressionType::Variable) {
+						if (exp.variable->type->type == Type::Vector) {
+							e.type = ExpressionType::SwizzleComponent;
+							e.parent = t;
+							c = ~0;
+						}
+					} else {
+						if (exp.result.type->type == Type::Vector) {
+							e.type = ExpressionType::SwizzleComponent;
+							e.parent = t;
+							c = ~0;
+						}
+					}
+				}
+			}
+			
+			if (next.type == TokenType::OperatorSelector || next.type == TokenType::BracketOpen && c != ~0) { //Member selection in a struct and/or array subscripting
 				ParseInfo inf;
 				inf.start = i;
 
@@ -62,16 +86,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				tmpVariables.Add(v);
 
 				i += inf.len - 1;
-
-				if (tokens[i].type == TokenType::OperatorSelector) i++;
-
 			} else if (t.string == "false" || t.string == "true") {
 				e.type = ExpressionType::Constant;
 				e.constant.isConstant = true;
 				e.constant.type = CreateTypeBool();
 				e.constant.id = CreateConstantBool(t.string == "true");
 				e.parent = t;
-			} else { //Variable or function
+			} else if (c != ~0) { //Variable or function
 				if (next.type == TokenType::ParenthesisOpen) { //Function
 					ParseInfo inf;
 					inf.start = i;
@@ -97,51 +118,54 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
 			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
 			e.parent = t;
-		} else if (t.type >= TokenType::OperatorIncrement && t.type <= TokenType::OperatorCompoundDiv) {
+		} else if (t.type >= TokenType::OperatorSelector && t.type <= TokenType::OperatorCompoundDiv) {
 			e.type = ExpressionType::Operator;
 			e.operatorType = t.type;
 			e.parent = t;
 		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) {
-			if (info->start == info->end) {//Type for a cast
-				//Log::CompilerError(t, "Unexpected symbol \"%s\"", t.string.str);
-				if (!Utils::CompareEnums(t.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
+			ParseInfo inf;
+			inf.start = i;
+
+			ResultVariable res = ParseTypeConstructor(tokens, &inf, localVariables);
+
+			e.type = ExpressionType::Result;
+			e.result = res;
+
+			info->end -= inf.end;
+			i += inf.len;
+		} else if (t.type == TokenType::ParenthesisOpen) {
+			const Token& next = tokens[i + (i == info->end ? 0 : 1)];
+
+			if (next.type >= TokenType::TypeVoid && next.type <= TokenType::TypeMatrix) {
+				if (!Utils::CompareEnums(next.type, CompareOperation::Or, TokenType::TypeInt, TokenType::TypeFloat)) {
 					Log::CompilerError(t, "Cast type must be scalar of type integer or float");
 				}
 
 				e.type = ExpressionType::Type;
-				e.castType = CreateTypePrimitiveScalar(ConvertToType(t.type), t.bits, t.sign);
+				e.castType = CreateTypePrimitiveScalar(ConvertToType(next.type), next.bits, next.sign);
 				e.parent = t;
-			} else { //Type constructor
+				i+=2;
+			} else {
 				ParseInfo inf;
-				inf.start = i;
-
-				ResultVariable res = ParseTypeConstructor(tokens, &inf, localVariables);
 
 				e.type = ExpressionType::Result;
-				e.result = res;
+				e.parent = t;
 
-				info->end -= inf.end;
-				i += inf.len;
+				uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+				if (parenthesisClose > info->end) {
+					Log::CompilerError(t, "\"(\" needs a closing \")\"");
+				}
+
+				inf.start = i + 1;
+				inf.end = --parenthesisClose;
+
+				e.result = ParseExpression(tokens, &inf, localVariables);
+
+				info->end -= parenthesisClose - inf.end;
+
+				i = inf.end + 1;
 			}
-
-		} else if (t.type == TokenType::ParenthesisOpen) {
-			ParseInfo inf;
-
-			e.type = ExpressionType::Result;
-			e.parent = t;
-
-			uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
-
-			if (parenthesisClose > info->end) {
-				Log::CompilerError(t, "\"(\" needs a closing \")\"");
-			}
-
-			inf.start = i + 1;
-			inf.end = --parenthesisClose;
-
-			e.result = ParseExpression(tokens, &inf, localVariables);
-
-			info->end -= parenthesisClose - inf.end;
 		}
 
 		if (e.type != ExpressionType::Undefined) expressions.Add(e);
@@ -204,6 +228,27 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			} else if (rightVar) {
 				Log::CompilerError(e.parent, "Left or right hand operand must be a lvalue");
 			}
+		} else if (e.operatorType == TokenType::OperatorSelector) {
+			Expression& left = expressions[i - 1];
+			Expression& right = expressions[i + 1];
+
+			TypePrimitive* lType = (TypePrimitive*)(left.type == ExpressionType::Variable ? left.variable->type : left.type == ExpressionType::Result || left.type == ExpressionType::Constant ? left.result.type : nullptr);
+			
+			if (lType->type != Type::Vector) Log::CompilerError(e.parent, "Left of operator \".\" must be a struct or vector");
+
+			if (right.type != ExpressionType::SwizzleComponent) Log::CompilerError(e.parent, "Right of operator \".\" must be a valid set of components for the left hand vector");
+			
+			left.swizzleIndices = GetVectorShuffleIndices(right.parent, lType);
+			left.swizzleWritable = true;
+
+			for (uint64 i = 0; i < left.swizzleIndices.GetCount()-1; i++) {
+				if (left.swizzleIndices.Find(left.swizzleIndices[i], i + 1) != ~0) {
+					left.swizzleWritable = false;
+					break;
+				}
+			}
+
+			expressions.Remove(i, i + 1);
 		}
 	}
 
@@ -222,14 +267,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			TypePrimitive* type = nullptr;
-			ID* operandId = GetExpressionOperandId(&right, &type, false);
+			ID* operandId = GetExpressionOperandId(&right, &type, true);
 
-
-			if (operandId == nullptr) {
-				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
-			}
-
-			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float)) {
+			if (!Utils::CompareEnums(type->type, CompareOperation::Or, Type::Int, Type::Float) || operandId == nullptr) {
 				Log::CompilerError(e.parent, "Right hand operand must be a scalar of type integer or float");
 			}
 
@@ -583,8 +623,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			InstBase* instruction = nullptr;
 			InstBase* convInst = nullptr;
@@ -830,8 +870,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			ResultVariable ret = { 0 };
 
@@ -887,8 +927,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			ResultVariable ret = { 0 };
 
@@ -944,8 +984,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			ResultVariable ret = { 0 };
 
@@ -1001,8 +1041,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
@@ -1060,8 +1100,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, false);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of bool, int or float");
@@ -1129,44 +1169,49 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			if (left.type != ExpressionType::Variable) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 
-			bool lSwizzle = left.variable->swizzleData.indices.GetCount() > 1;
+			bool lSwizzle = left.swizzleIndices.GetCount() > 0;
+			bool rSwizzle = right.swizzleIndices.GetCount() > 0;
+			bool opAssign = e.operatorType == TokenType::OperatorAssign;
+
+			bool lSwizzled = lSwizzle && !opAssign;
+			bool rSwizzled = rSwizzle && ((opAssign != lSwizzle) || !opAssign);
+			
+			if (lSwizzle && !left.swizzleWritable) {
+				Log::CompilerError(left.parent, "Left hand operand must be lvalue");
+			}
+
+			ID* lBaseId = nullptr;
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
-			ID* lOperandId = GetExpressionOperandId(&left, &lType, false);
-			ID* rOperandId = GetExpressionOperandId(&right, &rType, !lSwizzle);
+			ID* lOperandId = GetExpressionOperandId(&left, &lType, lSwizzled, &lBaseId);
+			ID* rOperandId = GetExpressionOperandId(&right, &rType, rSwizzled);
+
+			TypePrimitive* lBaseType = (TypePrimitive*)(lSwizzled ? left.type == ExpressionType::Variable ? left.variable->type : left.result.type : lType);
+
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector, Type::Matrix)) {
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
 			}
 
-			TypePrimitive* tmpType = lType;
-			ID* tmpId = lOperandId;
+			TypePrimitive* lSwizzledType = !lSwizzled ? GetSwizzledType(lType, left.swizzleIndices) : lType;
+			TypePrimitive* rSwizzledType = !rSwizzled ? GetSwizzledType(rType, right.swizzleIndices) : rType;
 
-			if (lType->type == Type::Vector && e.operatorType != TokenType::OperatorAssign) {
-				Variable::SwizzleData* swiz = &left.variable->swizzleData;
-				if (swiz->indices.GetCount() > 0) {
-					if (swiz->writable == false) Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
-					lOperandId = GetSwizzledVector(left.variable, &lType, lOperandId);
+			if (opAssign) {
+				if (*lSwizzledType != rSwizzledType) {
+					if (!rSwizzled) {
+						rSwizzled = true;
+						rOperandId = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
+					}
+
+					ResultVariable tmp = ImplicitCast(lSwizzledType, rSwizzledType, rOperandId, &right.parent);
+
+					rType = (TypePrimitive*)tmp.type;
+					rOperandId = tmp.id;
 				}
-			}
-
-			if (right.type == ExpressionType::Variable && e.operatorType != TokenType::OperatorAssign) {
-				Variable::SwizzleData* swiz = &right.variable->swizzleData;
-				if (swiz->indices.GetCount() > 0) {
-					rOperandId = GetSwizzledVector(right.variable, &rType, rOperandId);
-				}
-			}
-
-			if (lType->type != rType->type) {
-				ResultVariable tmp = ImplicitCast(lType, rType, rOperandId, &right.parent);
-
-				rType = (TypePrimitive*)tmp.type;
-				rOperandId = tmp.id;
 			}
 
 			ResultVariable tmp;
-
 			tmp.id = rOperandId;
 
 			switch (e.operatorType) {
@@ -1183,53 +1228,47 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 					tmp = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 					break;
 			}
-			//vec3.zx += vec3.yx;
+
+			//vec3.zx = vec3.yx;
 			if (lSwizzle) {
+				uint64 rows = lBaseType->rows;
+
 				List<uint32> indices;
-				indices.Resize(tmpType->rows);
 
-				uint32 rows = tmpType->rows;
-
-				Variable::SwizzleData* lSwiz = &left.variable->swizzleData;
-
-				if (lSwiz->writable == false) {
-					Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
-				}
-
-				if (e.operatorType == TokenType::OperatorAssign) {
-					Variable::SwizzleData* rSwiz = &right.variable->swizzleData;
-
-					if (rSwiz->indices.GetCount() > 0 && rSwiz->indices.GetCount() != lSwiz->indices.GetCount()) {
-						Log::CompilerError(e.parent, "Vectors must be matching");
-					}
-
-					for (uint32 i = 0; i < rows; i++) {
-						uint32 index = (uint32)lSwiz->indices.Find(i);
-
-						if (index == ~0) {
-							indices.EmplaceAt(i, i);
-						} else {
-							uint32 rIndex = rSwiz->indices.GetCount() > 0 ? rSwiz->indices[index] : index;
-
-							indices.EmplaceAt(i, rIndex + rows);
-						}
-					}
-				} else {
-					for (uint32 i = 0; i < rows; i++) {
-						uint32 index = (uint32)lSwiz->indices.Find(i);
-
-						if (index == ~0) {
-							indices.EmplaceAt(i, i);
-						} else {
-							indices.EmplaceAt(i, index + rows);
-						}
-					}
-				}
+				const List<uint32>& lIndices = left.swizzleIndices;
+				List<uint32> rIndices = right.swizzleIndices;
 				
-				InstBase* shuffle = new InstVectorShuffle(tmpType->typeId, tmpId, tmp.id, rows, indices.GetData());
-				instructions.Add(shuffle);
+				if (!rSwizzle) {
+					uint32 tmp[4] = { 0, 1, 2, 3 };
+					rIndices.Add(tmp);
+				}
 
-				tmp.id = shuffle->id;
+				InstBase* inst = nullptr;
+
+				if (lIndices.GetCount() == 1) {
+					if (!rSwizzled && rSwizzle) {
+						rSwizzled = true;
+						tmp.id = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
+					}
+
+					inst = new InstCompositeInsert(lBaseType->typeId, tmp.id, lBaseId, 1, lIndices.GetData());
+				} else {
+					for (uint64 i = 0; i < rows; i++) {
+						uint64 lIndex = lIndices.Find((uint32)i);
+
+						if (lIndex != ~0) {
+							uint64 index = rSwizzled ? lIndex : rIndices[lIndex];
+							indices.Add((uint32)(index + rows));
+						} else {
+							indices.Add((uint32)i);
+						}
+					}
+
+					inst = new InstVectorShuffle(lBaseType->typeId, lBaseId, tmp.id, (uint32)rows, indices.GetData());
+				} 
+
+				instructions.Add(inst);
+				tmp.id = inst->id;
 			}
 
 			instructions.Add(new InstStore(left.variable->variableId, tmp.id, 0));

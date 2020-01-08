@@ -510,23 +510,7 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 				}
 
 				if (curr->type == Type::Vector) {
-					if (accessIds.GetCount() == 0) {
-						*result = *var;
-					}
-
-					result->swizzleData.indices = GetVectorShuffleIndices(member, (TypePrimitive*)curr);
-
-					Variable::SwizzleData* swizzle = &result->swizzleData;
-
-					swizzle->writable = true;
-
-					for (uint64 i = 0; i < result->swizzleData.indices.GetCount()-1; i++) {
-						if (result->swizzleData.indices.Find(result->swizzleData.indices[i], i + 1) != ~0) {
-							swizzle->writable = false;
-							break;
-						}
-					}
-
+					offset--;
 					break;
 				}
 
@@ -607,7 +591,10 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 			result->typePointer = pointer;
 			result->variableId = access->id;
 			result->isConstant = var->isConstant;
-		} 
+		} else {
+			delete result;
+			result = var;
+		}
 	} else {
 		delete result;
 		result = var;

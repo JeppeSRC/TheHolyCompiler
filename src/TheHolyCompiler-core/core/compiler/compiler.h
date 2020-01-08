@@ -168,11 +168,6 @@ private: //Variable stuff
 		ID* variableId;
 
 		bool isConstant;
-
-		struct SwizzleData {
-			bool writable;
-			utils::List<uint32> indices;
-		} swizzleData;
 	};
 
 	struct Parameter : public Variable {
@@ -281,7 +276,8 @@ private: //Expression parsing
 		Constant,
 		Result,
 		Operator,
-		Type
+		Type,
+		SwizzleComponent
 	};
 
 	struct Expression {
@@ -303,6 +299,10 @@ private: //Expression parsing
 
 		//type = Type
 		TypeBase* castType;
+
+		//SwizzleInfo
+		utils::List<uint32> swizzleIndices;
+		bool swizzleWritable;
 
 		parsing::Token parent;
 	};
@@ -341,10 +341,11 @@ private: //Misc
 	bool IsCharWhitespace(const char c) const;
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
-	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle);
+	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle, ID** ogID = nullptr);
 	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
 	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
-	ID* GetSwizzledVector(Variable* v, TypePrimitive** type, ID* load);
+	TypePrimitive* GetSwizzledType(TypePrimitive* base, const utils::List<uint32>& indices);
+	ID* GetSwizzledVector(TypePrimitive** type, ID* load, const utils::List<uint32>& indices);
 
 public:
 	bool Process();

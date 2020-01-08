@@ -1662,7 +1662,7 @@ uint64 Compiler::FindMatchingToken(const List<Token>& tokens, uint64 start, Toke
 	return ~0;
 }
 
-ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle) {
+ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle, ID** ogID) {
 	ID* id = nullptr;
 
 	if (e->type == ExpressionType::Variable) {
@@ -1670,12 +1670,8 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 		InstLoad* load = new InstLoad(v->type->typeId, v->variableId, 0);
 		instructions.Add(load);
 
-		if (v->swizzleData.indices.GetCount() > 0 && swizzle) {
-			id = GetSwizzledVector(v, type, load->id);
-		} else {
-			id = load->id;
-			*type = (TypePrimitive*)v->type;
-		}
+		id = load->id;
+		*type = (TypePrimitive*)v->type;
 		
 	} else if (e->type == ExpressionType::Result || e->type == ExpressionType::Constant) {
 		if (e->result.isVariable) {
@@ -1688,6 +1684,13 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 			id = e->result.id;
 			*type = (TypePrimitive*)e->result.type;
 		}
+	}
+
+	if (ogID) *ogID = id;
+
+	if (swizzle) {
+		id = GetSwizzledVector(type, id, e->swizzleIndices);
+		const_cast<Expression*>(e)->swizzleIndices.Clear();
 	}
 
 	return id;
@@ -1737,14 +1740,39 @@ List<uint32> Compiler::GetVectorShuffleIndices(const Token& token, const TypePri
 	return std::move(ret);
 }
 
-ID* Compiler::GetSwizzledVector(Variable* v, TypePrimitive** type, ID* load) {
-	TypePrimitive* tmp = (TypePrimitive*)v->type;
+Compiler::TypePrimitive* Compiler::GetSwizzledType(TypePrimitive* base, const List<uint32>& indices) {
+	uint32 rows = (uint32)indices.GetCount();
 
-	*type = CreateTypePrimitiveVector(tmp->componentType, tmp->bits, tmp->sign, (uint8)v->swizzleData.indices.GetCount());
-	InstBase* swiz = new InstVectorShuffle((*type)->typeId, load, load, (uint32)v->swizzleData.indices.GetCount(), v->swizzleData.indices.GetData());
-	instructions.Add(swiz);
+	if (rows == 0) return base;
 
-	return swiz->id;
+	if (rows == 1) {
+		return CreateTypePrimitiveScalar(base->componentType, base->bits, base->sign);
+	} else {
+		return CreateTypePrimitiveVector(base->componentType, base->bits, base->sign, rows);
+	}
+}
+
+
+ID* Compiler::GetSwizzledVector(TypePrimitive** type, ID* load, const List<uint32>& indices) {
+	TypePrimitive* t = *type;
+	ID* id = load;
+
+	if (indices.GetCount() == 1) {
+		t = CreateTypePrimitiveScalar(t->componentType, t->bits, t->sign);
+		InstBase* inst = new InstCompositeExtract(t->typeId, load, 1, indices.GetData());
+		instructions.Add(inst);
+		id = inst->id;
+	} else if (indices.GetCount() > 1) {
+		uint32 rows = (uint32)indices.GetCount();
+		t = CreateTypePrimitiveVector(t->componentType, t->bits, t->sign, rows);
+		InstBase* inst = new InstVectorShuffle(t->typeId, load, load, rows, indices.GetData());
+		instructions.Add(inst);
+		id = inst->id;
+	}
+
+	*type = t;
+
+	return id;
 }
 
 }
