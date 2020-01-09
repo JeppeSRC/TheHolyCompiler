@@ -175,6 +175,12 @@ naughtyLabel:
 
 		instructions.InsertList(index, localVariables.variableInstructions); //Add all OpVariable instructions at the beginning of the first block
 
+		InstBase* last = instructions[instructions.GetCount() - 1];
+
+		if (last->opCode != THC_SPIRV_OPCODE_OpReturn && last->opCode != THC_SPIRV_OPCODE_OpReturnValue) {
+			instructions.Add(new InstReturn());
+		}
+
 		instructions.Add(new InstFunctionEnd);
 
 		decl->defined = true;
