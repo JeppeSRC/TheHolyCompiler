@@ -667,7 +667,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	if (!decl->defined) Log::Error("Main function not defined!");
 
 	capabilities.Add(new InstEntryPoint(executionMode, decl->id, "main", (uint32)ids.GetCount(), ids.GetData()));
-	capabilities.Add(new InstExecutionMode(decl->id, THC_SPIRV_EXECUTION_MODE_ORIGIN_LOWER_LEFT, 0, nullptr));
+	if (CompilerOptions::FragmentShader()) capabilities.Add(new InstExecutionMode(decl->id, THC_SPIRV_EXECUTION_MODE_ORIGIN_LOWER_LEFT, 0, nullptr));
 
 	FILE* file = fopen(filename.str, "wb");
 
