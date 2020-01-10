@@ -159,6 +159,51 @@ private: //Variable stuff
 
 	static uint32 ScopeToStorageClass(VariableScope scope);
 
+	enum class SymbolType {
+		None,
+		Variable,
+		TmpVariable,
+		Parameter,
+		Constant,
+		Result
+	};
+
+	struct Symbol {
+		SymbolType symbolType;
+
+		union {
+			TypeBase* type;
+			TypePrimitive* pType;
+			TypeArray* aType;
+			TypeStruct* sType;
+		};
+
+		ID* id;
+
+		union {
+			struct Variable {
+				VariableScope scope;
+				utils::String name;
+
+				bool isConst;
+				
+				ID* loadId;
+			} variable;
+
+			struct Parameter : public Variable {
+				bool isReference;
+			} parameter;
+
+			struct Constant {
+
+			} constant;
+
+			struct Result {
+
+			} result;
+		};
+	};
+	/*
 	struct Variable {
 		VariableScope scope;
 		utils::String name;
@@ -181,7 +226,7 @@ private: //Variable stuff
 		bool isVariable;
 		bool isConstant;
 	};
-
+	*/
 	utils::List<Variable*> globalVariables;
 
 	class VariableStack;
