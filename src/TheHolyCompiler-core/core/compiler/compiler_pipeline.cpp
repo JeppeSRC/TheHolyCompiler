@@ -106,11 +106,11 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 
 	const Token& scope = tokens[start + offset++];
 
-	Variable tmp;
+	VariableScope varScope;
 
 	switch (scope.type) {
 		case TokenType::DataIn:
-			tmp.scope = VariableScope::In;
+			varScope = VariableScope::In;
 
 			if (binding != ~0) {
 				Log::CompilerError(scope, "Specifier \"binding\" cannot be used on \"in\"");
@@ -122,7 +122,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 
 			break;
 		case TokenType::DataOut:
-			tmp.scope = VariableScope::Out;
+			varScope = VariableScope::Out;
 
 			if (binding != ~0) {
 				Log::CompilerError(scope, "Specifier \"binding\" cannot be used on \"out\"");
@@ -134,7 +134,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 
 			break;
 		case TokenType::DataUniform:
-			tmp.scope = VariableScope::Uniform;
+			varScope = VariableScope::Uniform;
 
 			if (binding == ~0) {
 				Log::CompilerError(scope, "Specifier \"binding\" must be set");
@@ -149,18 +149,18 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(scope, "Unexpected symbol \"%s\" expected \"in, out or uniform\"", scope.string.str);
 	}
 
-	Variable* var;
+	Symbol* var;
 
-	if (tmp.scope == VariableScope::Uniform) {
+	if (varScope == VariableScope::Uniform) {
 		TypeStruct* str = CreateTypeStruct(tokens, start + offset++, nullptr);
 
 		String name = str->typeString;
 		str->typeString += "_uniform_type";
 
-		var = CreateGlobalVariable(str, tmp.scope, name);
+		var = CreateGlobalVariable(str, varScope, name);
 
-		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BINDING, &binding, 1));
-		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
+		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_BINDING, &binding, 1));
+		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 	} else {
 		TypePrimitive* type = CreateTypePrimitive(tokens, start + offset, nullptr);
 
@@ -180,9 +180,9 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 			Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
 		}
 
-		var = CreateGlobalVariable(type, tmp.scope, name.string);
+		var = CreateGlobalVariable(type, varScope, name.string);
 
-		annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_LOCATION, &location, 1));
+		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_LOCATION, &location, 1));
 	}
 
 	start--;
@@ -219,7 +219,7 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 		Log::CompilerError(semi, "Unexpected symbol \"%s\" expected \";\"", semi.string.str);
 	}
 
-	Variable* var = CreateGlobalVariable(type, scope, name.string);
+	Symbol* var = CreateGlobalVariable(type, scope, name.string);
 
 	CheckIntrin(intrin, var);
 
@@ -228,7 +228,9 @@ void Compiler::ParseInOut(List<Token>& tokens, uint64 start, VariableScope scope
 	tokens.Remove(start, start + offset);
 }
 
-void Compiler::CheckIntrin(const Token& token, const Variable* var) {
+void Compiler::CheckIntrin(const Token& token, const Symbol* var) {
+	THC_ASSERT(var->symbolType == SymbolType::Variable);
+
 	enum class Stage {
 		Vertex,
 		Fragment,
@@ -260,13 +262,13 @@ void Compiler::CheckIntrin(const Token& token, const Variable* var) {
 		Intrin& intr = intrins[i];
 
 		if (intr.name == token.string) {
-			if (intr.scope != var->scope) {
+			if (intr.scope != var->variable.scope) {
 				Log::CompilerError(token, "Builtin %s must be an %s variable", intr.name.str, intr.scope == VariableScope::Out ? "output" : "input");
 			} else if (intr.stage != stage) {
 				Log::CompilerError(token, "Builtin %s cannot be used in %s", intr.name.str, stage == Stage::Vertex ? "Vertex" : "Fragment");
 			}
 
-			annotationIstructions.Add(new InstDecorate(var->variableId, THC_SPIRV_DECORATION_BUILTIN, &intr.builtin, 1));
+			annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_BUILTIN, &intr.builtin, 1));
 			return;
 		}
 	}
