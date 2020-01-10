@@ -37,9 +37,9 @@ using namespace parsing;
 using namespace type;
 using namespace instruction;
 
-Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	List<Expression> expressions;
-	List<Variable*> tmpVariables;
+	List<Symbol*> tmpVariables;
 	List<InstBase*> postIncrements;
 
 
@@ -57,19 +57,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				if (expressions[c - 1].type == ExpressionType::Operator && expressions[c - 1].operatorType == TokenType::OperatorSelector) {
 					const Expression& exp = expressions[c - 2];
 
-					if (Utils::CompareEnums(exp.type, CompareOperation::Or, ExpressionType::Variable, ExpressionType::Result, ExpressionType::Constant)) {
-						if (exp.type == ExpressionType::Variable) {
-							if (exp.variable->type->type == Type::Vector) {
-								e.type = ExpressionType::SwizzleComponent;
-								e.parent = t;
-								c = ~0;
-							}
-						} else {
-							if (exp.result.type->type == Type::Vector) {
-								e.type = ExpressionType::SwizzleComponent;
-								e.parent = t;
-								c = ~0;
-							}
+					if (exp.type == ExpressionType::Symbol) {
+						if (exp.symbol->type->type == Type::Vector) {
+							e.type = ExpressionType::SwizzleComponent;
+							e.parent = t;
+							c = ~0;
 						}
 					}
 				}
@@ -79,10 +71,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				ParseInfo inf;
 				inf.start = i;
 
-				Variable* v = ParseName(tokens, &inf, localVariables);
+				Symbol* v = ParseName(tokens, &inf, localVariables);
 
 				e.type = ExpressionType::Variable;
-				e.variable = v;
+				e.symbol = v;
 				e.parent = tokens[i + inf.len - 1];
 
 				tmpVariables.Add(v);
@@ -90,35 +82,37 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				i += inf.len - 1;
 			} else if (t.string == "false" || t.string == "true") {
 				e.type = ExpressionType::Constant;
-				e.constant.isConstant = true;
-				e.constant.type = CreateTypeBool();
-				e.constant.id = CreateConstantBool(t.string == "true");
+				e.symbol = new Symbol;
+				e.symbol->symbolType = SymbolType::Constant;
+				e.symbol->type = CreateTypeBool();
+				e.symbol->id = CreateConstantBool(t.string == "true");
 				e.parent = t;
 			} else if (c != ~0) { //Variable or function
 				if (next.type == TokenType::ParenthesisOpen) { //Function
 					ParseInfo inf;
 					inf.start = i;
 
-					ResultVariable res = ParseFunctionCall(tokens, &inf, localVariables);
+					Symbol* res = ParseFunctionCall(tokens, &inf, localVariables);
 
-					e.type = ExpressionType::Result;
-					e.result = res;
+					e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Symbol;
+					e.symbol = res;
 
 					i += inf.len;
 				} else { //Variable
 					e.type = ExpressionType::Variable;
-					e.variable = GetVariable(t.string, localVariables);
+					e.symbol = GetVariable(t.string, localVariables);
 					e.parent = t;
 
-					if (e.variable == nullptr) {
+					if (e.symbol == nullptr) {
 						Log::CompilerError(t, "Unexpected symbol \"%s\" expected a variable or constant", t.string.str);
 					}
 				}
 			}
 		} else if (t.type == TokenType::Value) {
 			e.type = ExpressionType::Constant;
-			e.constant.type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
-			e.constant.id = CreateConstant(e.constant.type, (uint32)t.value);
+			e.symbol = new Symbol;
+			e.symbol->type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
+			e.symbol->id = CreateConstant(e.symbol->type, (uint32)t.value);
 			e.parent = t;
 		} else if (t.type >= TokenType::OperatorSelector && t.type <= TokenType::OperatorCompoundDiv) {
 			e.type = ExpressionType::Operator;
@@ -128,10 +122,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ParseInfo inf;
 			inf.start = i;
 
-			ResultVariable res = ParseTypeConstructor(tokens, &inf, localVariables);
+			Symbol* res = ParseTypeConstructor(tokens, &inf, localVariables);
 
-			e.type = ExpressionType::Result;
-			e.result = res;
+			e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Symbol;
+			e.symbol = res;
 
 			info->end -= inf.end;
 			i += inf.len;
@@ -150,7 +144,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			} else {
 				ParseInfo inf;
 
-				e.type = ExpressionType::Result;
+				e.type = ExpressionType::Symbol;
 				e.parent = t;
 
 				uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
@@ -162,7 +156,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				inf.start = i + 1;
 				inf.end = --parenthesisClose;
 
-				e.result = ParseExpression(tokens, &inf, localVariables);
+				Symbol* res = ParseExpression(tokens, &inf, localVariables);
+
+				e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
+				e.symbol = res;
 
 				info->end -= parenthesisClose - inf.end;
 
@@ -194,15 +191,15 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 
 			if (left.type == ExpressionType::Variable) {
-				if (left.variable->isConstant) {
+				if (left.symbol->variable.isConst) {
 					Log::CompilerError(left.parent, "Left hand operand must be a modifiable value");
-				} else if (!Utils::CompareEnums(left.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+				} else if (!Utils::CompareEnums(left.symbol->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
 					Log::CompilerError(left.parent, "Left hand operand of must be a interger/float scalar");
 				}
 
-				const Variable* var = left.variable;
+				const Symbol* var = left.symbol;
 
-				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
+				InstLoad* load = new InstLoad(var->type->typeId, var->id, 0);
 				InstBase* operation = nullptr;
 
 				switch (var->type->type) {
@@ -214,7 +211,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						break;
 				}
 
-				InstStore* store = new InstStore(var->variableId, operation->id, 0);
+				InstStore* store = new InstStore(var->id, operation->id, 0);
 
 				instructions.Add(load);
 				instructions.Add(operation);
@@ -222,9 +219,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				postIncrements.Add(store);
 
 				left.type = ExpressionType::Result;
-				left.result.isVariable = false;
-				left.result.type = var->type;
-				left.result.id = load->id;
+				left.symbol = new Symbol(SymbolType::Result, var->type, operation->id);
 
 				expressions.RemoveAt(i--);
 			} else if (rightVar) {
@@ -234,7 +229,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& left = expressions[i - 1];
 			Expression& right = expressions[i + 1];
 
-			TypePrimitive* lType = (TypePrimitive*)(left.type == ExpressionType::Variable ? left.variable->type : left.type == ExpressionType::Result || left.type == ExpressionType::Constant ? left.result.type : nullptr);
+			TypePrimitive* lType = (TypePrimitive*)(left.type == ExpressionType::Symbol ? left.symbol->type : nullptr);
+
+			if (lType == nullptr) {
+				Log::CompilerError(e.parent, "Invalid left hand operand");
+			}
 			
 			if (lType->type != Type::Vector) Log::CompilerError(e.parent, "Left of operator \".\" must be a struct or vector");
 
@@ -280,9 +279,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				expressions.RemoveAt(i);
 			} else {
 				right.type = ExpressionType::Result;
-				right.result = Cast(e.castType, type, operandId, &e.parent);
+				right.symbol = Cast(e.castType, type, operandId, &e.parent);
 
-				if (right.result.id == nullptr) {
+				if (right.symbol->id == nullptr) {
 					Log::CompilerError(e.parent, "The only castable types are scalar integers or floats");
 				}
 
@@ -302,15 +301,15 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			Expression& right = expressions[i + 1];
 
 			if (right.type == ExpressionType::Variable) {
-				if (right.variable->isConstant) {
+				if (right.symbol->variable.isConst) {
 					Log::CompilerError(right.parent, "Right hand operand must be a modifiable value");
-				} else if (!Utils::CompareEnums(right.variable->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
+				} else if (!Utils::CompareEnums(right.symbol->type->type, CompareOperation::Or, Type::Float, Type::Int)) {
 					Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
 				}
 
-				const Variable* var = right.variable;
+				const Symbol* var = right.symbol;
 
-				InstLoad* load = new InstLoad(var->type->typeId, var->variableId, 0);
+				InstLoad* load = new InstLoad(var->type->typeId, var->id, 0);
 				InstBase* operation = nullptr;
 
 				switch (var->type->type) {
@@ -322,16 +321,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						break;
 				}
 
-				InstStore* store = new InstStore(var->variableId, operation->id, 0);
+				InstStore* store = new InstStore(var->id, operation->id, 0);
 
 				instructions.Add(load);
 				instructions.Add(operation);
 				instructions.Add(store);
 
 				right.type = ExpressionType::Result;
-				right.result.isVariable = false;
-				right.result.type = var->type;
-				right.result.id = operation->id;
+				right.symbol = new Symbol(SymbolType::Result, var->type, operation->id);
 
 				expressions.RemoveAt(i);
 			} else {
@@ -377,9 +374,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			instructions.Add(operation);
 
 			right.type = ExpressionType::Result;
-			right.result.isVariable = false;
-			right.result.type = type;
-			right.result.id = operation->id;
+			right.symbol = new Symbol(SymbolType::Result, type, operation->id);
 
 			expressions.RemoveAt(i);
 		} else if (e.operatorType == TokenType::OperatorLogicalNot) {
@@ -410,8 +405,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				constantId = CreateConstant(rType, 0.0f);
 			}
 
-			right.result.type = CreateTypeBool();
-			ID* retTypeId = right.result.type->typeId;
+			TypeBase* type = CreateTypeBool();
+			ID* retTypeId = type->typeId;
 
 			switch (rType->type) {
 				case Type::Bool:
@@ -428,8 +423,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			instructions.Add(operation);
 
-			right.result.isVariable = false;
-			right.result.id = operation->id;
+			right.type = ExpressionType::Result;
+			right.symbol = new Symbol(SymbolType::Result, type, operation->id);
 
 			expressions.RemoveAt(i);
 		} else if (e.operatorType == TokenType::OperatorBitwiseNot) {
@@ -454,9 +449,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			instructions.Add(operation);
 
 			right.type = ExpressionType::Result;
-			right.result.isVariable = false;
-			right.result.type = type;
-			right.result.id = operation->id;
+			right.symbol = new Symbol(SymbolType::Result, type, operation->id);
 
 			expressions.RemoveAt(i);
 		}
@@ -487,18 +480,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
-			ResultVariable ret = { 0 };
+			left.type = ExpressionType::Result;
 
 			if (mul) {
-				ret = Multiply(lType, lOperandId, rType, rOperandId, &e.parent);
+				left.symbol = Multiply(lType, lOperandId, rType, rOperandId, &e.parent);
 			} else {
-				ret = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
+				left.symbol = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
-
-			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
-
+			
 			expressions.Remove(i, i + 1);
 			i--;
 		}
@@ -529,17 +518,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
-			ResultVariable ret = { 0 };
+			left.type = ExpressionType::Result;
 
 			if (add) {
-				ret = Add(lType, lOperandId, rType, rOperandId, &e.parent);
+				left.symbol = Add(lType, lOperandId, rType, rOperandId, &e.parent);
 			} else {
-				ret = Subtract(lType, lOperandId, rType, rOperandId, &e.parent);
+				left.symbol = Subtract(lType, lOperandId, rType, rOperandId, &e.parent);
 			}
-
-			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -576,12 +561,11 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			}
 
 			InstBase* instruction = nullptr;
-			ResultVariable ret = { 0 };
 
 			ID* rId = rOperandId;
 
 			if (lType->bits != rType->bits) {
-				rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+				rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 			}
 
 			if (e.operatorType == TokenType::OperatorRightShift) {
@@ -592,12 +576,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			instructions.Add(instruction);
 
-			ret.type = lType;
-			ret.id = instruction->id;
-
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, lType, instruction->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -630,7 +610,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			InstBase* instruction = nullptr;
 			InstBase* convInst = nullptr;
-			ResultVariable ret = { 0 };
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int or float");
@@ -644,12 +623,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+						rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 					} else if (lType->bits < rType->bits) {
-						lId = ImplicitCast(rType, lType, lOperandId, &e.parent).id;
+						lId = ImplicitCastId(rType, lType, lOperandId, &e.parent);
 					}
 				} else { // Int
-					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+					rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 				}
 
 				floatCmp = true;
@@ -671,14 +650,14 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else { // Float
-					lId = ImplicitCast(rType, lType, lOperandId, &e.parent).id;
+					lId = ImplicitCastId(rType, lType, lOperandId, &e.parent);
 
 					floatCmp = true;
 				}
 			}
 
-			ret.type = CreateTypeBool();
-			ID* retTypeId = ret.type->typeId;
+			TypeBase* retType = CreateTypeBool();
+			ID* retTypeId = retType->typeId;
 
 			if (floatCmp) {
 				switch (e.operatorType) {
@@ -715,11 +694,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (convInst) instructions.Add(convInst);
 			instructions.Add(instruction);
 
-			ret.id = instruction->id;
 
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, retType, instruction->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -752,7 +729,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			InstBase* instruction = nullptr;
 			InstBase* convInst = nullptr;
-			ResultVariable ret = { 0 };
 
 			if (!Utils::CompareEnums(lType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float) || !Utils::CompareEnums(rType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float)) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int, float or bool");
@@ -766,12 +742,12 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (lType->type == Type::Float) {
 				if (rType->type == Type::Float) { // Float
 					if (lType->bits > rType->bits) {
-						rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+						rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 					} else if (lType->bits < rType->bits) {
-						lId = ImplicitCast(rType, lType, rOperandId, &e.parent).id;
+						lId = ImplicitCastId(rType, lType, rOperandId, &e.parent);
 					}
 				} else if (rType->type == Type::Int) { // Int
-					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+					rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 				} else {
 					Log::CompilerError(e.parent, "Type missmatch, cannot compare %s to bool", lType->typeString.str);
 				}
@@ -791,7 +767,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						Log::CompilerWarning(right.parent, "Implicit conversion from %s to %s", lType->typeString.str, tmp->typeString.str);
 					}
 				} else if (rType->type == Type::Float) { // Float
-					rId = ImplicitCast(lType, rType, rOperandId, &e.parent).id;
+					rId = ImplicitCastId(lType, rType, rOperandId, &e.parent);
 
 					cmpType = 1;
 				} else {
@@ -805,8 +781,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				cmpType = 2;
 			}
 
-			ret.type = CreateTypeBool();
-			ID* retTypeId = ret.type->typeId;
+			TypeBase* retType = CreateTypeBool();
+			ID* retTypeId = retType->typeId;
 
 			if (cmpType == 1) {
 				switch (e.operatorType) {
@@ -840,11 +816,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (convInst) instructions.Add(convInst);
 			instructions.Add(instruction);
 
-			ret.id = instruction->id;
-
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, retType, instruction->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -875,8 +848,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
-			ResultVariable ret = { 0 };
-
 			if (lType->type != Type::Int || rType->type != Type::Int) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int");
 			}
@@ -896,12 +867,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (conv) instructions.Add(conv);
 			instructions.Add(inst);
 
-			ret.type = lType;
-			ret.id = inst->id;
-
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, lType, inst->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -932,8 +899,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
-			ResultVariable ret = { 0 };
-
 			if (lType->type != Type::Int || rType->type != Type::Int) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int");
 			}
@@ -953,12 +918,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			if (conv) instructions.Add(conv);
 			instructions.Add(inst);
 
-			ret.type = lType;
-			ret.id = inst->id;
-
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, lType, inst->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -989,8 +950,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			ID* lOperandId = GetExpressionOperandId(&left, &lType, true);
 			ID* rOperandId = GetExpressionOperandId(&right, &rType, true);
 
-			ResultVariable ret = { 0 };
-
 			if (lType->type != Type::Int || rType->type != Type::Int) {
 				Log::CompilerError(e.parent, "Operands must be a scalar of type int");
 			}
@@ -1009,13 +968,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 			if (conv) instructions.Add(conv);
 			instructions.Add(inst);
-
-			ret.type = lType;
-			ret.id = inst->id;
-
+			
 			left.type = ExpressionType::Result;
-			left.result = ret;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, lType, inst->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -1056,13 +1011,15 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			TypeBase* retType = CreateTypeBool();
 
 			if (lType->type != Type::Bool) {
-				ResultVariable r = Cast(retType, lType, lOperandId, &left.parent);
-				lId = r.id;
+				Symbol* r = Cast(retType, lType, lOperandId, &left.parent);
+				lId = r->id;
+				delete r;
 			}
 
 			if (rType->type != Type::Bool) {
-				ResultVariable r = Cast(retType, rType, rOperandId, &right.parent);
-				rId = r.id;
+				Symbol* r = Cast(retType, rType, rOperandId, &right.parent);
+				rId = r->id;
+				delete r;
 			}
 
 			InstBase* instruction = new InstLogicalAnd(retType->typeId, lId, rId);
@@ -1070,11 +1027,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			instructions.Add(instruction);
 
 			left.type = ExpressionType::Result;
-			left.result.type = retType;
-			left.result.isConstant = false;
-			left.result.isVariable = false;
-			left.result.id = instruction->id;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, retType, instruction->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -1115,13 +1068,15 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			TypeBase* retType = CreateTypeBool();
 
 			if (lType->type != Type::Bool) {
-				ResultVariable r = Cast(retType, lType, lOperandId, &left.parent);
-				lId = r.id;
+				Symbol* r = Cast(retType, lType, lOperandId, &left.parent);
+				lId = r->id;
+				delete r;
 			}
 
 			if (rType->type != Type::Bool) {
-				ResultVariable r = Cast(retType, rType, rOperandId, &right.parent);
-				rId = r.id;
+				Symbol* r = Cast(retType, rType, rOperandId, &right.parent);
+				rId = r->id;
+				delete r;
 			}
 
 			InstBase* instruction = new InstLogicalOr(retType->typeId, lId, rId);
@@ -1129,11 +1084,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			instructions.Add(instruction);
 
 			left.type = ExpressionType::Result;
-			left.result.type = retType;
-			left.result.isConstant = false;
-			left.result.isVariable = false;
-			left.result.id = instruction->id;
-			left.variable = nullptr;
+			left.symbol = new Symbol(SymbolType::Result, retType, instruction->id);
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -1173,15 +1124,8 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 			TypePrimitive* lBaseType = nullptr;
 
 			if (left.type == ExpressionType::Variable) {
-				varId = left.variable->variableId;
-				lBaseType = (TypePrimitive*)left.variable->type;
-			} else if (left.type == ExpressionType::Result) {
-				if (!left.result.isVariable) {
-					Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
-				}
-
-				varId = left.result.id;
-				lBaseType = (TypePrimitive*)left.result.type;
+				varId = left.symbol->id;
+				lBaseType = (TypePrimitive*)left.symbol->type;
 			} else {
 				Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 			}
@@ -1232,15 +1176,13 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						rOperandId = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
 					}
 
-					ResultVariable tmp = ImplicitCast(lSwizzledType, rSwizzledType, rOperandId, &right.parent);
+					rOperandId = ImplicitCastId(lSwizzledType, rSwizzledType, rOperandId, &right.parent);
 
-					rType = (TypePrimitive*)tmp.type;
-					rOperandId = tmp.id;
+					rType = lSwizzledType;
 				}
 			}
 
-			ResultVariable tmp;
-			tmp.id = rOperandId;
+			Symbol* tmp = nullptr;
 
 			switch (e.operatorType) {
 				case TokenType::OperatorCompoundAdd:
@@ -1255,6 +1197,9 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				case TokenType::OperatorCompoundDiv:
 					tmp = Divide(lType, lOperandId, rType, rOperandId, &e.parent);
 					break;
+				default:
+					tmp = new Symbol;
+					tmp->id = rOperandId;
 			}
 
 			//vec3.zx = vec3.yx;
@@ -1276,10 +1221,10 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 				if (lIndices.GetCount() == 1) {
 					if (!rSwizzled && rSwizzle) {
 						rSwizzled = true;
-						tmp.id = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
+						tmp->id = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
 					}
 
-					inst = new InstCompositeInsert(lBaseType->typeId, tmp.id, lBaseId, 1, lIndices.GetData());
+					inst = new InstCompositeInsert(lBaseType->typeId, tmp->id, lBaseId, 1, lIndices.GetData());
 				} else {
 					for (uint64 i = 0; i < rows; i++) {
 						uint64 lIndex = lIndices.Find((uint32)i);
@@ -1292,14 +1237,16 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 						}
 					}
 
-					inst = new InstVectorShuffle(lBaseType->typeId, lBaseId, tmp.id, (uint32)rows, indices.GetData());
+					inst = new InstVectorShuffle(lBaseType->typeId, lBaseId, tmp->id, (uint32)rows, indices.GetData());
 				} 
 
 				instructions.Add(inst);
-				tmp.id = inst->id;
+				tmp->id = inst->id;
 			}
 
-			instructions.Add(new InstStore(varId, tmp.id, 0));
+			instructions.Add(new InstStore(varId, tmp->id, 0));
+
+			delete tmp;
 
 			expressions.Remove(i, i + 1);
 			i--;
@@ -1310,8 +1257,6 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 	instructions.Add(postIncrements);
 
-	ResultVariable result = { 0 };
-
 	if (expressions.GetCount() > 1) {
 		const Expression& e = expressions[1];
 		Log::CompilerError(e.parent, "Unexpected symbol \"%s\"", e.parent.string.str);
@@ -1319,21 +1264,7 @@ Compiler::ResultVariable Compiler::ParseExpression(List<Token>& tokens, ParseInf
 
 	Expression e = expressions[0];
 
-	switch (e.type) {
-		case ExpressionType::Variable:
-			result.isVariable = true;
-			result.type = e.variable->type;
-			result.id = e.variable->variableId;
-			break;
-		case ExpressionType::Constant:
-			result.isConstant = true;
-		case ExpressionType::Result:
-			result.type = e.result.type;
-			result.id = e.result.id;
-			break;
-	}
-
-	return result;
+	return e.symbol;
 }
 
 }}}
