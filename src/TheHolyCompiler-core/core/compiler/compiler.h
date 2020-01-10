@@ -227,36 +227,35 @@ private: //Variable stuff
 		bool isConstant;
 	};
 	*/
-	utils::List<Variable*> globalVariables;
+	utils::List<Symbol*> globalVariables;
 
 	class VariableStack;
-	Variable* GetVariable(const utils::String& name, VariableStack* localVariables) const;
+	Symbol* GetVariable(const utils::String& name, VariableStack* localVariables) const;
 
 	bool CheckGlobalName(const utils::String& name) const; //returns true if name is available
 
 	TypePointer* CreateTypePointer(const TypeBase* const type, VariableScope scope);
-	Variable* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
+	Symbol* CreateGlobalVariable(const TypeBase* const type, VariableScope scope, const utils::String& name);
 	
-	Variable* CreateLocalVariable(const TypeBase* const type, const utils::String& name, VariableStack* localVariables);
+	Symbol* CreateLocalVariable(const TypeBase* const type, const utils::String& name, VariableStack* localVariables);
 
-	ResultVariable Cast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
-	ResultVariable ImplicitCast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
-	ResultVariable Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
-	ResultVariable Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
-	ResultVariable Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
-	ResultVariable Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	Symbol Cast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
+	Symbol ImplicitCast(TypeBase* cType, TypeBase* type, ID* operandId, const parsing::Token* t);
+	Symbol Add(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	Symbol Subtract(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	Symbol Multiply(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
+	Symbol Divide(TypeBase* type1, ID* operand1, TypeBase* type2, ID* operand2, const parsing::Token* parent);
 
 private:
 	class VariableStack {
 	public:
 		utils::List<instruction::InstBase*> variableInstructions;
-		utils::List<Variable*> variables;
-		utils::List<Parameter*> parameters;
+		utils::List<Symbol*> variables;
 		utils::List<uint64> offsets;
 
 		Compiler* compiler;
 	public:
-		VariableStack(Compiler* compiler, const utils::List<Parameter*>& parameters);
+		VariableStack(Compiler* compiler, const utils::List<Symbol*>& parameters);
 		~VariableStack();
 
 		uint64 PushStack();
@@ -265,8 +264,8 @@ private:
 		bool CheckName(const parsing::Token& name);
 		bool CheckName(const utils::String& name, const parsing::Token& token);
 
-		void AddVariable(Variable* variable, instruction::InstBase* inst);
-		Variable* GetVariable(const utils::String& name);
+		void AddVariable(Symbol* variable, instruction::InstBase* inst);
+		Symbol* GetVariable(const utils::String& name);
 
 		uint64 GetSize() const;
 		uint64 GetStackSize(uint64 stack) const;
@@ -278,7 +277,7 @@ private: //Function stuff
 		utils::String name;
 
 		TypeBase* returnType;
-		utils::List<Parameter*> parameters;
+		utils::List<Symbol*> parameters;
 
 		bool defined;
 
@@ -295,7 +294,7 @@ private: //Function stuff
 	utils::List<FunctionDeclaration*> GetFunctionDeclarations(const utils::String& name); 
 	void CreateFunctionType(FunctionDeclaration* decl);
 
-	static bool CheckParameterName(const utils::List<Variable*>& params, const utils::String& name); //return true if name is available
+	static bool CheckParameterName(const utils::List<Symbol*>& params, const utils::String& name); //return true if name is available
 
 private: //Constants
 	ID* CreateConstantBool(bool value);
@@ -317,9 +316,7 @@ private: //Composites
 private: //Expression parsing
 	enum class ExpressionType {
 		Undefined,
-		Variable,
-		Constant,
-		Result,
+		Symbol,
 		Operator,
 		Type,
 		SwizzleComponent
@@ -328,16 +325,8 @@ private: //Expression parsing
 	struct Expression {
 		ExpressionType type;
 
-		//type = Variable
-		Variable* variable;
-
-		union {
-			//type = Constant
-			ResultVariable constant;
-
-			//type = Result
-			ResultVariable result;
-		};
+		//type = symbol
+		Symbol* symbol;
 
 		//type = Operator
 		parsing::TokenType operatorType;
@@ -375,11 +364,11 @@ private:
 		uint64 len;
 	};
 
-	Variable* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
-	ResultVariable ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	ResultVariable ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	ResultVariable ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	utils::List<ResultVariable> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
+	Symbol* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
+	Symbol ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	Symbol ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	Symbol ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	utils::List<Symbol> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 
 private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
@@ -387,11 +376,11 @@ private: //Misc
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle, ID** ogID = nullptr);
-	static utils::List<ID*> GetIDs(utils::List<ResultVariable>& things);
+	static utils::List<ID*> GetIDs(utils::List<Symbol>& things);
 	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
 	TypePrimitive* GetSwizzledType(TypePrimitive* base, const utils::List<uint32>& indices);
 	ID* GetSwizzledVector(TypePrimitive** type, ID* load, const utils::List<uint32>& indices);
-	void CheckIntrin(const parsing::Token& intrin, const Variable* var);
+	void CheckIntrin(const parsing::Token& intrin, const Symbol* var);
 
 public:
 	bool Process();
