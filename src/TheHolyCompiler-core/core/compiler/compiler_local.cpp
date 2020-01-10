@@ -33,10 +33,10 @@ using namespace instruction;
 using namespace utils;
 using namespace parsing;
 
-Compiler::VariableStack::VariableStack(Compiler* compiler, const List<Parameter*>& parameters) : compiler(compiler) {
+Compiler::VariableStack::VariableStack(Compiler* compiler, const List<Symbol*>& parameters) : compiler(compiler) {
 	PushStack();
-	this->parameters.Add(parameters);
-	//PushStack(); Test
+	variables.Add(parameters);
+	PushStack();
 }
 
 Compiler::VariableStack::~VariableStack() {
@@ -59,23 +59,25 @@ bool Compiler::VariableStack::CheckName(const String& name, const Token& token) 
 	bool res = true;
 
 	for (uint64 i = stackOffset; i < variables.GetCount(); i++) {
-		Variable* var = variables[i];
-		if (var->name == name) {
+		Symbol* var = variables[i];
+		if (var->variable.name == name) {
 			Log::CompilerError(token, "Redefinition of variable \"%s\"", name.str);
 		}
 	}
 
-	for (int64 i = stackOffset - 1; i >= (int64)0; i--) {
-		Variable* var = variables[i];
-		if (var->name == name) {
+	uint64 paramOffset = offsets[1];
+
+	for (int64 i = stackOffset - 1; i >= (int64)paramOffset; i--) {
+		Symbol* var = variables[i];
+		if (var->variable.name == name) {
 			Log::CompilerWarning(token, "Overriding local variable \"%s\"", name.str);
 			res = false;
 		}
 	}
 
-	for (uint64 i = 0; i < parameters.GetCount(); i++) {
-		Parameter* var = parameters[i];
-		if (var->name == name) {
+	for (uint64 i = 0; i < paramOffset; i++) {
+		Symbol* var = variables[i];
+		if (var->parameter.name == name) {
 			Log::CompilerWarning(token, "Overriding parameter \"%s\"", name.str);
 			res = false;
 		}
@@ -97,20 +99,15 @@ void Compiler::VariableStack::PopStack() {
 	variables.Remove(of, count - 1);
 }
 
-void Compiler::VariableStack::AddVariable(Variable* variable, InstBase* inst) {
+void Compiler::VariableStack::AddVariable(Symbol* variable, InstBase* inst) {
 	variables.Add(variable);
 	variableInstructions.Add(inst);
 }
 
-Compiler::Variable* Compiler::VariableStack::GetVariable(const String& name) {
+Compiler::Symbol* Compiler::VariableStack::GetVariable(const String& name) {
 	for (int64 i = variables.GetCount() - 1; i >= 0; i--) {
-		Variable* var = variables[i];
-		if (var->name == name) return var;
-	}
-
-	for (uint64 i = 0; i < parameters.GetCount(); i++) {
-		Parameter* par = parameters[i];
-		if (par->name == name) return par;
+		Symbol* var = variables[i];
+		if (var->variable.name == name) return var;
 	}
 
 	return nullptr;
