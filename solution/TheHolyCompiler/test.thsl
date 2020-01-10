@@ -20,7 +20,7 @@ float dot(vec3 v1, vec3 v2);
 
 struct O {
     uint32[10] someOtherName;
-    vec2 shit;
+    vec4 shit;
 };
 
 struct Dank {
@@ -28,26 +28,15 @@ struct Dank {
 };
 
 void main() {
-    bool tmp = false;
+    vec3 v1 = vec3(0.0, 0.0, 0.0);
+    vec3 v2 = vec3(0.0, 0.0, 0.0);
 
-    vec3 v1;
-    vec3 v2 = vec3(CONSTANT, 0.0, CONSTANT);
-
-    float res = dot(v1, v2);
-    Dank d;
-
-    vec2 a = d.o[0].shit.xy;
-
-    if (tmp) a.x = d.o[0].someOtherName[5];
-    else {
-        a.y = 1.23;
-    }
+    v1.zy = (v1.xxx + v2.yyy).zz * dot(v1, v2);
 
     pos = Buffer0.MVP * vec4(position, 1.0);
-
-    return;
 }
 
 float dot(vec3 v1, vec3 v2) {
-    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;    
+    v1 *= v2;
+    return v1.x + v1.y + v1.z;
 }
