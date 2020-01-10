@@ -129,10 +129,13 @@ bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) co
 bool Compiler::FunctionDeclaration::operator==(const FunctionDeclaration* const other) const {
 	if (name == other->name && *returnType == other->returnType && parameters.GetCount() == other->parameters.GetCount()) {
 		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			Variable* param = parameters[i];
-			Variable* paramOther = other->parameters[i];
+			Symbol* param = parameters[i];
+			Symbol* paramOther = other->parameters[i];
 
-			if (*param->type != paramOther->type || param->isConstant != paramOther->isConstant) return false;
+			THC_ASSERT(param->symbolType == SymbolType::Parameter);
+			THC_ASSERT(paramOther->symbolType == SymbolType::Parameter);
+
+			if (*param->type != paramOther->type || param->parameter.isConst != paramOther->parameter.isConst || param->parameter.isReference != paramOther->parameter.isReference) return false;
 		}
 
 		return true;
