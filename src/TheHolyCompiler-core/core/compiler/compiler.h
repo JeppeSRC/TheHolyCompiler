@@ -384,7 +384,7 @@ private:
 	Symbol* ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	Symbol* ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	Symbol* ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	utils::List<Symbol> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
+	utils::List<Symbol*> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 
 private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;

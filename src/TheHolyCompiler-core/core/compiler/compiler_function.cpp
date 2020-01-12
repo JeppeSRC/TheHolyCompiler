@@ -76,15 +76,15 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 	}
 
 	while (true) {
-		Parameter* param = new Parameter;
+		Symbol* param = new Symbol(SymbolType::Parameter);
 
-		param->scope = VariableScope::Function;
+		param->parameter.scope = VariableScope::Function;
 
 		const Token& token = tokens[start + offset++];
 
-		param->isConstant = token.type == TokenType::ModifierConst;
+		param->parameter.isConst = token.type == TokenType::ModifierConst;
 
-		if (!param->isConstant) {
+		if (!param->parameter.isConst) {
 			offset--;
 		}
 
@@ -99,23 +99,23 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 		if (ref.type == TokenType::ModifierReference) {
 			param->type = CreateTypePointer(type, VariableScope::Function);
-			param->isReference = true;
+			param->parameter.isReference = true;
 		} else {
 			offset--;
 			param->type = type;
-			param->isReference = false;
+			param->parameter.isReference = false;
 		}
 
 		const Token& name = tokens[start + offset++];
 
 		if (name.type == TokenType::Name) {
-			param->name = name.string;
+			param->parameter.name = name.string;
 			if (!CheckGlobalName(name.string)) {
 				Log::CompilerWarning(name, "Local parameter \"%s\" overriding global variable", name.string.str);
 			}
 		} else {
 			offset--;
-			param->name = "";
+			param->parameter.name = "";
 		}
 
 		decl->parameters.Add(param);
@@ -153,7 +153,7 @@ naughtyLabel:
 			decl = functionDeclarations[index];
 
 			for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
-				if ((decl->parameters[i]->name = old->parameters[i]->name) == "") {
+				if ((decl->parameters[i]->parameter.name = old->parameters[i]->parameter.name) == "") {
 					Log::CompilerError(name, "Parameter %u needs a name!", i);
 				}
 			}
@@ -208,119 +208,72 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 	decl->id = func->id;
 
 	for (uint64 i = 0; i < decl->parameters.GetCount(); i++) {
-		Parameter* v = decl->parameters[i];
+		Symbol* v = decl->parameters[i];
 
 		InstFunctionParameter* pa = new InstFunctionParameter(v->type->typeId);
 
-		v->variableId = pa->id;
+		v->id= pa->id;
 
 		decl->declInstructions.Add(pa);
 
-		debugInstructions.Add(new InstName(pa->id, (decl->name + "_" + v->name).str));
+		debugInstructions.Add(new InstName(pa->id, (decl->name + "_" + v->parameter.name).str));
 	}
 
 	functionDeclarations.Add(decl);
 }
 
-Compiler::ResultVariable Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token functionName = tokens[info->start];
 
 	ParseInfo inf;
 	inf.start = info->start + 1;
 
-	List<ResultVariable> parameterResults = ParseParameters(tokens, &inf, localVariables);
+	List<Symbol*> parameterResults = ParseParameters(tokens, &inf, localVariables);
 
 	info->len = inf.len;
 
-	ResultVariable r;
-
 	uint64 fOffset = 0;
 
-	List<FunctionDeclaration*> decls = GetFunctionDeclarations(functionName.string);
+	FunctionDeclaration* decl = GetFunctionDeclaration(functionName.string);
 
-	if (!decls.GetCount()) {
-		Log::CompilerError(functionName, "No function with name \"%s\"", functionName.string.str);
-	}
-
-
-	for (uint64 i = 0; i < decls.GetCount(); i++) {
-		if (decls[i]->parameters.GetCount() != parameterResults.GetCount()) {
-			decls.RemoveAt(i--);
-		}
-	}
-
-	if (decls.GetCount() == 0) {
-		Log::CompilerError(functionName, "No overloaded version of function \"%s()\" takes %llu arguments", functionName.string.str, parameterResults.GetCount());
+	if (decl == nullptr) {
+		Log::CompilerError(functionName, "No function called \"%s\" exists", functionName.string.str);
 	}
 
 	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-		ResultVariable& res = parameterResults[i];
+		Symbol* res = parameterResults[i];
 
-		for (uint64 j = 0; j < decls.GetCount(); j++) {
-			FunctionDeclaration* d = decls[j];
 
-			Variable* param = d->parameters[i];
-			TypeBase* dt = param->type;
+		Symbol* param = decl->parameters[i];
+		TypeBase* dt = param->type;
 
-			if (dt->type == Type::Pointer) {
-				//pass by reference but argument is rvalue
-				if (!res.isVariable /*&& !param->isConstant*/) {
-					if (decls.GetCount() == 1) {
-						Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
-					} else {
-						decls.RemoveAt(j--);
-						continue;
-					}
-				}
-			} else if (*dt != res.type) {
-				if (decls.GetCount() == 1) {
-					ID* operandId = res.id;
-
-					if (res.isVariable) {
-						InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
-						instructions.Add(load);
-
-						operandId = load->id;
-					}
-
-					TypeBase* tmp = res.type;
-					res = ImplicitCast(dt, res.type, operandId, &functionName);
-
-				} else {
-					decls.RemoveAt(j--);
-					continue;
-				}
+		if (dt->type == Type::Pointer) {
+			//pass by reference but argument is rvalue
+			if (res->symbolType != SymbolType::Variable) {
+				Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
 			}
+		} else if (*dt != res->type) {
+			continue;
 		}
 	}
-
-	FunctionDeclaration* decl = decls[0];
-
 	List<ID*> ids = Compiler::GetIDs(parameterResults);
 
 	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)ids.GetCount(), ids.GetData());
 	instructions.Add(call);
-
-	r.id = call->id;
-	r.type = decl->returnType;
-	r.isVariable = false;
-
-	return r;
+	
+	return new Symbol(SymbolType::Result, decl->returnType, call->id);
 }
 
-Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	info->end = 0;
 
 	Token tmp = tokens[info->start];
 
 	TypePrimitive* type = (TypePrimitive*)CreateType(tokens, info->start, &info->end);
 
-	List<ResultVariable> parameters = ParseParameters(tokens, info, localVariables);
+	List<Symbol*> parameters = ParseParameters(tokens, info, localVariables);
 
-	ResultVariable res;
-	res.type = type;
-	res.isConstant = true;
-	res.isVariable = false;
+	Symbol* res = new Symbol(SymbolType::Constant, type);
 
 	InstBase* inst = nullptr;
 
@@ -330,7 +283,7 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		uint8 numComponents = 0;
 
 		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			TypePrimitive* t = (TypePrimitive*)parameters[i].type;
+			TypePrimitive* t = (TypePrimitive*)parameters[i]->type;
 
 			if (type->componentType != t->componentType || type->bits != t->bits) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
@@ -338,7 +291,7 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 
 			numComponents += t->rows > 0 ? t->rows : 1;
 
-			if (parameters[i].isConstant == false) res.isConstant = false;
+			if (parameters[i]->parameter.isConst == false) res->symbolType = SymbolType::Result;
 		}
 
 		if (numComponents != type->rows) {
@@ -352,13 +305,13 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		}
 
 		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			TypePrimitive* t = (TypePrimitive*)parameters[i].type;
+			TypePrimitive* t = (TypePrimitive*)parameters[i]->type;
 
 			if (t->componentType != type->componentType || t->bits != type->bits || t->rows != type->rows || t->type != Type::Vector) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
 			}
 
-			if (parameters[i].isConstant == false) res.isConstant = false;
+			if (parameters[i]->parameter.isConst == false) res->symbolType = SymbolType::Result;
 		}
 
 		ids = Compiler::GetIDs(parameters);
@@ -366,7 +319,7 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		Log::CompilerError(tmp, "\"%s\" doesn't have a constructor", type->typeString.str);
 	}
 
-	if (res.isConstant) {
+	if (res->symbolType == SymbolType::Constant) {
 		inst = new InstConstantComposite(type->typeId, (uint32)ids.GetCount(), ids.GetData());
 		CheckConstantExist(&inst);
 	} else {
@@ -374,12 +327,12 @@ Compiler::ResultVariable Compiler::ParseTypeConstructor(List<Token>& tokens, Par
 		instructions.Add(inst);
 	}
 	
-	res.id = inst->id;
+	res->id = inst->id;
 
 	return res;
 }
 
-List<Compiler::ResultVariable> Compiler::ParseParameters(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+List<Compiler::Symbol*> Compiler::ParseParameters(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	uint64 offset = info->start;
 
 	const Token& parenthesisOpen = tokens[offset];
@@ -395,7 +348,7 @@ List<Compiler::ResultVariable> Compiler::ParseParameters(List<Token>& tokens, Pa
 	}
 
 
-	List<ResultVariable> parameterResults;
+	List<Symbol*> parameterResults;
 
 	bool moreParams = true;
 
@@ -412,7 +365,7 @@ List<Compiler::ResultVariable> Compiler::ParseParameters(List<Token>& tokens, Pa
 		inf.start = offset;
 		inf.end = end;
 
-		ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+		Symbol* res = ParseExpression(tokens, &inf, localVariables);
 
 		offset = inf.end + 2;
 
