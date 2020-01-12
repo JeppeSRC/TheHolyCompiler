@@ -271,7 +271,7 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 
 	TypePrimitive* type = (TypePrimitive*)CreateType(tokens, info->start, &info->end);
 
-	List<Symbol*> parameters = ParseParameters(tokens, info, localVariables);
+	List<Symbol*> arguments = ParseParameters(tokens, info, localVariables);
 
 	Symbol* res = new Symbol(SymbolType::Constant, type);
 
@@ -282,8 +282,8 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 	if (type->type == Type::Vector) {
 		uint8 numComponents = 0;
 
-		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			TypePrimitive* t = (TypePrimitive*)parameters[i]->type;
+		for (uint64 i = 0; i < arguments.GetCount(); i++) {
+			TypePrimitive* t = (TypePrimitive*)arguments[i]->type;
 
 			if (type->componentType != t->componentType || type->bits != t->bits) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
@@ -291,30 +291,31 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 
 			numComponents += t->rows > 0 ? t->rows : 1;
 
-			if (parameters[i]->parameter.isConst == false) res->symbolType = SymbolType::Result;
+			if (arguments[i]->symbolType != SymbolType::Constant) res->symbolType = SymbolType::Result;
+
 		}
 
 		if (numComponents != type->rows) {
 			Log::CompilerError(tmp, "Total component count must be %llu is %u", type->rows, numComponents);
 		}
 
-		ids = Compiler::GetIDs(parameters);
+		ids = Compiler::GetIDs(arguments);
 	} else if (type->type == Type::Matrix) {
-		if (parameters.GetCount() != type->columns) {
-			Log::CompilerError(tmp, "Argument count must be %llu is %u", parameters.GetCount(), type->columns);
+		if (arguments.GetCount() != type->columns) {
+			Log::CompilerError(tmp, "Argument count must be %llu is %u", arguments.GetCount(), type->columns);
 		}
 
-		for (uint64 i = 0; i < parameters.GetCount(); i++) {
-			TypePrimitive* t = (TypePrimitive*)parameters[i]->type;
+		for (uint64 i = 0; i < arguments.GetCount(); i++) {
+			TypePrimitive* t = (TypePrimitive*)arguments[i]->type;
 
 			if (t->componentType != type->componentType || t->bits != type->bits || t->rows != type->rows || t->type != Type::Vector) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
 			}
 
-			if (parameters[i]->parameter.isConst == false) res->symbolType = SymbolType::Result;
+			if (arguments[i]->symbolType != SymbolType::Constant) res->symbolType = SymbolType::Result;
 		}
 
-		ids = Compiler::GetIDs(parameters);
+		ids = Compiler::GetIDs(arguments);
 	} else {
 		Log::CompilerError(tmp, "\"%s\" doesn't have a constructor", type->typeString.str);
 	}

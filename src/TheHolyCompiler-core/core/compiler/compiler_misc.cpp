@@ -1297,18 +1297,18 @@ Compiler::Symbol* Compiler::Divide(TypeBase* type1, ID* operand1, TypeBase* type
 	return new Symbol(SymbolType::Result, lType, instruction->id);
 }
 
-utils::List<Compiler::FunctionDeclaration*> Compiler::GetFunctionDeclarations(const String& name) {
+Compiler::FunctionDeclaration* Compiler::GetFunctionDeclaration(const String& name) {
 	List<FunctionDeclaration*> decls;
 
 	for (uint64 i = 0; i < functionDeclarations.GetCount(); i++) {
 		FunctionDeclaration* d = functionDeclarations[i];
 
 		if (d->name == name) {
-			decls.Add(d);
+			return d;
 		}
 	}
 
-	return decls;
+	return nullptr;
 }
 
 void Compiler::CreateFunctionType(FunctionDeclaration* decl) {

@@ -94,7 +94,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 					Symbol* res = ParseFunctionCall(tokens, &inf, localVariables);
 
-					e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Symbol;
+					e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
 					e.symbol = res;
 
 					i += inf.len;
@@ -110,7 +110,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 			}
 		} else if (t.type == TokenType::Value) {
 			e.type = ExpressionType::Constant;
-			e.symbol = new Symbol;
+			e.symbol = new Symbol(SymbolType::Constant);
 			e.symbol->type = CreateTypePrimitiveScalar(ConvertToType(t.valueType), 32, t.sign);
 			e.symbol->id = CreateConstant(e.symbol->type, (uint32)t.value);
 			e.parent = t;
@@ -124,7 +124,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 			Symbol* res = ParseTypeConstructor(tokens, &inf, localVariables);
 
-			e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Symbol;
+			e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
 			e.symbol = res;
 
 			info->end -= inf.end;
@@ -144,9 +144,6 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 			} else {
 				ParseInfo inf;
 
-				e.type = ExpressionType::Symbol;
-				e.parent = t;
-
 				uint64 parenthesisClose = FindMatchingToken(tokens, i, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
 				if (parenthesisClose > info->end) {
@@ -160,7 +157,8 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 				e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
 				e.symbol = res;
-
+				e.parent = t;
+				
 				info->end -= parenthesisClose - inf.end;
 
 				i = inf.end + 1;

@@ -652,15 +652,11 @@ bool Compiler::GenerateFile(const String& filename) {
 
 	uint32 executionMode = CompilerOptions::VertexShader() ? THC_SPIRV_EXECUTION_MODEL_VERTEX : CompilerOptions::FragmentShader() ? THC_SPIRV_EXECUTION_MODEL_FRAGMENT : ~0;
 	
-	List<FunctionDeclaration*> main = GetFunctionDeclarations("main");
+	FunctionDeclaration* decl = GetFunctionDeclaration("main");
 
-	if (main.GetCount() == 0) {
+	if (decl == nullptr) {
 		Log::Error("No main function defined!");
-	} else if (main.GetCount() > 1) {
-		Log::Error("Multiple main functions defined!");
 	}
-
-	FunctionDeclaration* decl = main[0];
 
 	if (!decl->defined) Log::Error("Main function not defined!");
 

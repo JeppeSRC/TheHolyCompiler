@@ -187,11 +187,16 @@ private: //Variable stuff
 			bool isConst;
 				
 			ID* loadId;
-		} variable;
+		};
 
 		struct Parameter : public Variable {
 			bool isReference;
-		} parameter;
+		};
+
+		union {
+			Variable variable;
+			Parameter parameter;
+		};
 
 		struct Constant {
 
@@ -201,7 +206,8 @@ private: //Variable stuff
 
 		} result;
 
-		Symbol(SymbolType symbolType = SymbolType::None, TypeBase* type = nullptr, ID* id = nullptr) : symbolType(symbolType), type(type), id(id) {}
+		Symbol(SymbolType symbolType = SymbolType::None, TypeBase* type = nullptr, ID* id = nullptr) : symbolType(symbolType), type(type), id(id), parameter() {}
+		~Symbol() {}
 	};
 	/*
 	struct Variable {
@@ -292,7 +298,7 @@ private: //Function stuff
 
 	utils::List<FunctionDeclaration*> functionDeclarations;
 
-	utils::List<FunctionDeclaration*> GetFunctionDeclarations(const utils::String& name); 
+	FunctionDeclaration* GetFunctionDeclaration(const utils::String& name); 
 	void CreateFunctionType(FunctionDeclaration* decl);
 
 	static bool CheckParameterName(const utils::List<Symbol*>& params, const utils::String& name); //return true if name is available
@@ -328,12 +334,22 @@ private: //Expression parsing
 	};
 
 	inline friend bool operator==(const ExpressionType left, const ExpressionType right) {
+		THC_ASSERT(left != ExpressionType::Symbol);
+
 		uint16 l = (uint16)left;
 		uint16 r = (uint16)right;
 
+		uint16 lHigh = l & 0xE000;
+		uint16 rHigh = r & 0xE000;
+
+		l &= 0x1FFF;
+		r &= 0x1FFF;
+
+		if (rHigh) {
+			return lHigh == rHigh;
+		}
+
 		if (l == r) return true;
-	
-		if ((l & 0xFFFC) == (r & 0xFFFC)) return true;
 
 		return false;
 	}
