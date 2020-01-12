@@ -216,8 +216,8 @@ void Compiler::ParseTokens(List<Token>& tokens) {
 			} else {
 				TypeBase* type = CreateType(tokens, i - 1, nullptr);
 
-				Variable* var = CreateGlobalVariable(type, VariableScope::Private, token.string);
-				var->isConstant = tokens[i - 1].type == TokenType::ModifierConst;
+				Symbol* var = CreateGlobalVariable(type, VariableScope::Private, token.string);
+				var->variable.isConst = tokens[i - 1].type == TokenType::ModifierConst;
 
 				if (t2.type == TokenType::SemiColon) {
 					continue;
@@ -336,28 +336,26 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 					Log::CompilerError(token, "Expression is missing \";\"");
 				}
 
-				ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+				Symbol* res = ParseExpression(tokens, &inf, localVariables);
 
 				i = inf.end+1;
 
-				TypeBase* type = res.type;
+				TypeBase* type = res->type;
 				TypeBase* retType = declaration->returnType;
 
 				ID* operandId;
 
-				if (res.isVariable) {
-					InstLoad* load = new InstLoad(type->typeId, res.id, 0);
+				if (res->symbolType == SymbolType::Variable) {
+					InstLoad* load = new InstLoad(type->typeId, res->id, 0);
 					instructions.Add(load);
 
 					operandId = load->id;
 				} else {
-					operandId = res.id;
+					operandId = res->id;
 				}
 
 				if (*type != retType) {
-					ResultVariable tmp = ImplicitCast(retType, type, operandId, &next);
-
-					operandId = res.id;
+					operandId = ImplicitCastId(retType, type, operandId, &next);
 				}
 				
 
@@ -394,22 +392,22 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 	}
 
 
-	ResultVariable res = ParseExpression(tokens, &inf, localVariables);
+	Symbol* res = ParseExpression(tokens, &inf, localVariables);
 
-	if (!Utils::CompareEnums(res.type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
-		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res.type->typeString.str);
+	if (!Utils::CompareEnums(res->type->type, CompareOperation::Or, Type::Int, Type::Float, Type::Bool)) {
+		Log::CompilerError(tokens[start + 2], "Expression must result in a scalar bool, int or float type. Is \"%s\"", res->type->typeString.str);
 	}
 
-	if (res.isVariable) {
-		InstLoad* load = new InstLoad(res.type->typeId, res.id, 0);
+	if (res->symbolType == SymbolType::Variable) {
+		InstLoad* load = new InstLoad(res->type->typeId, res->id, 0);
 		instructions.Add(load);
 
-		res.id = load->id;
+		res->id = load->id;
 	}
 
-	if (res.type->type != Type::Bool) {
-		TypeBase* tmp = res.type;
-		res = ImplicitCast(CreateTypeBool(), res.type, res.id, &tokens[start + 2]);
+	if (res->type->type != Type::Bool) {
+		TypeBase* tmp = res->type;
+		res = ImplicitCast(CreateTypeBool(), res->type, res->id, &tokens[start + 2]);
 	}
 
 	tokens.Remove(start, inf.end+1);
@@ -421,7 +419,7 @@ void Compiler::ParseIf(FunctionDeclaration* declaration, List<Token>& tokens, ui
 	InstBase* falseBlock = new InstLabel;
 
 	instructions.Add(new InstSelectionMerge(mergeBlock->id, 0));
-	instructions.Add(new InstBranchConditional(res.id, trueBlock->id, falseBlock->id, 1, 1));
+	instructions.Add(new InstBranchConditional(res->id, trueBlock->id, falseBlock->id, 1, 1));
 	instructions.Add(trueBlock);
 
 	if (bracket.type == TokenType::CurlyBracketOpen) { 
@@ -481,13 +479,13 @@ void Compiler::ParseElse(FunctionDeclaration* declaration, List<Token>& tokens, 
 	instructions.Add(new InstBranch(mergeBlock->id));
 }
 
-Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
+Compiler::Symbol* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	uint64 offset = 0;
 
 	const Token& name = tokens[info->start + offset++];
 
-	Variable* var = GetVariable(name.string, localVariables);
-	Variable* result = new Variable;
+	Symbol* var = GetVariable(name.string, localVariables);
+	Symbol* result = new Symbol;
 
 	if (var == nullptr) {
 		Log::CompilerError(name, "Unexpected symbol \"%s\" expected a variable", name.string.str);
@@ -545,25 +543,25 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 					Log::CompilerError(op, "\"[\" needs a closing \"]\"");
 				}
 
-				ResultVariable index = ParseExpression(tokens, &inf, localVariables);
+				Symbol* index = ParseExpression(tokens, &inf, localVariables);
 
-				if (index.type->type != Type::Int) {
+				if (index->type->type != Type::Int) {
 					Log::CompilerError(op, "Array index must be a (signed) integer scalar");
 				} else {
-					TypePrimitive* p = (TypePrimitive*)index.type;
+					TypePrimitive* p = (TypePrimitive*)index->type;
 
 					if (!p->sign) {
 						Log::CompilerWarning(op, "Array index is unsigned but will be treated as signed");
 					}
 				}
 
-				if (index.isVariable) {
-					InstLoad* load = new InstLoad(index.type->typeId, index.id, 0);
+				if (index->symbolType == SymbolType::Variable) {
+					InstLoad* load = new InstLoad(index->type->typeId, index->id, 0);
 					instructions.Add(load);
 
 					accessIds.Add(load->id);
 				} else {
-					accessIds.Add(index.id);
+					accessIds.Add(index->id);
 				}
 
 				n.Append("[]");
@@ -579,18 +577,18 @@ Compiler::Variable* Compiler::ParseName(List<Token>& tokens, ParseInfo* info, Va
 		}
 		
 		if (accessIds.GetCount() != 0) {
-			TypePointer* pointer = CreateTypePointer(curr, var->scope);
+			TypePointer* pointer = CreateTypePointer(curr, var->variable.scope);
 
-			InstInBoundsAccessChain* access = new InstInBoundsAccessChain(pointer->typeId, var->variableId, (uint32)accessIds.GetCount(), accessIds.GetData());
+			InstInBoundsAccessChain* access = new InstInBoundsAccessChain(pointer->typeId, var->id, (uint32)accessIds.GetCount(), accessIds.GetData());
 
 			instructions.Add(access);
 			
-			result->scope = var->scope;
-			result->name = n;
+			result->symbolType = SymbolType::Variable;
+			result->variable.scope = var->variable.scope;
+			result->variable.name = n;
 			result->type = curr;
-			result->typePointer = pointer;
-			result->variableId = access->id;
-			result->isConstant = var->isConstant;
+			result->id = access->id;
+			result->variable.isConst= var->variable.isConst;
 		} else {
 			delete result;
 			result = var;
@@ -641,10 +639,10 @@ bool Compiler::GenerateFile(const String& filename) {
 
 	auto findIds = [&](VariableScope scope) {
 		for (uint64 i = 0; i < globalVariables.GetCount(); i++) {
-			Variable* v = globalVariables[i];
+			Symbol* v = globalVariables[i];
 
-			if (v->scope == scope) {
-				ids.Add(v->variableId);
+			if (v->variable.scope == scope) {
+				ids.Add(v->id);
 			}
 		}
 	};
