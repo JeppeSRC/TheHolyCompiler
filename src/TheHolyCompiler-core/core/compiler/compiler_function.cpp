@@ -271,14 +271,16 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 		TypeBase* argType = res->type;
 		TypeBase* paramType = param->type;
 
-		if (*paramType != argType) {
-			Log::CompilerError(functionName, "Missmatching type in argument %u (%s) in function %s", i, argType->typeString.str, declSig.str);
+		TypeBase* tmp = GetSwizzledType((TypePrimitive*)argType, res->swizzleIndices);
+
+		if (*paramType != tmp) {
+			Log::CompilerError(functionName, "Missmatching type in argument %u (%s) in function %s", i, tmp->typeString.str, declSig.str);
 		}
 
 		if (param->parameter.isReference) {
 			if (res->symbolType == SymbolType::Variable) {
 				if (res->variable.isConst && !param->parameter.isConst) {
-					Log::CompilerError(functionName, "Argument &u (%s) in functions %s must be const", i, argType->typeString.str, declSig.str);
+					Log::CompilerError(functionName, "Argument &u (%s) in functions %s is const", i, argType->typeString.str, declSig.str);
 				}
 
 				ids.Add(res->id);
@@ -292,6 +294,8 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 				ids.Add(res->id);
 			}
 		}
+
+		
 		
 	}
 
