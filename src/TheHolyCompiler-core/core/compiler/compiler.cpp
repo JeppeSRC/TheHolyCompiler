@@ -274,7 +274,7 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 				ParseFunctionCall(tokens, &inf, localVariables);
 
-				tokens.Remove(i, i + inf.len - 1);
+				tokens.Remove(i, i + inf.len);
 			} else if (index != ~0) {
 				TypeStruct* str = (TypeStruct*)typeDefinitions[index];
 				tokens.RemoveAt(i);
