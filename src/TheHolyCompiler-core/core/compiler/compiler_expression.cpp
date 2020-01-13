@@ -161,7 +161,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				
 				info->end -= parenthesisClose - inf.end;
 
-				i = inf.end + 1;
+				i = inf.end;
 			}
 		}
 
@@ -338,6 +338,10 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 		} else if (e.operatorType == TokenType::OperatorNegate) {
 			if (i >= expressions.GetCount() - 1) {
 				Log::CompilerError(e.parent, "No right hand operand");
+			} else if (i - 1 >= 0) {
+				Expression& l = expressions[i];
+				if (l.type == ExpressionType::Operator) {
+				}
 			}
 
 			Expression& right = expressions[i + 1];
@@ -511,7 +515,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 		if (e.operatorType == TokenType::OperatorAdd || e.operatorType == TokenType::OperatorSub) {
 			bool add = e.operatorType == TokenType::OperatorAdd;
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -548,7 +552,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (e.operatorType == TokenType::OperatorRightShift || e.operatorType == TokenType::OperatorLeftShift) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -601,7 +605,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLess, TokenType::OperatorLessEqual, TokenType::OperatorGreater, TokenType::OperatorGreaterEqual)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -720,7 +724,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorEqual, TokenType::OperatorNotEqual)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -841,7 +845,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorBitwiseAnd)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -892,7 +896,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorBitwiseXor)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -943,7 +947,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorBitwiseOr)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -994,7 +998,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLogicalAnd)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;
@@ -1051,7 +1055,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 		if (Utils::CompareEnums(e.operatorType, CompareOperation::Or, TokenType::OperatorLogicalOr)) {
 			Expression& left = expressions[i - 1];
-			Expression& right = expressions[1 + 1];
+			Expression& right = expressions[i + 1];
 
 			TypePrimitive* lType = nullptr;
 			TypePrimitive* rType = nullptr;

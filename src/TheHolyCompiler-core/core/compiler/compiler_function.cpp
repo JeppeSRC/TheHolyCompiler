@@ -414,6 +414,13 @@ List<Compiler::Symbol*> Compiler::ParseParameters(List<Token>& tokens, ParseInfo
 
 	do {
 		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
+		uint64 open = tokens.Find<TokenType>(TokenType::ParenthesisOpen, CmpFunc, offset);
+		uint64 close = FindMatchingToken(tokens, open, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+
+		if (end > open&& end < close) {
+			open = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, close);
+			if (open != ~0) end = open;
+		}
 
 		if (end-- > parenthesisClose) {
 			end = parenthesisClose - 1;

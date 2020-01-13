@@ -434,11 +434,20 @@ Compiler::TypeStruct* Compiler::CreateTypeStruct(List<Token>& tokens, uint64 sta
 		const StructMember& m = var->members[i];
 		debugInstructions.Add(new InstMemberName(st->id, (uint32)i, m.name.str));
 		annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_OFFSET, &memberOffset, 1));
+
+		if (m.type->type == Type::Matrix) {
+			TypePrimitive* mat = (TypePrimitive*)m.type;
+			uint32 stride = mat->rows * (mat->bits / 8);
+			annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_COL_MAJOR, nullptr, 0));
+			annotationIstructions.Add(new InstMemberDecorate(st->id, (uint32)i, THC_SPIRV_DECORATION_MATRIX_STRIDE, &stride, 1));
+		}
 		
 		memberOffset += m.type->GetSize();
 	}
 
 	var->typeId = st->id;
+
+	annotationIstructions.Add(new InstDecorate(st->id, THC_SPIRV_DECORATION_BLOCK, nullptr, 0));
 
 	if (len) *len += offset;
 

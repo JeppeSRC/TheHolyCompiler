@@ -183,9 +183,8 @@ List<Token> Compiler::Tokenize() {
 				t.type = TokenType::OperatorNegate;
 			} else {
 				const Token& left = tokens[i-1];
-				const Token& right = tokens[i+1];
 
-				if ((right.type == TokenType::Value || right.type == TokenType::Name) && (left.type != TokenType::Name || left.type != TokenType::Value)) {
+				if (left.type >= TokenType::OperatorTernary1 && left.type <= TokenType::OperatorCompoundDiv || left.type == TokenType::Comma || left.type == TokenType::ParenthesisOpen) {
 					t.type = TokenType::OperatorNegate;
 				}
 			}
@@ -308,7 +307,9 @@ void Compiler::ParseBody(FunctionDeclaration* declaration, List<Token>& tokens, 
 
 				ParseExpression(tokens, &inf, localVariables);
 
-				i = inf.end+1;
+				if (tokens[inf.end].type != TokenType::SemiColon) inf.end++;
+
+				i = inf.end;
 			}
 		} else if (token.type == TokenType::ControlFlowReturn) {
 			const Token& next = tokens[++i];
@@ -661,7 +662,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	if (!decl->defined) Log::Error("Main function not defined!");
 
 	capabilities.Add(new InstEntryPoint(executionMode, decl->id, "main", (uint32)ids.GetCount(), ids.GetData()));
-	if (CompilerOptions::FragmentShader()) capabilities.Add(new InstExecutionMode(decl->id, THC_SPIRV_EXECUTION_MODE_ORIGIN_LOWER_LEFT, 0, nullptr));
+	if (CompilerOptions::FragmentShader()) capabilities.Add(new InstExecutionMode(decl->id, THC_SPIRV_EXECUTION_MODE_ORIGIN_UPPER_LEFT, 0, nullptr));
 
 	FILE* file = fopen(filename.str, "wb");
 
@@ -672,7 +673,7 @@ bool Compiler::GenerateFile(const String& filename) {
 
 	struct Header {
 		uint32 magic = THC_SPIRV_MAGIC_NUMBER;
-		uint32 version = 0x00010300;
+		uint32 version = 0x00010000;
 		uint32 gen = THC_GENERATOR_ID;
 		uint32 bound = IDManager::GetCount()+1;
 		uint32 schema = 0;
