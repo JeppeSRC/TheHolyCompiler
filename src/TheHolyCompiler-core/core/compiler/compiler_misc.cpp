@@ -756,6 +756,8 @@ uint32 Compiler::ScopeToStorageClass(VariableScope scope) {
 			return THC_SPIRV_STORAGE_CLASS_UNIFORM;
 		case VariableScope::Function:
 			return THC_SPIRV_STORAGE_CLASS_FUNCTION;
+		case VariableScope::UniformConstant:
+			return THC_SPIRV_STORAGE_CLASS_UNIFORM_CONSTANT;
 	}
 
 	return ~0;

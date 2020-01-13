@@ -154,6 +154,7 @@ private: //Variable stuff
 		Out,
 		Private,
 		Uniform,
+		UniformConstant,
 		Function
 	};
 
