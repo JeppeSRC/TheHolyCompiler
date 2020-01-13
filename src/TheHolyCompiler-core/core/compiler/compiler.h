@@ -185,7 +185,7 @@ private: //Variable stuff
 
 		struct Variable {
 			VariableScope scope;
-			utils::String name;
+			utils::String name = "";
 
 			bool isConst;
 				
