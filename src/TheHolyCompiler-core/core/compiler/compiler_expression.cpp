@@ -195,7 +195,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 					Log::CompilerError(left.parent, "Left hand operand of must be a interger/float scalar");
 				}
 
-				const Symbol* var = left.symbol;
+				Symbol* var = left.symbol;
 
 				InstLoad* load = new InstLoad(var->type->typeId, var->id, 0);
 				InstBase* operation = nullptr;
@@ -220,7 +220,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				left.symbol = new Symbol(SymbolType::Result, var->type, operation->id);
 
 				expressions.RemoveAt(i--);
-			} else if (rightVar) {
+			} else if (!rightVar) {
 				Log::CompilerError(e.parent, "Left or right hand operand must be a lvalue");
 			}
 		} else if (e.operatorType == TokenType::OperatorSelector) {
@@ -305,28 +305,26 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 					Log::CompilerError(right.parent, "Right hand operand of must be a interger/float scalar");
 				}
 
-				const Symbol* var = right.symbol;
+				Symbol* var = right.symbol;
 
-				InstLoad* load = new InstLoad(var->type->typeId, var->id, 0);
+				ID* load = LoadVariable(var, true);
 				InstBase* operation = nullptr;
 
 				switch (var->type->type) {
 					case Type::Int:
-						operation = new InstIAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : ~0U));
+						operation = new InstIAdd(var->type->typeId, load, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1U : ~0U));
 						break;
 					case Type::Float:
-						operation = new InstFAdd(var->type->typeId, load->id, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
+						operation = new InstFAdd(var->type->typeId, load, CreateConstant(var->type, e.operatorType == TokenType::OperatorIncrement ? 1.0f : -1.0f));
 						break;
 				}
 
-				InstStore* store = new InstStore(var->id, operation->id, 0);
-
-				instructions.Add(load);
 				instructions.Add(operation);
-				instructions.Add(store);
 
-				right.type = ExpressionType::Result;
-				right.symbol = new Symbol(SymbolType::Result, var->type, operation->id);
+				StoreVariable(var, operation->id, true);
+
+				//right.type = ExpressionType::Result;
+				//right.symbol = new Symbol(SymbolType::Result, var->type, operation->id);
 
 				expressions.RemoveAt(i);
 			} else {
@@ -1118,11 +1116,9 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 			Expression& left = expressions[i - 1];
 			Expression& right = expressions[i + 1];
 
-			ID* varId = nullptr;
 			TypePrimitive* lBaseType = nullptr;
 
 			if (left.type == ExpressionType::Variable) {
-				varId = left.symbol->id;
 				lBaseType = (TypePrimitive*)left.symbol->type;
 			} else {
 				Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
@@ -1242,7 +1238,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				tmp->id = inst->id;
 			}
 
-			instructions.Add(new InstStore(varId, tmp->id, 0));
+			StoreVariable(left.symbol, tmp->id);
 
 			delete tmp;
 

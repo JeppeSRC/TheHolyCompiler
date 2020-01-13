@@ -187,6 +187,9 @@ private: //Variable stuff
 			bool isConst;
 				
 			ID* loadId = nullptr;
+
+			utils::List<uint32> swizzleIndices;
+			bool swizzleWritable;
 		};
 
 		struct Parameter : public Variable {
@@ -402,6 +405,8 @@ private:
 	Symbol* ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	utils::List<Symbol*> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 
+	static utils::String GetFunctionSignature(FunctionDeclaration* decl);
+	static utils::String GetFunctionSignature(utils::List<Symbol*> parameters, const utils::String& functionName);
 private: //Misc
 	bool IsCharAllowedInName(const char c, bool first = true) const;
 	bool IsCharWhitespace(const char c) const;

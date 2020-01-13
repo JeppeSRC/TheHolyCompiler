@@ -133,17 +133,29 @@ void Compiler::ParseFunction(List<Token>& tokens, uint64 start) {
 
 naughtyLabel:
 
-	auto cmp = [](FunctionDeclaration* const& curr, FunctionDeclaration* const& other) {
-		return *curr == other;
-	};
-
 	const Token& bracket = tokens[start + offset++];
 
-	uint64 index = functionDeclarations.Find<FunctionDeclaration*>(decl, cmp);
+	uint64 index = ~0;
+
+	String declSig = GetFunctionSignature(decl);
+
+	for (uint64 i = 0; i < functionDeclarations.GetCount(); i++) {
+		FunctionDeclaration* d = functionDeclarations[i];
+
+		if (d->name == decl->name) {
+			if (GetFunctionSignature(d) == declSig) {
+				index = i;
+				break;
+			} else {
+				index--;
+				break;
+			}
+		}
+	}
 
 	if (index == ~0) {
 		CreateFunctionDeclaration(decl);
-	} else if (bracket.type == TokenType::SemiColon) {
+	} else if (bracket.type == TokenType::SemiColon || index == ~0 - 1) {
 		Log::CompilerError(name, "Redeclaration of function \"%s\"", name.string.str);
 	}
 
@@ -214,6 +226,10 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 
 		v->id= pa->id;
 
+		if (v->type->type == Type::Pointer) {
+			v->type = ((TypePointer*)v->type)->baseType;
+		}
+
 		decl->declInstructions.Add(pa);
 
 		debugInstructions.Add(new InstName(pa->id, (decl->name + "_" + v->parameter.name).str));
@@ -228,7 +244,7 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 	ParseInfo inf;
 	inf.start = info->start + 1;
 
-	List<Symbol*> parameterResults = ParseParameters(tokens, &inf, localVariables);
+	List<Symbol*> arguments = ParseParameters(tokens, &inf, localVariables);
 
 	info->len = inf.len;
 
@@ -240,23 +256,44 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 		Log::CompilerError(functionName, "No function called \"%s\" exists", functionName.string.str);
 	}
 
-	for (uint64 i = 0; i < parameterResults.GetCount(); i++) {
-		Symbol* res = parameterResults[i];
+	String declSig = GetFunctionSignature(decl);
 
-
-		Symbol* param = decl->parameters[i];
-		TypeBase* dt = param->type;
-
-		if (dt->type == Type::Pointer) {
-			//pass by reference but argument is rvalue
-			if (res->symbolType != SymbolType::Variable) {
-				Log::CompilerError(functionName, "argument %llu in \"%s\" must be a lvalue", i, functionName.string.str);
-			}
-		} else if (*dt != res->type) {
-			continue;
-		}
+	if (arguments.GetCount() != decl->parameters.GetCount()) {
+		Log::CompilerError(functionName, "Fuction %s takes %llu arguments", declSig.str, decl->parameters.GetCount());
 	}
-	List<ID*> ids = Compiler::GetIDs(parameterResults);
+
+	List<ID*> ids(arguments.GetCount());
+
+	for (uint64 i = 0; i < arguments.GetCount(); i++) {
+		Symbol* res = arguments[i];
+		Symbol* param = decl->parameters[i];
+
+		TypeBase* argType = res->type;
+		TypeBase* paramType = param->type;
+
+		if (*paramType != argType) {
+			Log::CompilerError(functionName, "Missmatching type in argument %u (%s) in function %s", i, argType->typeString.str, declSig.str);
+		}
+
+		if (param->parameter.isReference) {
+			if (res->symbolType == SymbolType::Variable) {
+				if (res->variable.isConst && !param->parameter.isConst) {
+					Log::CompilerError(functionName, "Argument &u (%s) in functions %s must be const", i, argType->typeString.str, declSig.str);
+				}
+
+				ids.Add(res->id);
+			} else {
+				Log::CompilerError(functionName, "Argument %u (%s) in function %s must be lvalue", i, argType->typeString.str, declSig.str);
+			}
+		} else {
+			if (res->symbolType == SymbolType::Variable) {
+				ids.Add(LoadVariable(res, true)); //TODO: option
+			} else {
+				ids.Add(res->id);
+			}
+		}
+		
+	}
 
 	InstFunctionCall* call = new InstFunctionCall(decl->returnType->typeId, decl->id, (uint32)ids.GetCount(), ids.GetData());
 	instructions.Add(call);
@@ -376,6 +413,38 @@ List<Compiler::Symbol*> Compiler::ParseParameters(List<Token>& tokens, ParseInfo
 	info->len = offset - info->start;
 
 	return std::move(parameterResults);
+}
+
+String Compiler::GetFunctionSignature(FunctionDeclaration* decl) {
+	return GetFunctionSignature(decl->parameters, decl->name);
+}
+
+String Compiler::GetFunctionSignature(List<Symbol*> parameters, const String& functionName) {
+	String result = functionName + "(";
+
+	for (uint64 i = 0; i < parameters.GetCount(); i++) {
+		THC_ASSERT(parameters[i]->symbolType == SymbolType::Parameter);
+
+		Symbol* param = parameters[i];
+
+		if (param->parameter.isConst) result += "const ";
+		
+		result += param->type->typeString;
+
+		if (param->parameter.isReference) {
+			result += "&, ";
+		} else {
+			result += ", ";
+		}
+	}
+	
+	uint64 len = result.length-1;
+
+	result.Remove(len, len);
+
+	result += ")";
+
+	return result;
 }
 
 }
