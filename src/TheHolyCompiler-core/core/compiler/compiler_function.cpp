@@ -280,7 +280,11 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 		if (param->parameter.isReference) {
 			if (res->symbolType == SymbolType::Variable) {
 				if (res->variable.isConst && !param->parameter.isConst) {
-					Log::CompilerError(functionName, "Argument &u (%s) in functions %s is const", i, argType->typeString.str, declSig.str);
+					Log::CompilerError(functionName, "Argument %u (%s) in function %s is const", i, argType->typeString.str, declSig.str);
+				}
+
+				if (res->swizzleIndices.GetCount() > 0) {
+					Log::CompilerError(functionName, "Argument %u (%s) in function %s cannot be swizzled", i, tmp->typeString.str, declSig.str);
 				}
 
 				ids.Add(res->id);
@@ -288,11 +292,17 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 				Log::CompilerError(functionName, "Argument %u (%s) in function %s must be lvalue", i, argType->typeString.str, declSig.str);
 			}
 		} else {
+			ID* id = res->id;
+
 			if (res->symbolType == SymbolType::Variable) {
-				ids.Add(LoadVariable(res, true)); //TODO: option
-			} else {
-				ids.Add(res->id);
+				id = LoadVariable(res, true);
+			} 
+
+			if (res->swizzleIndices.GetCount() > 0) {
+				id = GetSwizzledVector((TypePrimitive**)&tmp, id, res->swizzleIndices);
 			}
+
+			ids.Add(id);
 		}
 
 		
@@ -364,15 +374,20 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 		Log::CompilerError(tmp, "\"%s\" doesn't have a constructor", type->typeString.str);
 	}
 
-	if (res->symbolType == SymbolType::Constant) {
-		inst = new InstConstantComposite(type->typeId, (uint32)ids.GetCount(), ids.GetData());
-		CheckConstantExist(&inst);
+	if (ids.GetCount() > 1) {
+		if (res->symbolType == SymbolType::Constant) {
+			inst = new InstConstantComposite(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+			CheckConstantExist(&inst);
+		} else {
+			inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
+			instructions.Add(inst);
+		}
+
+		res->id = inst->id;
 	} else {
-		inst = new InstCompositeConstruct(type->typeId, (uint32)ids.GetCount(), ids.GetData());
-		instructions.Add(inst);
+		res->id = ids[0];
 	}
 	
-	res->id = inst->id;
 
 	return res;
 }
@@ -439,7 +454,9 @@ String Compiler::GetFunctionSignature(List<Symbol*> parameters, const String& fu
 		result += param->type->typeString;
 
 		if (param->parameter.isReference) {
-			result += "&, ";
+			result += "&, ";//* FUNCTION
+			uint64 index = result.Find("*");
+			if (index != ~0) result.Remove(index, index+9);
 		} else {
 			result += ", ";
 		}
@@ -447,7 +464,7 @@ String Compiler::GetFunctionSignature(List<Symbol*> parameters, const String& fu
 	
 	uint64 len = result.length-1;
 
-	result.Remove(len, len);
+	if (parameters.GetCount() > 0) result.Remove(len-1, len);
 
 	result += ")";
 
