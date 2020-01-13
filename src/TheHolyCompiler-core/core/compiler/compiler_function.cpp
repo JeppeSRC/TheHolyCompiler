@@ -320,7 +320,10 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 		uint8 numComponents = 0;
 
 		for (uint64 i = 0; i < arguments.GetCount(); i++) {
-			TypePrimitive* t = (TypePrimitive*)arguments[i]->type;
+			Symbol* arg = arguments[i];
+			TypePrimitive* t = (TypePrimitive*)arg->type;
+
+			if (arg->swizzleIndices.GetCount() != 0) arg->id = GetSwizzledVector(&t, LoadVariable(arg, true), arg->swizzleIndices);
 
 			if (type->componentType != t->componentType || type->bits != t->bits) {
 				Log::CompilerError(tmp, "Argument \"%s\"(%llu) is not compatible with \"%s\"", t->typeString.str, i, type->typeString.str);
@@ -328,7 +331,7 @@ Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo*
 
 			numComponents += t->rows > 0 ? t->rows : 1;
 
-			if (arguments[i]->symbolType != SymbolType::Constant) res->symbolType = SymbolType::Result;
+			if (arg->symbolType != SymbolType::Constant) res->symbolType = SymbolType::Result;
 
 		}
 
