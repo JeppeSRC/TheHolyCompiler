@@ -1609,8 +1609,8 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 	if (ogID) *ogID = id;
 
 	if (swizzle) {
-		id = GetSwizzledVector(type, id, e->swizzleIndices);
-		const_cast<Expression*>(e)->swizzleIndices.Clear();
+		id = GetSwizzledVector(type, id, e->symbol->swizzleIndices);
+		const_cast<Expression*>(e)->symbol->swizzleIndices.Clear();
 	}
 
 	return id;

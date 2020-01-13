@@ -180,6 +180,9 @@ private: //Variable stuff
 
 		ID* id;
 
+		utils::List<uint32> swizzleIndices;
+		bool swizzleWritable;
+
 		struct Variable {
 			VariableScope scope;
 			utils::String name;
@@ -187,9 +190,6 @@ private: //Variable stuff
 			bool isConst;
 				
 			ID* loadId = nullptr;
-
-			utils::List<uint32> swizzleIndices;
-			bool swizzleWritable;
 		};
 
 		struct Parameter : public Variable {
@@ -209,6 +209,7 @@ private: //Variable stuff
 
 		} result;
 
+		Symbol(const Symbol* other) : symbolType(other->symbolType), type(other->type), id(other->id), parameter(other->parameter) { }
 		Symbol(SymbolType symbolType = SymbolType::None, TypeBase* type = nullptr, ID* id = nullptr) : symbolType(symbolType), type(type), id(id), parameter() {}
 		~Symbol() {}
 	};
@@ -368,10 +369,6 @@ private: //Expression parsing
 
 		//type = Type
 		TypeBase* castType;
-
-		//SwizzleInfo
-		utils::List<uint32> swizzleIndices;
-		bool swizzleWritable;
 
 		parsing::Token parent;
 	};

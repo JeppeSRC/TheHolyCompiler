@@ -237,15 +237,19 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 			if (right.type != ExpressionType::SwizzleComponent) Log::CompilerError(e.parent, "Right of operator \".\" must be a valid set of components for the left hand vector");
 			
-			left.swizzleIndices = GetVectorShuffleIndices(right.parent, lType);
-			left.swizzleWritable = true;
+			Symbol* symbol = new Symbol(left.symbol);
 
-			for (uint64 i = 0; i < left.swizzleIndices.GetCount()-1; i++) {
-				if (left.swizzleIndices.Find(left.swizzleIndices[i], i + 1) != ~0) {
-					left.swizzleWritable = false;
+			symbol->swizzleIndices = GetVectorShuffleIndices(right.parent, lType);
+			symbol->swizzleWritable = true;
+
+			for (uint64 i = 0; i < symbol->swizzleIndices.GetCount()-1; i++) {
+				if (symbol->swizzleIndices.Find(symbol->swizzleIndices[i], i + 1) != ~0) {
+					symbol->swizzleWritable = false;
 					break;
 				}
 			}
+
+			left.symbol = symbol;
 
 			expressions.Remove(i, i + 1);
 		}
@@ -1124,14 +1128,14 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				Log::CompilerError(e.parent, "Left hand operand must be a lvalue");
 			}
 
-			bool lSwizzle = left.swizzleIndices.GetCount() > 0;
-			bool rSwizzle = right.swizzleIndices.GetCount() > 0;
+			bool lSwizzle = left.symbol->swizzleIndices.GetCount() > 0;
+			bool rSwizzle = right.symbol->swizzleIndices.GetCount() > 0;
 			bool opAssign = e.operatorType == TokenType::OperatorAssign;
 
 			bool lSwizzled = lSwizzle && !opAssign;
 			bool rSwizzled = rSwizzle && ((opAssign != lSwizzle) || !opAssign);
 			
-			if (lSwizzle && !left.swizzleWritable) {
+			if (lSwizzle && !left.symbol->swizzleWritable) {
 				Log::CompilerError(left.parent, "Left hand operand must be lvalue");
 			}
 
@@ -1160,14 +1164,14 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				Log::CompilerError(e.parent, "Operands must be a of valid type");
 			}
 
-			TypePrimitive* lSwizzledType = !lSwizzled ? GetSwizzledType(lType, left.swizzleIndices) : lType;
-			TypePrimitive* rSwizzledType = !rSwizzled ? GetSwizzledType(rType, right.swizzleIndices) : rType;
+			TypePrimitive* lSwizzledType = !lSwizzled ? GetSwizzledType(lType, left.symbol->swizzleIndices) : lType;
+			TypePrimitive* rSwizzledType = !rSwizzled ? GetSwizzledType(rType, right.symbol->swizzleIndices) : rType;
 
 			if (opAssign) {
 				if (*lSwizzledType != rSwizzledType) {
 					if (!rSwizzled) {
 						rSwizzled = true;
-						rOperandId = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
+						rOperandId = GetSwizzledVector(&rType, rOperandId, right.symbol->swizzleIndices);
 					}
 
 					rOperandId = ImplicitCastId(lSwizzledType, rSwizzledType, rOperandId, &right.parent);
@@ -1202,8 +1206,8 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 
 				List<uint32> indices;
 
-				const List<uint32>& lIndices = left.swizzleIndices;
-				List<uint32> rIndices = right.swizzleIndices;
+				const List<uint32>& lIndices = left.symbol->swizzleIndices;
+				List<uint32> rIndices = right.symbol->swizzleIndices;
 				
 				if (!rSwizzle) {
 					uint32 tmp[4] = { 0, 1, 2, 3 };
@@ -1215,7 +1219,7 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				if (lIndices.GetCount() == 1) {
 					if (!rSwizzled && rSwizzle) {
 						rSwizzled = true;
-						tmp->id = GetSwizzledVector(&rType, rOperandId, right.swizzleIndices);
+						tmp->id = GetSwizzledVector(&rType, rOperandId, right.symbol->swizzleIndices);
 					}
 
 					inst = new InstCompositeInsert(lBaseType->typeId, tmp->id, lBaseId, 1, lIndices.GetData());
