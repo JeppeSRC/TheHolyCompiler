@@ -186,7 +186,7 @@ private: //Variable stuff
 
 			bool isConst;
 				
-			ID* loadId;
+			ID* loadId = nullptr;
 		};
 
 		struct Parameter : public Variable {
@@ -408,6 +408,8 @@ private: //Misc
 	void ProcessName(parsing::Token& t) const;
 	uint64 FindMatchingToken(const utils::List<parsing::Token>& tokens, uint64 start, parsing::TokenType open, parsing::TokenType close) const;
 	ID* GetExpressionOperandId(const Expression* e, TypePrimitive** type, bool swizzle, ID** ogID = nullptr);
+	ID* LoadVariable(Symbol* var, bool usePreviousLoad = false);
+	void StoreVariable(Symbol* var, ID* storeId, bool setAsLoadId = false);
 	static utils::List<ID*> GetIDs(utils::List<Symbol*>& things);
 	utils::List<uint32> GetVectorShuffleIndices(const parsing::Token& token, const TypePrimitive* type);
 	TypePrimitive* GetSwizzledType(TypePrimitive* base, const utils::List<uint32>& indices);

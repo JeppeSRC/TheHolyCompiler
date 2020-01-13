@@ -1599,12 +1599,8 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 
 	if (e->type == ExpressionType::Variable) {
 		Symbol* v = e->symbol;
-		InstLoad* load = new InstLoad(v->type->typeId, v->id, 0);
-		instructions.Add(load);
-
-		id = load->id;
 		*type = (TypePrimitive*)v->type;
-		
+		id = LoadVariable(e->symbol, true);
 	} else if (e->type == ExpressionType::Result || e->type == ExpressionType::Constant) {
 		id = e->symbol->id;
 		*type = (TypePrimitive*)e->symbol->type;
@@ -1618,6 +1614,36 @@ ID* Compiler::GetExpressionOperandId(const Expression* e, TypePrimitive** type, 
 	}
 
 	return id;
+}
+
+ID* Compiler::LoadVariable(Symbol* var, bool usePreviousLoad) {
+	THC_ASSERT(var->symbolType == SymbolType::Variable || var->symbolType == SymbolType::Parameter);
+
+	if (var->symbolType == SymbolType::Parameter && !var->parameter.isReference) {
+		return var->id;
+	}
+	
+	if (usePreviousLoad && var->variable.loadId != nullptr) {
+		return var->variable.loadId;
+	}
+
+	InstLoad* load = new InstLoad(var->type->typeId, var->id, 0);
+	instructions.Add(load);
+
+	return var->variable.loadId = load->id;
+}
+
+void Compiler::StoreVariable(Symbol* var, ID* storeId, bool setAsLoadId) {
+	if (var->symbolType == SymbolType::Parameter && !var->parameter.isReference) {
+		var->id = storeId;
+	} else if (setAsLoadId) {
+		var->variable.loadId = storeId;
+	} else {
+		InstStore* store = new InstStore(var->id, storeId, 0);
+		instructions.Add(store);
+
+		var->variable.loadId = nullptr;
+	}
 }
 
 List<ID*> Compiler::GetIDs(List<Symbol*>& things) {
