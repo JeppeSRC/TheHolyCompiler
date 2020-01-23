@@ -106,7 +106,7 @@ bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypePointer::operator==(const Compiler::TypeBase* const other) const {
+bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) const {
 	return !operator==(other);
 }
 
