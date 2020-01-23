@@ -46,7 +46,8 @@ enum class Type {
 	Struct,
 	Function,
 	Pointer,
-	Image
+	Image,
+	SampledImage
 };
 
 Type ConvertToType(parsing::TokenType t);
@@ -178,7 +179,8 @@ public:
 };
 
 class InstTypeImage : public InstTypeBase {
-	uint32 sampledType;
+public:
+	compiler::ID* sampledType;
 	uint32 dim;
 	uint32 depth;
 	uint32 arrayed;
@@ -186,7 +188,18 @@ class InstTypeImage : public InstTypeBase {
 	uint32 sampled;
 	uint32 imageFormat;
 	
-	InstTypeImage(uint32 sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat);
+	InstTypeImage(compiler::ID* sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat);
+
+	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstTypeBase* type) const override;
+};
+
+class InstTypeSampledImage : public InstTypeBase {
+public:
+	compiler::ID* imageType;
+
+	InstTypeSampledImage(compiler::ID* imageType);
 
 	void GetInstWords(uint32* words) const override;
 

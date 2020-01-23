@@ -115,7 +115,7 @@ void InstTypeImage::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 
 	words[1] = id->id;
-	words[2] = sampledType;
+	words[2] = sampledType->id;
 	words[3] = dim;
 	words[4] = depth;
 	words[5] = arrayed;
@@ -123,6 +123,12 @@ void InstTypeImage::GetInstWords(uint32* words) const {
 	words[7] = sampled;
 	words[8] = imageFormat;
 }
+
+void InstTypeSampledImage::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = id->id;
+	words[2] = imageType->id;
 
 }
 }

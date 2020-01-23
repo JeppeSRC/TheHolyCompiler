@@ -519,6 +519,47 @@ Compiler::TypeArray* Compiler::CreateTypeArray(List<Token>& tokens, uint64 start
 	return var;
 }
 
+Compiler::TypeImage* Compiler::CreateTypeImage(List<Token>& tokens, uint64 start, uint64* len) {
+	TypeImage* var = new TypeImage;
+	
+	Token& sampler = tokens[start];
+
+	if (!Utils::CompareEnums(sampler.type, CompareOperation::Or, TokenType::TypeImage1D, TokenType::TypeImage2D, TokenType::TypeImage3D, TokenType::TypeImageCube)) {
+		Log::CompilerError(sampler, "uniform must be sampler or buffer");
+	}
+
+	var->type = Type::Image;
+	var->imageType = (ImageType)((uint8)sampler.type - (uint8)TokenType::TypeImage1D);
+	var->depth = 0;
+	var->arrayed = 0;
+	var->multiSampled = 0;
+	var->sampled = 1;
+
+	CheckTypeExist((TypeBase**)&var);
+
+	tokens.RemoveAt(start);
+
+	if (len) *len += 1;
+
+	if (var->typeId != nullptr) {
+		return var;
+	}
+
+	var->typeString = GetTypeString(var);
+
+	InstTypeImage* image = new InstTypeImage(CreateTypePrimitiveScalar(Type::Float, 32, 0)->typeId, (uint32)var->imageType, var->depth, var->arrayed, var->multiSampled, var->sampled, THC_SPIRV_IMAGE_FORMAT_UNKNOWN);
+	
+	CheckTypeExist((InstTypeBase**)&image);
+
+	InstTypeSampledImage* sampledImage = new InstTypeSampledImage(image->id);
+
+	CheckTypeExist((InstTypeBase**)&sampledImage);
+
+	var->sampledImageId = sampledImage->id;
+
+	return var;
+}
+
 Compiler::TypeBase* Compiler::CreateType(List<Token>& tokens, uint64 start, uint64* len) {
 	const Token& token = tokens[start];
 
@@ -1572,6 +1613,11 @@ void Compiler::ProcessName(Token& t) const {
 
 		{"mat3", TokenType::TypeMatrix, 0, 0, 3, 3},
 		{"mat4", TokenType::TypeMatrix, 0, 0, 4, 4},
+
+		{"sampler1D",	TokenType::TypeImage1D, 0, 0, 0, 0},
+		{"sampler2D",	TokenType::TypeImage2D, 0, 0, 0, 0},
+		{"sampler3D",	TokenType::TypeImage3D, 0, 0, 0, 0},
+		{"samplerCube", TokenType::TypeImageCube, 0, 0, 0, 0},
 	};
 
 	for (uint64 i = 0; i < sizeof(props) / sizeof(TokenProperties); i++) {

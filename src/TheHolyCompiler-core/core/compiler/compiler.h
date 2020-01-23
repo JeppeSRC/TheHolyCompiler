@@ -118,8 +118,12 @@ private: //Type stuff
 		uint8 multiSampled;
 		uint8 sampled;
 
+		ID* sampledImageId;
+
 		bool operator==(const TypeBase* const other) const override;
 		bool operator!=(const TypeBase* const other) const override;
+
+		uint32 GetSize() const override { return ~0; }
 	};
 
 	/*struct TypeFunction : public TypeBase {
@@ -155,11 +159,13 @@ private: //Type stuff
 	TypePrimitive* CreateTypePrimtiveMatrix(type::Type componentType, uint8 bits, uint8 sign, uint8 rows, uint8 columns);
 
 	TypePrimitive* ModifyTypePrimitiveBitWidth(TypePrimitive* base, uint8 bits);
-
+	
 	//start is the index of the name of the struct
 	TypeStruct* CreateTypeStruct(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 	//start is start of type
 	TypeArray* CreateTypeArray(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
+	//start is start of sampeler
+	TypeImage* CreateTypeImage(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 
 	TypeBase* CreateType(utils::List<parsing::Token>& tokens, uint64 start, uint64* len);
 

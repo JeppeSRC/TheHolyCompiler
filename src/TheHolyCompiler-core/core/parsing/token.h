@@ -56,6 +56,11 @@ enum class TokenType {
 	TypeVector,
 	TypeMatrix,
 
+	TypeImage1D,
+	TypeImage2D,
+	TypeImage3D,
+	TypeImageCube,
+
 	OperatorSelector,
 	OperatorIncrement,
 	OperatorDecrement,
