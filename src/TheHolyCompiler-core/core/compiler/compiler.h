@@ -101,6 +101,26 @@ private: //Type stuff
 		uint32 GetSize() const override { return ~0; }
 	};
 
+	enum class ImageType : uint8 {
+		Image1D,
+		Image2D,
+		Image3D,
+		ImageCube,
+		ImageRect,
+		ImageBuffer,
+		ImageSubpassData
+	};
+
+	struct TypeImage : public TypeBase {
+		ImageType imageType;
+		uint8 arrayed;
+		uint8 multiSampled;
+		uint8 sampled;
+
+		bool operator==(const TypeBase* const other) const override;
+		bool operator!=(const TypeBase* const other) const override;
+	};
+
 	/*struct TypeFunction : public TypeBase {
 		TypeBase* returnType;
 

@@ -106,9 +106,24 @@ bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) const {
+bool Compiler::TypePointer::operator==(const Compiler::TypeBase* const other) const {
 	return !operator==(other);
 }
+
+bool Compiler::TypeImage::operator==(const TypeBase* const other) const {
+	if (other->type == type) {
+		const TypeImage* t = (const TypeImage*)other;
+
+		return imageType == t->imageType && arrayed == t->arrayed && multiSampled == t->multiSampled && sampled == t->sampled;
+	}
+
+	return false;
+}
+
+bool Compiler::TypeImage::operator!=(const TypeBase* const other) const {
+	return !operator==(other);
+}
+
 /*bool Compiler::TypeFunction::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeFunction* t = (const TypeFunction*)other;

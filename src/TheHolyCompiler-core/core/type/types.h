@@ -45,7 +45,8 @@ enum class Type {
 	Array,
 	Struct,
 	Function,
-	Pointer
+	Pointer,
+	Image
 };
 
 Type ConvertToType(parsing::TokenType t);
