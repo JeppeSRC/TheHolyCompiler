@@ -555,7 +555,8 @@ Compiler::TypeImage* Compiler::CreateTypeImage(List<Token>& tokens, uint64 start
 
 	CheckTypeExist((InstTypeBase**)&sampledImage);
 
-	var->sampledImageId = sampledImage->id;
+	var->imageId = image->id;
+	var->typeId = sampledImage->id;
 
 	return var;
 }
@@ -775,7 +776,27 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			}
 
 			break;
+		case Type::Image:
+			switch (((TypeImage*)type)->imageType) {
+				case ImageType::Image1D:
+					name = "sampler1D";
+					break;
+				case ImageType::Image2D:
+					name = "sampler2D";
+					break;
+				case ImageType::Image3D:
+					name = "sampler3D";
+					break;
+				case ImageType::ImageCube:
+					name = "samplerCube";
+					break;
+			}
 
+			if (((TypeImage*)type)->multiSampled) {
+				name += "MS";
+			}
+
+			break;
 		default:
 			name = type->typeString;
 			break;

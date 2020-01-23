@@ -106,7 +106,7 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 
 	const Token& scope = tokens[start + offset++];
 
-	VariableScope varScope;
+	VariableScope varScope = VariableScope::None;
 
 	switch (scope.type) {
 		case TokenType::DataIn:
@@ -152,15 +152,40 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	Symbol* var;
 
 	if (varScope == VariableScope::Uniform) {
-		TypeStruct* str = CreateTypeStruct(tokens, start + offset++, nullptr);
+		const Token& tmp = tokens[start + offset];
 
-		String name = str->typeString;
-		str->typeString += "_uniform_type";
+		String name = "";
 
-		var = CreateGlobalVariable(str, varScope, name);
+		TypeBase* t = nullptr;
+
+		if (tmp.string.StartsWith("sampler")) {
+			t = CreateTypeImage(tokens, start + offset, nullptr);
+
+			const Token& next = tokens[start + offset++];
+
+			if (next.type != TokenType::Name) {
+				Log::CompilerError(next, "Unexpected symbol \"%s\" expected name after sampler", next.string.str);
+			}
+
+			const Token& semiColon = tokens[start + offset++];
+			
+			if (semiColon.type != TokenType::SemiColon) {
+				Log::CompilerError(semiColon, "Unexpected symbol \"%s\" expected \";\"", semiColon.string.str);
+			}
+
+			name = next.string;
+			varScope = VariableScope::UniformConstant;
+		} else {
+			TypeStruct* str = CreateTypeStruct(tokens, start + offset++, nullptr);
+
+			String name = str->typeString;
+		}
+
+		var = CreateGlobalVariable(t, varScope, name);
 
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_BINDING, &binding, 1));
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
+
 	} else {
 		TypePrimitive* type = CreateTypePrimitive(tokens, start + offset, nullptr);
 

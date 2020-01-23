@@ -131,5 +131,7 @@ void InstTypeSampledImage::GetInstWords(uint32* words) const {
 	words[2] = imageType->id;
 
 }
+
+}
 }
 }

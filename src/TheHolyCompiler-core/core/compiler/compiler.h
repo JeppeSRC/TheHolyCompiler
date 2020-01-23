@@ -118,7 +118,7 @@ private: //Type stuff
 		uint8 multiSampled;
 		uint8 sampled;
 
-		ID* sampledImageId;
+		ID* imageId;
 
 		bool operator==(const TypeBase* const other) const override;
 		bool operator!=(const TypeBase* const other) const override;
