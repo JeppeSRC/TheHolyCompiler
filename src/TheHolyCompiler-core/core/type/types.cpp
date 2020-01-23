@@ -77,6 +77,8 @@ InstTypePointer::InstTypePointer(uint32 storageClass, compiler::ID* typeId) : In
 
 InstTypeFunction::InstTypeFunction(compiler::ID* returnTypeId, uint32 parameterCount, compiler::ID** parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount * sizeof(void*)); }
 
+InstTypeImage::InstTypeImage(uint32 sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat) : InstTypeBase(Type::Image, THC_SPIRV_OPCODE_OpTypeImage, 9, "OpTypeImage"), sampledType(sampledType), dim(dim), depth(depth), arrayed(arrayed), multiSampled(multiSampled), sampled(sampled), imageFormat(imageFormat) {}
+
 bool InstTypeVoid::operator==(const InstTypeBase* type) const {
 	return this->type == type->type;
 }
@@ -158,6 +160,12 @@ bool InstTypeFunction::operator==(const InstTypeBase* type) const {
 	return false;
 }
 
+bool InstTypeImage::operator==(const InstTypeBase* type) const {
+	if (this->type != type->type) return false;
+	InstTypeImage* t = (InstTypeImage*)type;
+
+	return sampledType == t->sampledType && dim == t->dim && depth == t->depth && arrayed == t->arrayed && multiSampled == t->multiSampled && sampled == t->sampled && imageFormat == t->imageFormat;
+}
 
 }
 }

@@ -177,6 +177,22 @@ public:
 	bool operator==(const InstTypeBase* type) const override;
 };
 
+class InstTypeImage : public InstTypeBase {
+	uint32 sampledType;
+	uint32 dim;
+	uint32 depth;
+	uint32 arrayed;
+	uint32 multiSampled;
+	uint32 sampled;
+	uint32 imageFormat;
+	
+	InstTypeImage(uint32 sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat);
+
+	void GetInstWords(uint32* words) const override;
+
+	bool operator==(const InstTypeBase* type) const override;
+};
+
 }
 }
 }
