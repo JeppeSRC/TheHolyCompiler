@@ -42,7 +42,7 @@ bool Compiler::TypeBase::operator!=(const TypeBase* const other) const {
 	return !operator==(other);
 }
 
-bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) const {
+bool Compiler::TypePrimitive::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypePrimitive* t = (const TypePrimitive*)other;
 
@@ -52,7 +52,7 @@ bool Compiler::TypePrimitive::operator==(const Compiler::TypeBase* const other) 
 	return false;
 }
 
-bool Compiler::TypePrimitive::operator!=(const Compiler::TypeBase* const other) const {
+bool Compiler::TypePrimitive::operator!=(const TypeBase* const other) const {
 	return !operator==(other);
 }
 
@@ -78,7 +78,7 @@ bool Compiler::TypeStruct::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypeStruct::operator!=(const Compiler::TypeBase* const other) const {
+bool Compiler::TypeStruct::operator!=(const TypeBase* const other) const {
 	return !operator==(other);
 }
 
@@ -92,7 +92,7 @@ bool Compiler::TypeArray::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypeArray::operator!=(const Compiler::TypeBase* const other) const {
+bool Compiler::TypeArray::operator!=(const TypeBase* const other) const {
 	return !operator==(other);
 }
 
@@ -106,7 +106,7 @@ bool Compiler::TypePointer::operator==(const TypeBase* const other) const {
 	return false;
 }
 
-bool Compiler::TypePointer::operator!=(const Compiler::TypeBase* const other) const {
+bool Compiler::TypePointer::operator!=(const TypeBase* const other) const {
 	return !operator==(other);
 }
 
