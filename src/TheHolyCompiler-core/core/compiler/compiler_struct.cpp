@@ -114,7 +114,7 @@ bool Compiler::TypeImage::operator==(const TypeBase* const other) const {
 	if (other->type == type) {
 		const TypeImage* t = (const TypeImage*)other;
 
-		return imageType == t->imageType && arrayed == t->arrayed && multiSampled == t->multiSampled && sampled == t->sampled;
+		return imageType == t->imageType && depth == t->depth && arrayed == t->arrayed && multiSampled == t->multiSampled && sampled == t->sampled;
 	}
 
 	return false;

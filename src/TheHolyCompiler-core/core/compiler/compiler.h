@@ -113,6 +113,7 @@ private: //Type stuff
 
 	struct TypeImage : public TypeBase {
 		ImageType imageType;
+		uint8 depth;
 		uint8 arrayed;
 		uint8 multiSampled;
 		uint8 sampled;
