@@ -634,6 +634,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	List<InstBase*> capabilities;
 
 	capabilities.Add(new InstCapability(THC_SPIRV_CAPABILITY_SHADER)); // Currently shader is the only supported capability
+	if (extendedInstructionSet) capabilities.Add(extendedInstructionSet);
 	capabilities.Add(new InstMemoryModel(THC_SPIRV_ADDRESSING_MODEL_LOGICAL, THC_SPIRV_MEMORY_MODEL_GLSL450));
 
 	List<ID*> ids;

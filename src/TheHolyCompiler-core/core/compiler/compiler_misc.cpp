@@ -920,8 +920,8 @@ Compiler::Symbol* Compiler::Cast(TypeBase* castType, TypeBase* currType, ID* ope
 
 	if (!Utils::CompareEnums(cType->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector) && !Utils::CompareEnums(type->type, CompareOperation::Or, Type::Bool, Type::Int, Type::Float, Type::Vector)) {
 		CAST_ERROR;
-	} else if (cType->type == Type::Vector) {
-		if (type->type != Type::Vector || cType->rows != type->rows) {
+	} else if (cType->type == Type::Vector || type->type == Type::Vector) {
+		if (cType->rows != type->rows) {
 			CAST_ERROR;
 		}
 	}

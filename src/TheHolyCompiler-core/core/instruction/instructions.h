@@ -247,7 +247,18 @@ public:
 	void GetInstWords(uint32* words) const;
 };
 
-//TODO: OpExtInst will be 
+class InstExtInst : public InstBase {
+public:
+	compiler::ID* resultType;
+	compiler::ID* set;
+	uint32 opCode;
+	uint32 numOperands;
+	compiler::ID* operands[3];
+
+	InstExtInst(compiler::ID* resultType, compiler::ID* set, uint32 opCode, uint32 numOperands, compiler::ID** operands);
+
+	void GetInstWords(uint32* words) const;
+};
 
 #pragma endregion
 

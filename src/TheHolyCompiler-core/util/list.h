@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include "thc_assert.h"
 #include <core/thctypes.h>
+#include <initializer_list>
 
 #define THC_PREALLOC_COUNT 128
 
@@ -42,6 +43,16 @@ private:
 
 public:
 	List() : List(THC_PREALLOC_COUNT) {}
+
+	List(std::initializer_list<T> list) : count(list.size()) {
+		const T* it = list.begin();
+
+		items = new T[count];
+
+		for (uint64 i = 0; i < count; i++) {
+			new (items + i * sizeof(T)) T(it[i]);
+		}
+	}
 
 	List(uint64 reserve) : count(0), allocated(reserve) {
 		items = new T[reserve];

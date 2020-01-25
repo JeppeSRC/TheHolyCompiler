@@ -335,6 +335,47 @@ private: //Function stuff
 
 	static bool CheckParameterName(const utils::List<Symbol*>& params, const utils::String& name); //return true if name is available
 
+	enum class ExtParamType : uint8 {
+		None,
+		Vector = 0x01,
+		Scalar = 0x02,
+		Reference = 0x04,
+		Float = 0x08,
+		Integer = 0x10,
+		Matrix = 0x20,
+
+		FloatScalar = Scalar | Float,
+		FloatMatrix = Matrix | Float,
+		FloatVectorScalar = Vector | Scalar | Float,
+		IntegerVectorScalar = Vector | Scalar | Integer
+	};
+
+	inline friend ExtParamType operator&(const ExtParamType left, const ExtParamType right) {
+		return (ExtParamType)((uint8)left & (uint8)right);
+	}
+
+	inline friend ExtParamType operator|(const ExtParamType left, const ExtParamType right) {
+		return (ExtParamType)((uint8)left | (uint8)right);
+	}
+
+	inline friend bool operator==(const ExtParamType left, const ExtParamType right) {
+		return (bool)(left & right);
+	}
+	
+	inline friend bool operator!=(const ExtParamType left, const ExtParamType right) {
+		return !operator==(left, right);
+	}
+
+	struct ExtFunctionDeclaration {
+		utils::String name;
+		uint32 opCode;
+		uint8 params;
+
+		ExtParamType param[3];
+	};
+
+	instruction::InstBase* extendedInstructionSet = nullptr;
+
 private: //Constants
 	ID* CreateConstantBool(bool value);
 	ID* CreateConstantS32(int32 value);
@@ -427,6 +468,7 @@ private:
 	Symbol* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
 	Symbol* ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	Symbol* ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
+	Symbol* ParseExtFunctionCall(const parsing::Token& functionName, utils::List<Symbol*>& arguments, VariableStack* localVariables);
 	Symbol* ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	utils::List<Symbol*> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 

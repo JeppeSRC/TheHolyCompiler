@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+#include <vector>
 #include "compiler.h"
 #include <util/utils.h>
 #include <core/preprocessor/preprocessor.h>
@@ -241,12 +241,13 @@ void Compiler::CreateFunctionDeclaration(FunctionDeclaration* decl) {
 Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token functionName = tokens[info->start];
 
-	ParseInfo inf;
-	inf.start = info->start + 1;
+	info->start++;
 
-	List<Symbol*> arguments = ParseParameters(tokens, &inf, localVariables);
+	List<Symbol*> arguments = ParseParameters(tokens, info, localVariables);
 
-	info->len = inf.len;
+	Symbol* ret = ParseExtFunctionCall(functionName, arguments, localVariables);
+
+	if (ret) return ret;
 
 	uint64 fOffset = 0;
 
@@ -315,12 +316,139 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 	return new Symbol(SymbolType::Result, decl->returnType, call->id);
 }
 
-Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
-	info->end = 0;
+Compiler::Symbol* Compiler::ParseExtFunctionCall(const Token& functionName, List<Symbol*>& arguments, VariableStack* localVariables) {
+	static ExtFunctionDeclaration tmp[] { 
+		{"round",		1, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"roundeven",	2, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"trunc",		3, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"fabs",		4, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"sabs",		5, 1,  {ExtParamType::IntegerVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"fsign",		6, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"ssign",		7, 1,  {ExtParamType::IntegerVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"floor",		8, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"ceil",		9, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"fract",		10, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"radians",		11, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"degrees",		12, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"sin",			13, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"cos",			14, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"tan",			15, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"asin",		16, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"acos",		17, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"atan",		18, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"sinh",		19, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"cosh",		20, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"tanh",		21, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"asinh",		22, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"acosh",		23, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"atanh",		24, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"atan2",		25, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"pow",			26, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"exp",			27, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"log",			28, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"exp2",		29, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"log2",		30, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"sqrt",		31, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"invsqrt",		32, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"determinant",	33, 1, {ExtParamType::FloatMatrix,			ExtParamType::None,											ExtParamType::None} },
+		{"inverse",		34, 1, {ExtParamType::FloatMatrix,			ExtParamType::None,											ExtParamType::None} },
+		{"modf",		35, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar | ExtParamType::Reference,	ExtParamType::None} },
+		{"fmin",		37, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"umin",		38, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"smin",		39, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"fmax",		40, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"umax",		41, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"smax",		42, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"fclamp",		43, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"uclamp",		44, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"sclamp",		45, 2, {ExtParamType::IntegerVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"fmix",		46, 3, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::FloatVectorScalar} },
+		{"step",		48, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"sstep",		49, 3, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::FloatVectorScalar} },
+		{"fma",			50, 3, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::FloatVectorScalar} },
+		{"frexp",		51, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"ldexp",		53, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::IntegerVectorScalar,							ExtParamType::None} },
+		{"length",		66, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"distance",	67, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"cross",		68, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"normalize",	69, 1, {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
+		{"fforward",	70, 3, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::FloatVectorScalar} },
+		{"reflect",		71, 2, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::None} },
+		{"refract",		72, 3, {ExtParamType::FloatVectorScalar,	ExtParamType::FloatVectorScalar,							ExtParamType::FloatScalar} },
+		};
 
+	List<ExtFunctionDeclaration> decls;
+
+	decls.Add(tmp);
+
+	uint64 index = decls.Find<String>(functionName.string, [](const ExtFunctionDeclaration& item, const String& name) {
+		return item.name == name;
+	});
+
+	if (index == ~0) return nullptr;
+
+	const ExtFunctionDeclaration& decl = decls[index];
+
+	if (decl.params != arguments.GetCount()) {
+		Log::CompilerError(functionName, "Function \"%s\" doesn't take %llu arguments", functionName.string.str, arguments.GetCount());
+	}
+
+	List<ID*> ids;
+
+	for (uint64 i = 0; i < arguments.GetCount(); i++) {
+		Symbol* arg = arguments[i];
+		ExtParamType param = decl.param[i];
+
+		if (Utils::CompareEnums(param, CompareOperation::Equal, ExtParamType::Integer, ExtParamType::Vector, ExtParamType::Scalar)) {
+			if (arg->type->type == Type::Vector) {
+				if (arg->pType->componentType != Type::Int) {
+					Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be a vector or scalar of type int", i, functionName.string.str);
+				}
+			} else if (arg->type->type != Type::Int) {
+				Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be a vector or scalar of type int", i, functionName.string.str);
+			}
+		} else if (Utils::CompareEnums(param, CompareOperation::Equal, ExtParamType::Float, ExtParamType::Vector, ExtParamType::Scalar)) {
+			if (arg->type->type == Type::Vector) {
+				if (arg->pType->componentType != Type::Float) {
+					Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be a vector or scalar of type float", i, functionName.string.str);
+				}
+			} else if (arg->type->type != Type::Float) {
+				Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be a vector or scalar of type float", i, functionName.string.str);
+			}
+		} else if (Utils::CompareEnums(param, CompareOperation::Equal, ExtParamType::Float, ExtParamType::Matrix)) {
+			if (arg->type->type == Type::Matrix) {
+				if (arg->pType->componentType != Type::Float || arg->pType->rows != arg->pType->columns) {
+					Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be a square matrix of type float", i, functionName.string.str);
+				}
+			}
+		}
+
+		if (arg->symbolType == SymbolType::Variable || (arg->symbolType == SymbolType::Parameter && arg->parameter.isReference)) {
+			if (param == ExtParamType::Reference) {
+				ids.Add(arg->id);
+			} else {
+				ids.Add(LoadVariable(arg, true));
+			}
+		} else if (param == ExtParamType::Reference) {
+			Log::CompilerError(functionName, "Argument %llu in function \"%s\" must be of pointer type", i, functionName.string.str);
+		} else {
+			ids.Add(arg->id);
+		}
+
+	}
+
+	if (extendedInstructionSet == nullptr) extendedInstructionSet = new InstExtInstImport("GLSL.std.450");
+
+	InstBase* call = new InstExtInst(arguments[0]->type->typeId, extendedInstructionSet->id, decl.opCode, decl.params, ids.GetData());
+	instructions.Add(call);
+
+	return new Symbol(SymbolType::Result, arguments[0]->type, call->id);
+}
+
+Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {
 	Token tmp = tokens[info->start];
 
-	TypePrimitive* type = (TypePrimitive*)CreateType(tokens, info->start, &info->end);
+	TypePrimitive* type = (TypePrimitive*)CreateType(tokens, info->start, &info->len);
 
 	List<Symbol*> arguments = ParseParameters(tokens, info, localVariables);
 
@@ -416,10 +544,10 @@ List<Compiler::Symbol*> Compiler::ParseParameters(List<Token>& tokens, ParseInfo
 		uint64 end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, offset);
 		uint64 open = tokens.Find<TokenType>(TokenType::ParenthesisOpen, CmpFunc, offset);
 		uint64 close = FindMatchingToken(tokens, open, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
+		parenthesisClose = FindMatchingToken(tokens, info->start, TokenType::ParenthesisOpen, TokenType::ParenthesisClose);
 
-		if (end > open&& end < close) {
-			open = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, close);
-			if (open != ~0) end = open;
+		if (end > open && end < close) {
+			end = tokens.Find<TokenType>(TokenType::Comma, CmpFunc, close);
 		}
 
 		if (end-- > parenthesisClose) {
@@ -431,15 +559,18 @@ List<Compiler::Symbol*> Compiler::ParseParameters(List<Token>& tokens, ParseInfo
 
 		inf.start = offset;
 		inf.end = end;
+		inf.len = 0;
 
 		Symbol* res = ParseExpression(tokens, &inf, localVariables);
 
 		offset = inf.end + 2;
 
+		info->len += inf.len;
+
 		parameterResults.Add(res);
 	} while (moreParams);
 
-	info->len = offset - info->start;
+	info->end = parenthesisClose;
 
 	return std::move(parameterResults);
 }

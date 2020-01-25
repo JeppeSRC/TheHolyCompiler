@@ -91,13 +91,17 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 				if (next.type == TokenType::ParenthesisOpen) { //Function
 					ParseInfo inf;
 					inf.start = i;
+					inf.end = 0;
+					inf.len = 0;
 
 					Symbol* res = ParseFunctionCall(tokens, &inf, localVariables);
 
 					e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
 					e.symbol = res;
 
-					i += inf.len;
+					info->end -= inf.len;
+					info->len += inf.len;
+					i = inf.end-1;
 				} else { //Variable
 					e.type = ExpressionType::Variable;
 					e.symbol = GetVariable(t.string, localVariables);
@@ -121,14 +125,17 @@ Compiler::Symbol* Compiler::ParseExpression(List<Token>& tokens, ParseInfo* info
 		} else if (t.type >= TokenType::TypeVoid && t.type <= TokenType::TypeMatrix) {
 			ParseInfo inf;
 			inf.start = i;
+			inf.end = 0;
+			inf.len = 0;
 
 			Symbol* res = ParseTypeConstructor(tokens, &inf, localVariables);
 
 			e.type = res->symbolType == SymbolType::Variable ? ExpressionType::Variable : res->symbolType == SymbolType::Constant ? ExpressionType::Constant : ExpressionType::Result;
 			e.symbol = res;
 
-			info->end -= inf.end;
-			i += inf.len;
+			info->end -= inf.len;
+			info->len += inf.len;
+			i = inf.end;
 		} else if (t.type == TokenType::ParenthesisOpen) {
 			const Token& next = tokens[i + (i == info->end ? 0 : 1)];
 

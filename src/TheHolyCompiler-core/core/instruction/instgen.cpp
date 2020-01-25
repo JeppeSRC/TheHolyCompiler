@@ -169,6 +169,19 @@ void InstExtInstImport::GetInstWords(uint32* words) const {
 	memcpy(words+2, extensionSet, len);
 }
 
+void InstExtInst::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = resultType->id;
+	words[2] = id->id;
+	words[3] = set->id;
+	words[4] = opCode;
+
+	for (uint64 i = 0; i < numOperands; i++) {
+		words[5 + i] = operands[i]->id;
+	}
+}
+
 void InstMemoryModel::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 

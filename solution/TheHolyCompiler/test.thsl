@@ -24,6 +24,7 @@ void main() {
 }
 
 #else
+
 layout (location = 0) out vec4 Color;
 
 layout (location = 0) in vec4 color;
@@ -32,6 +33,9 @@ layout (location = 1) in vec2 texCoord;
 layout (binding = 1, set = 0) uniform sampler2D tex;
 
 void main() {
-	Color = color * texture(tex, texCoord);
+	float res = reflect(vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0)).z;
+
+	Color = color;// * texture(tex, texCoord);
+
 }
 #endif

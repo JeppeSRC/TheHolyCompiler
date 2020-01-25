@@ -83,6 +83,8 @@ InstExtension::InstExtension(const char* const extension) : InstBase(THC_SPIRV_O
 
 InstExtInstImport::InstExtInstImport(const char* const extensionSet) : InstBase(THC_SPIRV_OPCODE_OpExtInstImport, 2, "OpExtInstImport", true) { Utils::CopyString(this->extensionSet, extensionSet); }
 
+InstExtInst::InstExtInst(ID* resultType, ID* set, uint32 opCode, uint32 numOperands, ID** operands) : InstBase(THC_SPIRV_OPCODE_OpExtInst, 5 + numOperands, "OpExtInst", true), resultType(resultType), set(set), opCode(opCode), numOperands(numOperands) { memcpy(this->operands, operands, sizeof(void*) * numOperands); }
+
 InstMemoryModel::InstMemoryModel(uint32 addressingModel, uint32 memoryModel) : InstBase(THC_SPIRV_OPCODE_OpMemoryModel, 3, "OpMemoryModel"), addressingModel(addressingModel), memoryModel(memoryModel) {}
 
 InstEntryPoint::InstEntryPoint(uint32 executionModel, compiler::ID* entryPointId, const char* const entryPointName, uint32 inoutVariableCount, compiler::ID** inoutVariableIds) : InstBase(THC_SPIRV_OPCODE_OpEntryPoint, 3, "OpEntryPoint"), executionModel(executionModel), entryPointId(entryPointId), inoutVariableCount(inoutVariableCount){ Utils::CopyString(this->entryPointName, entryPointName); memcpy(inoutVariableId, inoutVariableIds, inoutVariableCount * sizeof(void*)); }
