@@ -254,6 +254,17 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bi
 
 	switch (type) {
 		case Type::Int:
+			switch (bits) {
+				case 8:
+					if (!CompilerOptions::Int8()) Log::Error("-int8 needs be specified to use int8");
+					break;
+				case 16:
+					if (!CompilerOptions::Int16()) Log::Error("-int16 needs be specified to use int16");
+					break;
+				case 64:
+					if (!CompilerOptions::Int64()) Log::Error("-int64 needs to be specified to use int64");
+			}
+
 			t = new InstTypeInt(bits, 0); //Remove signedness from all integers, signedness will be handled internally
 			break;
 		case Type::Float:
