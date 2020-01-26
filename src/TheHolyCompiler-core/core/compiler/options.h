@@ -37,6 +37,8 @@ private:
 	static bool ppOnly;
 	static bool stopOnError;
 	static bool fpDefaultPrecision64;
+	static bool float16;
+	static bool float64;
 	static bool implicitConversions;
 	static bool vertexShader;
 	static bool fragmentShader;
@@ -57,6 +59,8 @@ public:
 	inline static bool StopOnError() { return stopOnError; }
 	inline static bool FPDefaultPrecision64() { return fpDefaultPrecision64; }
 	inline static bool FPDefaultPrecision32() { return !fpDefaultPrecision64; }
+	inline static bool Float16() { return float16; }
+	inline static bool Float64() { return float64; }
 	inline static bool ImplicitConversions() { return implicitConversions; }
 	inline static bool VertexShader() { return vertexShader; }
 	inline static bool FragmentShader() { return fragmentShader; }
