@@ -460,7 +460,7 @@ Compiler::Symbol* Compiler::ParseBuiltinFunctionCall(const Token& functionName, 
 		Symbol* arg0 = arguments[0];
 		Symbol* arg1 = arguments[1];
 
-		if (arg0->symbolType != SymbolType::Variable || arg0->type->type != Type::Image) {
+		if (arg0->symbolType != SymbolType::Variable || arg0->type->type != Type::SampledImage) {
 			Log::CompilerError(functionName, "Argument 0 in function \"texture\" needs to be a sampler2D");
 		}
 
