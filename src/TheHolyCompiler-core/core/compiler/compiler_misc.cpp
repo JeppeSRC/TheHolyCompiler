@@ -56,14 +56,14 @@ void Compiler::CheckTypeExist(InstTypeBase** type) {
 		return false;
 	};
 
-	uint64 index = types.Find<InstTypeBase*>(*type, cmp);
+	uint64 index = typeInstructions.Find<InstTypeBase*>(*type, cmp);
 
 	if (index == ~0) {
-		types.Add(*type);
+		typeInstructions.Add(*type);
 	} else {
 		delete *type;
 
-		*type = (InstTypeBase*)types[index];
+		*type = (InstTypeBase*)typeInstructions[index];
 	}
 }
 
@@ -84,16 +84,16 @@ void Compiler::CheckTypeExist(TypeBase** type) {
 }
 
 void Compiler::CheckConstantExist(InstBase** constant) {
-	uint64 index = types.Find<InstBase*>(*constant, [](InstBase* const& curr, InstBase* const& inst) -> bool {
+	uint64 index = typeInstructions.Find<InstBase*>(*constant, [](InstBase* const& curr, InstBase* const& inst) -> bool {
 		return *curr == inst;
 	});
 
 	if (index == ~0) {
-		types.Add(*constant);
+		typeInstructions.Add(*constant);
 	} else {
 		delete *constant;
 
-		*constant = types[index];
+		*constant = typeInstructions[index];
 	}
 }
 
@@ -125,7 +125,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 		}
 
 		InstTypeVoid* v = new InstTypeVoid();
-		types.Add(v);
+		typeInstructions.Add(v);
 
 		var->typeId = v->id;
 
@@ -886,7 +886,7 @@ Compiler::Symbol* Compiler::CreateGlobalVariable(const TypeBase* const type, Var
 
 	debugInstructions.Add(new InstName(opVar->id, name.str));
 
-	types.Add(opVar);
+	typeInstructions.Add(opVar);
 	globalVariables.Add(var);
 
 	return var;

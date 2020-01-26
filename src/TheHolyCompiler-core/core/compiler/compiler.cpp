@@ -707,7 +707,7 @@ bool Compiler::GenerateFile(const String& filename) {
 	writeCode(capabilities);
 	if (CompilerOptions::DebugInformation()) writeCode(debugInstructions);
 	writeCode(annotationIstructions);
-	writeCode(types);
+	writeCode(typeInstructions);
 	writeCode(instructions);
 
 	fclose(file);

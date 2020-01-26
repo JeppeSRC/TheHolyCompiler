@@ -141,7 +141,7 @@ private: //Type stuff
 	
 	utils::List<instruction::InstBase*> debugInstructions;
 	utils::List<instruction::InstBase*> annotationIstructions;
-	utils::List<instruction::InstBase*> types;
+	utils::List<instruction::InstBase*> typeInstructions;
 	utils::List<instruction::InstBase*> instructions;
 
 	void CheckTypeExist(type::InstTypeBase** type); 
