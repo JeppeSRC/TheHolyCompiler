@@ -37,6 +37,8 @@ private:
 	static bool ppOnly;
 	static bool stopOnError;
 	static bool fpDefaultPrecision64;
+	static bool float16;
+	static bool float64;
 	static bool implicitConversions;
 	static bool vertexShader;
 	static bool fragmentShader;
