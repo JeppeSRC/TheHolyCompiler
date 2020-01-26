@@ -208,6 +208,20 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		var = CreateGlobalVariable(type, varScope, name.string);
 
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_LOCATION, &location, 1));
+
+		if (varScope == VariableScope::In) {
+			if (inLocations.Find(location) != ~0) {
+				Log::CompilerWarning(name, "\"layout (location = %u) in\" already used", location);
+			} else {
+				inLocations.Add(location);
+			}
+		} else if (varScope == VariableScope::Out) {
+			if (outLocations.Find(location) != ~0) {
+				Log::CompilerWarning(name, "\"layout (location = %u) out\" already used", location);
+			} else {
+				outLocations.Add(location);
+			}
+		}
 	}
 
 	start--;
