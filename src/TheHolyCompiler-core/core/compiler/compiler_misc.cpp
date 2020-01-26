@@ -257,6 +257,15 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitiveScalar(Type type, uint8 bi
 			t = new InstTypeInt(bits, 0); //Remove signedness from all integers, signedness will be handled internally
 			break;
 		case Type::Float:
+			switch (bits) {
+				case 16:
+					if (!CompilerOptions::Float16()) Log::Error("-float16 needs be specified to use float16");
+					break;
+				case 64:
+					if (!CompilerOptions::Float64()) Log::Error("-float64 needs to be specified to use float64");
+
+			}
+
 			t = new InstTypeFloat(bits);
 			break;
 	}
@@ -1625,6 +1634,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"int64", TokenType::TypeInt, 64, 1, 0, 0},
 
 		{"float",  TokenType::TypeFloat, CompilerOptions::FPDefaultPrecision32() ? (uint8)32 : (uint8)64, 0, 0, 0},
+		{"float16",  TokenType::TypeFloat, 16, 0, 0, 0},
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 
