@@ -77,7 +77,7 @@ InstTypePointer::InstTypePointer(uint32 storageClass, compiler::ID* typeId) : In
 
 InstTypeFunction::InstTypeFunction(compiler::ID* returnTypeId, uint32 parameterCount, compiler::ID** parameterIds) : InstTypeBase(Type::Function, THC_SPIRV_OPCODE_OpTypeFunction, 3, "OpTypeFunction"), returnTypeId(returnTypeId), parameterCount(parameterCount) { memcpy(parameterId, parameterIds, parameterCount * sizeof(void*)); }
 
-InstTypeImage::InstTypeImage(compiler::ID* sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat) : InstTypeBase(Type::Image, THC_SPIRV_OPCODE_OpTypeImage, 9, "OpTypeImage"), sampledType(sampledType), dim(dim), depth(depth), arrayed(arrayed), multiSampled(multiSampled), sampled(sampled), imageFormat(imageFormat) {}
+InstTypeImage::InstTypeImage(compiler::ID* sampledType, uint32 dim, uint32 depth, uint32 arrayed, uint32 multiSampled, uint32 sampled, uint32 imageFormat) : InstTypeBase(Type::SampledImage, THC_SPIRV_OPCODE_OpTypeImage, 9, "OpTypeImage"), sampledType(sampledType), dim(dim), depth(depth), arrayed(arrayed), multiSampled(multiSampled), sampled(sampled), imageFormat(imageFormat) {}
 
 InstTypeSampledImage::InstTypeSampledImage(compiler::ID* imageType) : InstTypeBase(Type::SampledImage, THC_SPIRV_OPCODE_OpTypeSampledImage, 3, "OpTypeSampledImage"), imageType(imageType) { }
 

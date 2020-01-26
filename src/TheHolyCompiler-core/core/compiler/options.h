@@ -36,7 +36,7 @@ private:
 	static bool debugInformation;
 	static bool ppOnly;
 	static bool stopOnError;
-	static bool fpPrecision64;
+	static bool fpDefaultPrecision64;
 	static bool implicitConversions;
 	static bool vertexShader;
 	static bool fragmentShader;
@@ -55,8 +55,8 @@ public:
 	inline static bool DebugInformation() { return debugInformation; }
 	inline static bool PPOnly() { return ppOnly; }
 	inline static bool StopOnError() { return stopOnError; }
-	inline static bool FPPrecision64() { return fpPrecision64; }
-	inline static bool FPPrecision32() { return !fpPrecision64; }
+	inline static bool FPDefaultPrecision64() { return fpDefaultPrecision64; }
+	inline static bool FPDefaultPrecision32() { return !fpDefaultPrecision64; }
 	inline static bool ImplicitConversions() { return implicitConversions; }
 	inline static bool VertexShader() { return vertexShader; }
 	inline static bool FragmentShader() { return fragmentShader; }

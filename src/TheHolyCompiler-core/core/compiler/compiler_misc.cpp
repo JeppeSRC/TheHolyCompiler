@@ -155,7 +155,7 @@ Compiler::TypePrimitive* Compiler::CreateTypePrimitive(List<Token>& tokens, uint
 			tmpVar.sign = type.sign;
 		} else {
 			tmpVar.componentType = Type::Float;;
-			tmpVar.bits = CompilerOptions::FPPrecision32() ? 32 : 64;
+			tmpVar.bits = CompilerOptions::FPDefaultPrecision32() ? 32 : 64;
 			tmpVar.sign = 0;
 
 			offset--;
@@ -528,7 +528,7 @@ Compiler::TypeImage* Compiler::CreateTypeImage(List<Token>& tokens, uint64 start
 		Log::CompilerError(sampler, "uniform must be sampler or buffer");
 	}
 
-	var->type = Type::Image;
+	var->type = Type::SampledImage;
 	var->imageType = (ImageType)((uint8)sampler.type - (uint8)TokenType::TypeImage1D);
 	var->depth = 0;
 	var->arrayed = 0;
@@ -776,7 +776,7 @@ String Compiler::GetTypeString(const TypeBase* const type) const {
 			}
 
 			break;
-		case Type::Image:
+		case Type::SampledImage:
 			switch (((TypeImage*)type)->imageType) {
 				case ImageType::Image1D:
 					name = "sampler1D";
@@ -1624,7 +1624,7 @@ void Compiler::ProcessName(Token& t) const {
 		{"int32", TokenType::TypeInt, 32, 1, 0, 0},
 		{"int64", TokenType::TypeInt, 64, 1, 0, 0},
 
-		{"float",  TokenType::TypeFloat, CompilerOptions::FPPrecision32() ? (uint8)32 : (uint8)64, 0, 0, 0},
+		{"float",  TokenType::TypeFloat, CompilerOptions::FPDefaultPrecision32() ? (uint8)32 : (uint8)64, 0, 0, 0},
 		{"float32",  TokenType::TypeFloat, 32, 0, 0, 0},
 		{"float64",  TokenType::TypeFloat, 64, 0, 0, 0},
 

@@ -36,7 +36,7 @@ bool CompilerOptions::debugMessages = false;
 bool CompilerOptions::debugInformation = false;
 bool CompilerOptions::ppOnly = false;
 bool CompilerOptions::stopOnError = false;
-bool CompilerOptions::fpPrecision64 = false;
+bool CompilerOptions::fpDefaultPrecision64 = false;
 bool CompilerOptions::implicitConversions = true;
 bool CompilerOptions::vertexShader = false;
 bool CompilerOptions::fragmentShader = false;
@@ -65,7 +65,7 @@ bool CompilerOptions::ParseOptions(const List<String>& args) {
 		else if (arg == "-eD") debugMessages = true;
 		else if (arg == "-eDI") debugInformation = true;
 		else if (arg == "-pp") ppOnly = true;
-		else if (arg == "-f64") fpPrecision64 = true;
+		else if (arg == "-deffp64") fpDefaultPrecision64 = true;
 		else if (arg == "-moIMP") implicitConversions = false;
 		else if (arg == "-vertex") vertexShader = true;
 		else if (arg == "-fragment") fragmentShader = true;
