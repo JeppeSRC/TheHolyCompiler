@@ -363,6 +363,20 @@ void InstFunctionCall::GetInstWords(uint32* words) const {
 	}
 }
 
+void InstImageSampledImplicitLod::GetInstWords(uint32* words) const {
+	InstBase::GetInstWords(words);
+
+	words[1] = resultType->id;
+	words[2] = id->id;
+	words[3] = image->id;
+	words[4] = coordinate->id;
+	words[5] = imageOperand;
+
+	for (uint64 i = 0; i < numOperands; i++) {
+		words[6 + i] = operands[i]->id;
+	}
+}
+
 void InstConvertFToU::GetInstWords(uint32* words) const {
 	InstBase::GetInstWords(words);
 

@@ -245,7 +245,11 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 
 	List<Symbol*> arguments = ParseParameters(tokens, info, localVariables);
 
-	Symbol* ret = ParseExtFunctionCall(functionName, arguments, localVariables);
+	Symbol* ret = ParseExtFunctionCall(functionName, arguments);
+
+	if (ret) return ret;
+
+	ret = ParseBuiltinFunctionCall(functionName, arguments);
 
 	if (ret) return ret;
 
@@ -316,7 +320,7 @@ Compiler::Symbol* Compiler::ParseFunctionCall(List<Token>& tokens, ParseInfo* in
 	return new Symbol(SymbolType::Result, decl->returnType, call->id);
 }
 
-Compiler::Symbol* Compiler::ParseExtFunctionCall(const Token& functionName, List<Symbol*>& arguments, VariableStack* localVariables) {
+Compiler::Symbol* Compiler::ParseExtFunctionCall(const Token& functionName, List<Symbol*>& arguments) {
 	static ExtFunctionDeclaration tmp[] { 
 		{"round",		1, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
 		{"roundeven",	2, 1,  {ExtParamType::FloatVectorScalar,	ExtParamType::None,											ExtParamType::None} },
@@ -443,6 +447,64 @@ Compiler::Symbol* Compiler::ParseExtFunctionCall(const Token& functionName, List
 	instructions.Add(call);
 
 	return new Symbol(SymbolType::Result, arguments[0]->type, call->id);
+}
+
+Compiler::Symbol* Compiler::ParseBuiltinFunctionCall(const Token& functionName, List<Symbol*>& arguments) {
+	Symbol* res = nullptr;
+
+	if (functionName.string == "texture") {
+		if (arguments.GetCount() != 2) {
+			Log::CompilerError(functionName, "Function \"texture\" does not take %llu arguments", arguments.GetCount());
+		}
+
+		Symbol* arg0 = arguments[0];
+		Symbol* arg1 = arguments[1];
+
+		if (arg0->symbolType != SymbolType::Variable || arg0->type->type != Type::Image) {
+			Log::CompilerError(functionName, "Argument 0 in function \"texture\" needs to be a sampler2D");
+		}
+
+		uint8 rows = 0;
+
+		switch (arg0->iType->imageType) {
+			case ImageType::Image1D:
+				rows = 1;
+				break;
+			case ImageType::Image2D:
+				rows = 2;
+				break;
+			case ImageType::Image3D:
+			case ImageType::ImageCube:
+				rows = 3;
+		}
+
+		if (rows == 0) {
+			Log::CompilerError(functionName, "Invalid sampler type");
+		}
+
+		List<ID*> ids;
+
+		if (arg1->type->type == Type::Vector && arg1->pType->rows == rows) {
+			ids.Add(LoadVariable(arg0, false));
+			
+			if (arg1->symbolType == SymbolType::Variable || arg1->symbolType == SymbolType::Parameter) {
+				ids.Add(LoadVariable(arg1, true));
+			} else {
+				ids.Add(arg1->id);
+			}
+		} else {
+			Log::CompilerError(functionName, "Argument 1 in funciton \"texture\" needs to ba a vec%u_float32", rows);
+		}
+
+		TypeBase* retType = CreateTypePrimitiveVector(Type::Float, 32, 0, 4);
+
+		InstBase* func = new InstImageSampledImplicitLod(retType->typeId, ids[0], ids[1], 0, 0, nullptr);
+		instructions.Add(func);
+
+		res = new Symbol(SymbolType::Result, retType, func->id);
+	}
+
+	return res;
 }
 
 Compiler::Symbol* Compiler::ParseTypeConstructor(List<Token>& tokens, ParseInfo* info, VariableStack* localVariables) {

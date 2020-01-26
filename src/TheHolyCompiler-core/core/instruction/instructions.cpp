@@ -127,6 +127,8 @@ InstFunctionEnd::InstFunctionEnd() : InstBase(THC_SPIRV_OPCODE_OpFunctionEnd, 1,
 
 InstFunctionCall::InstFunctionCall(compiler::ID* resultTypeId, compiler::ID* functionId, uint32 argumentCount, compiler::ID** argumentIds) : InstBase(THC_SPIRV_OPCODE_OpFunctionCall, 4, "OpFunctionCall", true), resultTypeId(resultTypeId), functionId(functionId), argumentCount(argumentCount) { memcpy(argumentId, argumentIds, argumentCount * sizeof(void*)); }
 
+InstImageSampledImplicitLod::InstImageSampledImplicitLod(ID* resultType, ID* image, ID* coordinate, uint32 imageOperand, uint32 numOperands, ID** operands) : InstBase(THC_SPIRV_OPCODE_OpImageSampleImplicitLod, 5 + (imageOperand ? 1 + numOperands : 0), "OpImageSampleImplicitLod", true), resultType(resultType), image(image), coordinate(coordinate), imageOperand(imageOperand), numOperands(numOperands) { this->operands = new ID * [numOperands]; memcpy(this->operands, operands, numOperands * sizeof(void*)); }
+
 InstConvertFToU::InstConvertFToU(compiler::ID* resultTypeId, compiler::ID* valueId) : InstBase(THC_SPIRV_OPCODE_OpConvertFToU, 4, "OpConvertFToU", true), resultTypeId(resultTypeId), valueId(valueId) { }
 
 InstConvertFToS::InstConvertFToS(compiler::ID* resultTypeId, compiler::ID* valueId) : InstBase(THC_SPIRV_OPCODE_OpConvertFToS, 4, "OpConvertFToS", true), resultTypeId(resultTypeId), valueId(valueId) { }

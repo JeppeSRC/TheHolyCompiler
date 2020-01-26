@@ -500,7 +500,19 @@ public:
 
 #pragma region image instructions
 
-//TODO: image instructions
+class InstImageSampledImplicitLod : public InstBase {
+public:
+	compiler::ID* resultType;
+	compiler::ID* image;
+	compiler::ID* coordinate;
+	uint32 imageOperand;
+	uint32 numOperands;
+	compiler::ID** operands;
+
+	InstImageSampledImplicitLod(compiler::ID* resultType, compiler::ID* image, compiler::ID* coordinate, uint32 imageOperand, uint32 numOperands, compiler::ID** operands);
+
+	void GetInstWords(uint32* words) const override;
+};
 
 #pragma endregion
 

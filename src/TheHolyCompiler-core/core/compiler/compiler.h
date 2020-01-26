@@ -204,6 +204,7 @@ private: //Variable stuff
 			TypePrimitive* pType;
 			TypeArray* aType;
 			TypeStruct* sType;
+			TypeImage* iType;
 		};
 
 		ID* id;
@@ -468,7 +469,8 @@ private:
 	Symbol* ParseName(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables); //struct member selection, array subscripting and function calls
 	Symbol* ParseExpression(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	Symbol* ParseFunctionCall(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
-	Symbol* ParseExtFunctionCall(const parsing::Token& functionName, utils::List<Symbol*>& arguments, VariableStack* localVariables);
+	Symbol* ParseExtFunctionCall(const parsing::Token& functionName, utils::List<Symbol*>& arguments);
+	Symbol* ParseBuiltinFunctionCall(const parsing::Token& functionName, utils::List<Symbol*>& arguments);
 	Symbol* ParseTypeConstructor(utils::List<parsing::Token>& tokens, ParseInfo* info, VariableStack* localVariables);
 	utils::List<Symbol*> ParseParameters(utils::List<parsing::Token>& tokens, ParseInfo* inf, VariableStack* localVariables);
 
