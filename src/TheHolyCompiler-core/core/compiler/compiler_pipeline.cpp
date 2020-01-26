@@ -176,9 +176,9 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 			name = next.string;
 			varScope = VariableScope::UniformConstant;
 		} else {
-			TypeStruct* str = CreateTypeStruct(tokens, start + offset++, nullptr);
+			t = CreateTypeStruct(tokens, start + offset++, nullptr);
 
-			String name = str->typeString;
+			name = t->typeString;
 		}
 
 		var = CreateGlobalVariable(t, varScope, name);

@@ -20,7 +20,6 @@ void main() {
 
 	color = colors;
 	texCoord = (UniformBuffer.model * vec4(texCoords - vec2(0.5, 0.5), 0.0, 0.5)).xy + vec2(0.5, 0.5);
-	//texCoord = texCoords;
 }
 
 #else
