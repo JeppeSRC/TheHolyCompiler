@@ -450,8 +450,7 @@ private:
 	utils::List<utils::String> defines;
 	utils::List<utils::String> includes;
 
-	utils::List<uint32> inLocations;
-	utils::List<uint32> outLocations;
+	utils::List<uint32> locations;
 
 	utils::List<parsing::Token> Tokenize();
 	void ParseTokens(utils::List<parsing::Token>& tokens);
