@@ -37,6 +37,9 @@ using namespace parsing;
 using namespace type;
 using namespace instruction;
 
+#define MAKE_LOCATION(in, location) (uint64)((1ULL << 63) | (((uint64)in & 0x1) << 62) | (location & 0xFFFFFF))
+#define MAKE_UNIFORM(binding, set) (uint64)((uint64)(binding & 0x7FFFFF) << 32 | (set & 0xFFFFFF))
+
 void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 	uint64 offset = 0;
 
@@ -186,6 +189,12 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_BINDING, &binding, 1));
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_DESCRIPTORSET, &set, 1));
 
+		if (locations.Find(MAKE_UNIFORM(binding, set)) != ~0) {
+			Log::CompilerWarning(tmp, "\"layout (binding = %u, set = %u) uniform\" already used", binding, set);
+		} else {
+			locations.Add(MAKE_UNIFORM(binding, set));
+		}
+
 	} else {
 		TypePrimitive* type = CreateTypePrimitive(tokens, start + offset, nullptr);
 
@@ -208,6 +217,20 @@ void Compiler::ParseLayout(List<Token>& tokens, uint64 start) {
 		var = CreateGlobalVariable(type, varScope, name.string);
 
 		annotationIstructions.Add(new InstDecorate(var->id, THC_SPIRV_DECORATION_LOCATION, &location, 1));
+
+		if (varScope == VariableScope::In) {
+			if (locations.Find(MAKE_LOCATION(1, location)) != ~0) {
+				Log::CompilerWarning(name, "\"layout (location = %u) in\" already used", location);
+			} else {
+				locations.Add(MAKE_LOCATION(1, location));
+			}
+		} else if (varScope == VariableScope::Out) {
+			if (locations.Find(MAKE_LOCATION(0, location)) != ~0) {
+				Log::CompilerWarning(name, "\"layout (location = %u) out\" already used", location);
+			} else {
+				locations.Add(MAKE_LOCATION(0, location));
+			}
+		}
 	}
 
 	start--;

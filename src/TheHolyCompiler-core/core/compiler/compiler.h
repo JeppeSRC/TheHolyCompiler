@@ -450,6 +450,8 @@ private:
 	utils::List<utils::String> defines;
 	utils::List<utils::String> includes;
 
+	utils::List<uint64> locations;
+
 	utils::List<parsing::Token> Tokenize();
 	void ParseTokens(utils::List<parsing::Token>& tokens);
 	void ParseLayout(utils::List<parsing::Token>& tokens, uint64 start);
